@@ -1,0 +1,302 @@
+.original-container {
+    display: flex;
+    overflow: hidden;
+    height: calc(100vh - 12px);
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add shadow for 3D effect */
+    padding: 5px; /* Increase padding for space between border and form elements */
+    /* border for visualization */
+}
+
+.left-container,
+.right-container {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    
+    /* border for visualization */
+    
+}
+
+.left-container {
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); */
+    flex: 3;
+    /* takes 3 out of 10 space */
+   
+
+}
+
+.right-container {
+    flex: 7;
+    /* takes 7 out of 10 space */
+    padding: 10px;
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); */
+}
+
+.sub-container-user-info {
+    margin: 10px;
+    
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    /* border for visualization */
+   
+}
+
+.user-info {
+    text-align: center;
+    
+}
+
+.loggedin-possitional {
+    text-align: left;
+    justify-content: left;
+    margin-left: 10px; /* Adjust margin as needed */
+    color: #7986cb;
+    font-family: cursive !important;
+}
+
+.name {
+    
+    text-align: center;
+}
+
+
+.logout-button{
+    background-color:#7986cb !important;
+    color:white !important;
+    margin-bottom: 5px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    text-align: left;
+}
+
+.sub-container-online-users {
+    margin: 10px;
+    display: flex;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    flex: 5;
+    overflow-y: auto;
+    overflow-x:hidden;
+  
+
+}
+
+.offline-users-possition{
+  flex:5;
+}
+.offline-users-possition{
+  flex:5;
+  
+}
+
+/* Style the scrollbar and its track */
+.sub-container-online-users::-webkit-scrollbar {
+    width: 5px; /* Width of the scrollbar */
+}
+
+.sub-container-online-users::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Background color of the scrollbar track */
+}
+
+/* Style the scrollbar thumb (handle) */
+.sub-container-online-users::-webkit-scrollbar-thumb {
+    background: #7986cb; /* Color of the scrollbar thumb */
+    border-radius: 5px; /* Border radius of the scrollbar thumb */
+}
+
+/* Style the scrollbar thumb on hover */
+.sub-container-online-users::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color of the scrollbar thumb on hover */
+}
+
+.sub-container-channels {
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    flex: 5;
+    overflow-y: auto;
+    width:478px;
+    
+    /* border for visualization */
+}
+
+.channel-types{
+    display: flex;
+    flex-direction: row;
+    justify-content:start;
+}
+.private-channel{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+.public-channel{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+.sub-container-channels::-webkit-scrollbar {
+    width: 5px; /* Width of the scrollbar */
+}
+
+.sub-container-channels::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Background color of the scrollbar track */
+}
+
+.sub-container-channels::-webkit-scrollbar-thumb {
+    background: #7986cb; /* Color of the scrollbar thumb */
+    border-radius: 5px; /* Border radius of the scrollbar thumb */
+}
+
+.sub-container-channels::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color of the scrollbar thumb on hover */
+}
+
+.chat-container {
+    overflow: hidden;
+    display:flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+    /* takes entire space of right container */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    /* border for visualization */
+    overflow-y: auto;
+}
+
+.chat-name{
+    height: 45px;
+    line-height: 45px;
+    vertical-align: middle;
+    width: 100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    color: #7986cb;
+    font-family: cursive !important;
+    border-bottom: 2px solid #7986cb;
+}
+
+.chat-body {
+    flex-grow: 1;
+    overflow-x: hidden;
+    width: calc(100% - 20px);
+    overflow-y: auto; /* Add vertical scroll if needed */
+     /* Set maximum width to prevent overflow */
+    max-height: calc(100vh - 203px); /* Set maximum height */
+    /* TODO: This is dangureso to do*/
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.chat-body::-webkit-scrollbar {
+    width: 5px; /* Width of the scrollbar */
+}
+
+.chat-body::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Background color of the scrollbar track */
+}
+
+/* Style the scrollbar thumb (handle) */
+.chat-body::-webkit-scrollbar-thumb {
+    background: #7986cb; /* Color of the scrollbar thumb */
+    border-radius: 5px; /* Border radius of the scrollbar thumb */
+}
+
+/* Style the scrollbar thumb on hover */
+.chat-body::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color of the scrollbar thumb on hover */
+}
+.chat-body pre {
+    white-space: pre-wrap; /* Preserve line breaks and wrap long lines */
+    word-wrap: break-word; /* Wrap long words to prevent overflow */
+    word-break: break-all; /* Break long words if necessary */
+}
+/* Adjust padding and margin for mat-list-item */
+
+
+
+.chat-commands{
+    width: 100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    position: relative; /* Add position relative */
+    
+    box-sizing: border-box; /* Ensure padding is included in width */
+    overflow: hidden; /* Prevent overflow */
+    border-top: 2px solid #7986cb;
+}
+.flex-grow {
+ 
+     /* Optional: Add border for visualization */
+    width: 95.5%;
+    height: 100%;
+    
+}
+/* Add this CSS to your component's CSS file */
+.custom-textarea {
+    
+    resize: both; /* Prevent resizing */
+    padding: -10px; /* Optional: Add padding for better appearance */
+    border: none; /* Optional: Remove border for better appearance */
+   /* Add scrollbar if content overflows */
+   
+}
+
+.tooltips-colors{
+    font-family: cursive !important;
+    color: #7986cb;
+}
+
+.user-data-fonts{
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif !important;
+}
+.chater-font{
+    height: 100%;
+    font-family: cursive !important;
+    display: flex;
+    flex-direction: row;
+}
+.chater-message{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: justify;
+    margin-bottom: 4px;
+}
+
+.selectedConversation{
+    color: #7986cb;
+}
+.conversation-row{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.chat-body mat-list-item {
+    text-align: left;
+    justify-content: left;
+   
+  }
+
+.search-box-online{
+    
+    color: #7986cb;
+    border-color: #7986cb;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    margin-left:15px;
+    margin-top: 2px;
+}
+.search-box-offline{
+    
+    color: #7986cb;
+    border-color: #7986cb;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    margin-top: 2px;
+}
+
+.currently-typing{
+    color:#7986cb ;
+    
+    transform: skew(-20deg);
+}

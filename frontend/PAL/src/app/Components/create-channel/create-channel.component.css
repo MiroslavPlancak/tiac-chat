@@ -1,0 +1,8 @@
+.new-channel-created{
+    height: auto !important; /* Set height to auto */
+    overflow: hidden; /* Disable overflow */
+}
+
+.new-channel-main-window{
+    overflow: hidden !important;
+}

@@ -1,0 +1,28 @@
+<div class="form-possition">
+   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" >
+    <mat-form-field>
+      <mat-label  class="ui-color">Email:</mat-label>
+      <input matInput type="text" formControlName="email" />
+    </mat-form-field>
+    <br>
+  
+    <mat-form-field>
+      <mat-label  class="ui-color">Password:</mat-label>
+      <input matInput type="password" formControlName="password" />
+    </mat-form-field>
+    <br>
+    <br>
+    <button mat-raised-button class="button-ui-color" type="submit" >Login</button>
+    <br>
+    <br>
+   
+  </form>
+ <button mat-button  class="register-button" (click)="openRegistrationDialog()">register</button>
+ <div *ngIf="errorHappened">
+  <div class="error-container">
+    <p class="error-message"> {{ errorMessage }}</p>
+  </div>
+</div>
+</div>
+
+  

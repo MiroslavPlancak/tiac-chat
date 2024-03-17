@@ -1,0 +1,15 @@
+.search-box-online{
+    
+    color: #7986cb;
+    border-color: #7986cb;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    margin-left:15px;
+    margin-top: 2px;
+}
+
+.user-data-fonts{
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif !important;
+}
+.selectedConversation{
+    color: #7986cb;
+}

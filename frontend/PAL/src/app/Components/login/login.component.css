@@ -1,0 +1,26 @@
+.form-possition{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add shadow for 3D effect */
+    padding: 20px; /* Increase padding for space between border and form elements */
+    
+}
+
+.ui-color{
+    color:#7986cb;
+    
+}
+
+.button-ui-color{
+    background-color:#7986cb !important;
+    color:white !important;
+}
+.register-button{
+    color:#7986cb !important;
+}
+
+.error-message{
+    color:#7986cb;
+}

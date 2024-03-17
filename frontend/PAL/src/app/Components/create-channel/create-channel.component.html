@@ -1,0 +1,31 @@
+<div *ngIf="!newChannelCreated" class="new-channel-main-window">
+ 
+  <h3><mat-icon style="font-size: 24px; vertical-align: middle;" color="primary">fiber_new</mat-icon>create new channel:</h3>
+    <mat-form-field>
+      <mat-label>Channel Name:</mat-label>
+      <input matInput type="text" id="channelName" name="channelName" [(ngModel)]="channelName" required>
+    </mat-form-field>
+  
+    <mat-form-field>
+      <mat-label>Channel Type:</mat-label>
+      <select matNativeControl id="channelType" name="channelType" [(ngModel)]="channelType" required>
+        <option *ngFor="let channelType of channelTypes | keyvalue" [value]="channelTypes[channelType.key]">
+          {{channelType.key}}
+        </option>
+      </select>
+    </mat-form-field>
+  
+    <br>
+    <br>
+    
+  
+    <button mat-raised-button color="primary" [disabled]="!channelName"  (click)="createChannel()">Create Channel</button>
+    <button mat-raised-button color="red" (click)="close()">close</button>
+  </div>
+  <div *ngIf="newChannelCreated" class="new-channel-created">
+    <h5>New Channel Created:</h5>
+    <p><strong>Name:</strong> {{ newChannelName }}</p>
+    <p><strong>Type:</strong> {{ getChannelTypeText(newChannelType) }}</p>
+    <p><strong>Created By:</strong> {{ newChannelCreator }}</p>
+    <button mat-raised-button color="primary" (click)="close()">Close</button>
+  </div>

@@ -1,0 +1,34 @@
+.private-conversation {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.online-users {
+    flex-grow: 1;
+}
+.user {
+    text-align: left;
+}
+
+.user:hover { 
+    cursor: pointer;
+}
+
+.conversation {
+    flex-grow: 9;
+    flex-direction: column;
+    display: flex;
+}
+.conversation-message {
+    text-align: left;
+    flex-grow: 9;
+}
+.conversation-name {
+    text-align: right;
+    flex-grow: 0.3;
+}
+.conversation-row {
+    display: flex;
+    flex-direction: row;
+}

@@ -1,0 +1,12 @@
+<div class="sub-container-user-info" style="flex:1;">
+    <div class="user-info">
+        <p class="loggedin-possitional"></p>
+
+        <p class="user-data-fonts">{{ (currentUserLogged$ | async)?.firstName }}&nbsp;{{ (currentUserLogged$ |
+            async)?.lastName }}</p>
+
+        <div class="email" class="user-data-fonts">
+            <p>{{ (currentUserLogged$ | async)?.email }}</p>
+            <button mat-flat-button class="logout-button" (click)="logout()"><mat-icon>logout</mat-icon></button>
+        </div>
+    </div>

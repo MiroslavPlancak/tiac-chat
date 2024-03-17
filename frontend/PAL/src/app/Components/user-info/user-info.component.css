@@ -1,0 +1,33 @@
+.sub-container-user-info {
+    margin: 10px;
+
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    /* border for visualization */
+
+}
+
+.user-info {
+    text-align: center;
+}
+
+.loggedin-possitional {
+    text-align: left;
+    justify-content: left;
+    margin-left: 10px;
+    /* Adjust margin as needed */
+    color: #7986cb;
+    font-family: cursive !important;
+}
+
+.user-data-fonts{
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif !important;
+}
+
+.logout-button{
+    background-color:#7986cb !important;
+    color:white !important;
+    margin-bottom: 5px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    text-align: left;
+}

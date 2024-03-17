@@ -1,0 +1,68 @@
+<!-- chat.component.html -->
+<div class="private-conversation">
+  <div class="online-users">
+    <h2>online users</h2>
+    <div class="user" *ngFor="let entry of (chatService.onlineUsers$ | async)" (click)="conversationIdSelectedClickHandler(+entry.id)">
+      <span *ngIf="(privateConversationId$ |async) === +entry.id">x&nbsp;</span>{{entry.firstName}}
+    </div>
+  </div>
+  <div class="conversation">
+    <div class="conversation-row" *ngFor="let privateMessage of receivedPrivateMessages">
+      <div class="conversation-name">{{privateMessage.senderId}}:</div>
+      <div class="conversation-message">{{privateMessage.message}}</div>
+    </div>
+  </div>
+</div>
+<div>
+    <div>Send message to: {{ privateConversationId$  | async}}</div>
+    <input type="text" (change)="onPrivateMessageChangeHandler($event)"/>
+    <button [disabled]="!tempMessage" (click)="sendPrivateMessage()">Send Private Mesage</button>
+</div>
+
+<div style="border: 1px solid black;">
+    <h3>public channel</h3>
+    
+    <div *ngFor="let receivedPublicMessage of receivedPublicMessages" >
+      <strong>{{receivedPublicMessage.sentFromUserDTO.firstName}}:</strong> {{ receivedPublicMessage.body }}
+    </div>
+  
+    
+    <form (ngSubmit)="sendMessage()" #messageForm="ngForm">
+      
+      <label for="user">You are logged in as:</label>
+      
+      <p>{{ currentUserName$ | async |json }}</p>
+      <label for="message">Message:</label>
+      <input type="text" id="message" [(ngModel)]="newPublicMessage" name="message" required>
+  
+      <button type="submit" [disabled]="messageForm.invalid">Send Message</button>
+    </form>
+    <button  (click)="logout()">logout</button>
+  </div>
+  
+  <hr>
+
+  <h3>list of public channels</h3>
+     
+<div *ngFor="let loadedPublicChannel of loadedPublicChannels" (click)="channelIdSelectedClickHandler(+loadedPublicChannel.id)">
+ 
+  <span *ngIf="(SelectedChannel$ |async)=== loadedPublicChannel.id">#====>&nbsp;</span>
+  <strong>{{loadedPublicChannel.name}}:</strong> 
+  owner: {{loadedPublicChannel.createdByUser.firstName}}({{loadedPublicChannel.createdByUser.id}}) 
+</div>
+<div>
+  <h5>create new channel:</h5>
+  <label for="channelName">Channel Name:</label>
+    <input type="text" id="channelName" name="channelName"  [(ngModel)]="channelName" required>
+
+    <label for="channelType">Channel Type:</label>
+    <select id="channelType" name="channelType" [(ngModel)]="channelType" required>
+      <option *ngFor="let channelType of channelTypes | keyvalue" [value]="channelTypes[channelType.key]" >
+        {{channelType.key}}
+      </option>
+    </select>
+    <br>
+    <br>
+    <br>
+    <button type="button" mat-raised-button (click)="createChannel()">Create Channel</button>
+</div>

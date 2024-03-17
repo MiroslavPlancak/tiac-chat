@@ -1,0 +1,46 @@
+.error-message{
+    color:#7986cb
+    
+}
+
+.new-user-created {
+    border: 1px solid #ccc; /* Add border */
+    border-radius: 5px; /* Add border radius for rounded corners */
+    box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2); /* Add box shadow for 3D effect */
+    padding: 20px; /* Add padding for content */
+    text-align: center; /* Center text content */
+  
+    /* Center the close button */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .registered-user-color{
+    color:#7986cb;
+  }
+  .new-user-created h3 {
+    margin-top: 0; /* Remove default margin */
+  }
+  
+  .new-user-created button {
+    margin-top: 20px; /* Add space between paragraph and button */
+  }
+
+/* user-form.component.css */
+
+.form-container{
+    border: 1px solid #ccc; /* Add border */
+    border-radius: 5px; /* Add border radius for rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Add box shadow for 3D effect */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.submit-button{
+    margin-bottom: 20px;
+    color:white;
+    background-color: #7986cb;
+}
+form {
+    overflow: hidden;
+}

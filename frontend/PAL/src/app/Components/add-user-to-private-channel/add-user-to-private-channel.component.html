@@ -1,0 +1,50 @@
+<div class="added-users-list">
+
+    <h4>users in {{selectedChannelIdName}}:</h4>
+    <ul>
+        <li *ngFor="let user of listOfAddedUsers">
+            {{ user.firstName }} {{ user.lastName }} 
+            <span *ngIf="isOwnerOfPrivateChannel && user.id !== (authService.userId$ | async)" (click)="removeUserFromPrivateChannel(user.id)">
+                    <mat-icon color="primary">delete</mat-icon>
+            </span>
+            <span *ngIf="user.id === (authService.userId$ | async) && isOwnerOfPrivateChannel" >
+                <mat-icon color="primary">grade</mat-icon>
+           </span>
+           
+        </li>
+    </ul>
+</div>
+
+<div *ngIf="!addedEntryToPrivateChannel && isOwnerOfPrivateChannel" class="add-user">
+    <mat-form-field>
+        <mat-label>add user</mat-label>
+        <mat-select [(value)]="selectedUserId">
+            <mat-option *ngFor="let user of listOfUsers" [value]="user.id">
+                {{ user.firstName }}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="addUserToPrivateChannel()">Add</button>
+</div>
+
+<div *ngIf="addedEntryToPrivateChannel && !ErrorMessage" class="user-added">
+    <h3>user successfully added:</h3>
+    <p class="user-name"> <span class="name-color">{{ selectedUserIdName.firstName }}
+            {{selectedUserIdName.lastName}}</span>
+        has been added to <span class="name-color">{{ selectedChannelIdName }}</span>.</p>
+
+    <button mat-raised-button color="primary" (click)="addAnother()">add another</button> &nbsp;&nbsp;
+    <button mat-raised-button color="primary" (click)="close()">close</button>
+</div>
+<div *ngIf="ErrorMessage !== undefined && ErrorMessage !== null && ErrorMessage !== ''" class="error-message">
+    Error occurred:
+    <div class="message-body">
+        {{ ErrorMessage }}
+    </div>
+    <div class="buttons-possition">
+        <button mat-raised-button color="primary" (click)="addAnother()">add another</button>
+        <button mat-raised-button color="primary" (click)="close()">Close</button>
+    </div>
+
+</div>

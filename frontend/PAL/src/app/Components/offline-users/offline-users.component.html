@@ -1,0 +1,17 @@
+<div class="offline-users-possition">
+               
+    <input matInput class="search-box-offline" placeholder="Search Offline Users" (input)="filterOfflineUsers($event)">
+    <mat-icon color="primary" style="font-size: 24px; vertical-align: middle;">search</mat-icon>
+    <mat-list>
+        <mat-list-item *ngFor="let offlineUser of offlineFilteredUsers$ | async"
+            (click)="conversationIdSelectedOfflineClickHandler(offlineUser.id)">
+            <div class="user-data-fonts"
+                [ngClass]="{'selectedConversation': (selectedConversation | async) === offlineUser.id 
+                && (isDirectMessage | async) !== true && (isDirectMessageOffline | async)}">
+                <span *ngIf="(privateConversationId$ | async) === offlineUser.id">
+                    <mat-icon style="font-size: 24px; vertical-align: middle;">record_voice_over</mat-icon></span>
+                {{offlineUser.firstName}} {{offlineUser.lastName}}
+            </div>
+        </mat-list-item>
+    </mat-list>
+</div>

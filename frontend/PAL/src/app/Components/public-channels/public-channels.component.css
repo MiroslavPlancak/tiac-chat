@@ -1,0 +1,22 @@
+.public-channel{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+.channel-types{
+    display: flex;
+    flex-direction: row;
+    justify-content:start;
+}
+.user-data-fonts{
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif !important;
+}
+
+.selectedConversation{
+    color: #7986cb;
+}
+.private-channel{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}

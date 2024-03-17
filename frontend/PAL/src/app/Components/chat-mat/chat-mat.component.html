@@ -1,0 +1,123 @@
+<div class="original-container">
+    <div class="left-container">
+        <app-user-info></app-user-info>
+        <div class="sub-container-online-users" style="flex: 4;">
+
+            <app-online-users></app-online-users> <app-offline-users></app-offline-users>
+
+        </div>
+        <div class="sub-container-channels" style="flex: 5;">
+            <div>
+                <p class="tooltips-colors">join a channel:
+                    <button mat-icon-button (click)="openDialog()" matTooltip="Add new channel">
+                        <mat-icon color="primary">add</mat-icon>
+                    </button>
+                </p>
+            </div>
+            <app-public-channels></app-public-channels>
+        </div>
+    </div>
+    <div class="right-container">
+        <div class="chat-container">
+            <div class="chat-name">currently writing to:<strong>{{writingTo | async}}</strong>
+                
+                <span *ngIf="(isPrivateChannel | async)" (click)="this.userService.addUserToPrivateChannel(curentlyClickedPrivateChannel)"><button
+                        mat-icon-button matTooltip="user list">
+                        <mat-icon color="primary">group</mat-icon></button>
+                </span>
+            </div>
+
+
+            <div class="chat-body" #chatBodyContainer>
+                <ng-container *ngIf="(privateConversationId$ | async) as privateConversationId">
+
+                    <cdk-virtual-scroll-viewport #virtualScrollViewport itemSize="18" class="chat-body" autosize
+                        (scrolledIndexChange)="privateAutoScroll($event)">
+                        <button *ngIf="canLoadMorePrivateMessages$ |async" mat-raised-button color="primary"
+                            (click)="loadMorePrivateMessages()">Load More</button>
+                        <ng-container
+                            *cdkVirtualFor="let privateMessage of this.messageService.receivedPrivateMessages$; let i = index;">
+                            <div class="conversation-row">
+                                <div class="chater-font">
+                                    <div *ngIf="privateMessage.senderId == (currentUserLogged$ | async)?.firstName">
+                                        <span *ngIf="privateMessage.isSeen"><mat-icon color="primary"
+                                                matTooltip="Seen by {{writingTo | async}}."
+                                                style="font-size: 17px; vertical-align: middle; align-items: center;">check_circle</mat-icon></span>
+                                        <span *ngIf="!privateMessage.isSeen"><mat-icon color="primary"
+                                                matTooltip="Not seen by {{writingTo | async}}."
+                                                style="font-size: 17px; vertical-align: middle; align-items: center;">check_circle_outline</mat-icon></span>
+                                    </div>
+                                    <span
+                                        *ngIf="privateMessage.senderId !== (currentUserLogged$ | async)?.firstName">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                    <strong>{{ privateMessage.senderId }}</strong>:
+                                </div>
+                                <div class="chater-message">{{ privateMessage.message }} </div>
+                            </div>
+                        </ng-container>
+                    </cdk-virtual-scroll-viewport>
+
+
+
+
+                    <div *ngFor="let senderId of currentlyTypingUsers">
+                        <span *ngIf=" senderId == (privateConversationId$ | async)" class="currently-typing">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ typingStatusMap.get(senderId)}} is typing...</span>
+                    </div>
+                </ng-container>
+
+                <ng-container *ngIf="!(privateConversationId$ | async)">
+                    <cdk-virtual-scroll-viewport #virtualScrollViewportPublic itemSize="18" class="chat-body" autosize
+                        (scrolledIndexChange)="publicAutoScroll($event)">
+                        <button *ngIf="canLoadMorePublicMessages$ |async" mat-raised-button color="primary"
+                            (click)="loadMorePublicMessages()">Load More</button>
+                        <ng-container
+                            *cdkVirtualFor="let receivedPublicMessage of receivedPublicMessages$; let i = index; let last = last; let count = count">
+                            <div class="conversation-row"
+                                (click)="conversationIdSelectedClickHandler(receivedPublicMessage.sentFromUserDTO.id)">
+                                <div class="chater-font">
+                                    <strong>{{ receivedPublicMessage.sentFromUserDTO.firstName }}: </strong>
+                                </div>
+                                <div class="chater-message">&nbsp;{{ receivedPublicMessage.body }} {{i}}</div>
+                            </div>
+                        </ng-container>
+                    </cdk-virtual-scroll-viewport>
+                </ng-container>
+
+            </div>
+            <div class="chat-commands">
+                <div *ngIf="(privateConversationId$ | async) as privateConversationId">
+                    <form class="message-form" (keydown.enter)="sendPrivateMessage()" #privateMessageForm="ngForm">
+                        <mat-form-field appearance="fill" class="flex-grow">
+                            <mat-label *ngIf="isUserTyping$.getValue() == false ">{{ this.userService.fullName
+                                }}</mat-label>
+                            <mat-label
+                                *ngIf="(isUserTyping$ | async) && (senderId$ | async) == (privateConversationId$ | async)">
+                                {{ fullName.substring(fullName.lastIndexOf(" ") + 1, fullName.lastIndexOf(":")) }} is
+                                typing...</mat-label>
+                            <textarea matInput id="privateMessage" [(ngModel)]="newPrivateMessage" name="privateMessage"
+                                class="custom-textarea" (input)="onTypingPrivateMessage()"></textarea>
+                        </mat-form-field>
+                        <button mat-icon-button color="primary" type="submit" [disabled]="privateMessageForm.invalid"
+                            (click)="sendPrivateMessage()">
+                            <mat-icon>send</mat-icon>
+                        </button>
+                    </form>
+                </div>
+                <!-- Render public message form if privateConversationId$ does not have a value -->
+                <div *ngIf="!(privateConversationId$ | async)">
+                    <form class="message-form" (keydown.enter)="sendMessage()" #publicMessageForm="ngForm">
+                        <mat-form-field appearance="fill" class="flex-grow">
+                            <mat-label>{{ (this.userService.writeToChannelName | async )}}</mat-label>
+                            <textarea matInput id="message" [(ngModel)]="newPublicMessage" name="message"
+                                class="custom-textarea"></textarea>
+                        </mat-form-field>
+                        <button mat-icon-button color="primary" type="submit" [disabled]="publicMessageForm.invalid"
+                            (click)="sendMessage()">
+                            <mat-icon>send</mat-icon>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,25 @@
+.error-message{
+    overflow: hidden;
+}
+
+.message-body{
+    color:red;
+    padding:20px;
+}
+
+.user-added{
+    
+    overflow: hidden;
+}
+
+.user-name{
+    padding:20px;
+}
+
+.name-color{
+    color:#7986cb;
+}
+
+.buttons-possition{
+    justify-content: center;
+}
