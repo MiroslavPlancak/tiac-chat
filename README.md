@@ -1,6 +1,6 @@
 # Tiac Chat
 
-What does it do?
+`What does it do?`
 
 The application is meant to provide a real time, live chat capability to all registered and authenticated clients. It encompasses three main channels of communication: 
 
@@ -10,15 +10,15 @@ The application is meant to provide a real time, live chat capability to all reg
 
 -Private message channels: all connected clients can write to other online or offline clients via direct, private message.
 
-The application includes a searchable list of online and offline users, along with the broadcast of corresponding toast notifications of clients coming online or going offline. Private messaging channel is enhanced by `seen` as well as `is typing` logic.
+The application includes a searchable list of online and offline users, along with the broadcast of corresponding toast notifications of clients coming online or going offline. Private messaging channel is enhanced by "seen" as well as "is typing" logic.
 
-How is it structured? 
+`How is it structured?`
 
-Database
+### Database
 
 As it's persistence foundation the app uses an MSSQL database, which is connected to the back end of the application through Entity Framework. Entity Type Configurations are employed to precisely define database mappings for each domain entity, promoting maintainability and separation of concerns within the application's data layer. Fluent Validation is employed to validate user input and enforce business rules. With a database-first approach, Fluent Validation offers a flexible and expressive way to define validation rules in a fluent manner, enhancing the overall robustness and reliability of the application.
 
-Back End
+### Back End
 
 Back end follows a three-tiered architecture design in the .NET framework, it is comprised of the following layers:
 
@@ -28,7 +28,7 @@ Back end follows a three-tiered architecture design in the .NET framework, it is
 
 3) Presentation Access Layer: This layer's primary responsibility is communication with the client, which is achieved through exposure of HTTP end points via controllers and Hubs, which use AspNetCore.SignalR library to establish the connection with the connected client.
 
-Front end
+### Front end
 
 Front end is written in Angular and it employs different communication protocols based on the nature of data interaction: 
 
@@ -37,4 +37,32 @@ HTTP Endpoints: In scenarios where real-time communication isn't necessary, the 
 SignalR Hub: For real-time communication needs, such as live messaging and notifications, the front end interacts with the Presentation Access Layer through a SignalR Hub. By invoking methods on the SignalR Hub, the application achieves bi-directional, low-latency communication, ensuring seamless real-time updates and interactions in a client-server manner.
 
 
+`How do I install it?`
 
+The Tiac Chat application relies on the following dependencies:
+
+### Presentation access layer's .csproj file:
+
+- Bcrypt.Net-Next (v4.0.3)
+- FluentAssertions (v6.12.0)
+- FluentValidation (v11.9.0)
+- Microsoft.AspNetCore.Authentication.JwtBearer (v8.0.1)
+- Microsoft.AspNetCore.SignalR.Client (v8.0.1)
+- Microsoft.NET.Test.Sdk (v17.8.0)
+- Newtonsoft.Json (v13.0.3)
+- NSubstitute (v5.1.0)
+- NuGet.Frameworks (v6.5.0)
+- Swashbuckle.AspNetCore (v6.4.0)
+- xunit (v2.6.6)
+- xunit.runner.visualstudio (v2.5.3)
+
+### Data access layer's .csproj file:
+
+- Microsoft.AspNetCore.Identity.EntityFrameworkCore (v8.0.1)
+- Microsoft.EntityFrameworkCore (v8.0.1)
+- Microsoft.EntityFrameworkCore.Relational (v8.0.1)
+- Microsoft.EntityFrameworkCore.SqlServer (v8.0.1)
+
+### Database script file (tiac_chat_db_script.sql)
+
+Import the .sql script file found inside the root folder of this repository.
