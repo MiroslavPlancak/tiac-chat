@@ -7,6 +7,7 @@ import { AuthService } from '../../Services/auth.service';
 import * as rxjs from 'rxjs';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { AddUserToPrivateChannelComponent } from '../add-user-to-private-channel/add-user-to-private-channel.component';
+import { CreateChannelComponent } from '../create-channel/create-channel.component';
 
 @Component({
   selector: 'app-public-channels',
@@ -38,6 +39,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     private chatService:ChatService,
     private messageService:MessageService,
     private matDialog: MatDialog,
+    
   ) {
 
     
@@ -47,7 +49,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     //load the public_root channel contents when this component is initialized
     this.chatService.hubConnection?.on(`YourConnectionId`,()=>{
       this.channelIdSelectedClickHandler(8)
-      console.log(`public-channels`)
+      
     })
 
     //redirect user to public_root after he has been kicked from a private channel
@@ -84,7 +86,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
 
     this.SelectedChannel$.next(channelId);
     this.channelId = channelId
-    console.log(this.SelectedChannel$.value)
+  
     this.messageService.initialPrivateMessageStartIndex$.next(0)
     this.messageService.canLoadMorePublicMessages$.next(false)
     
@@ -183,6 +185,27 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
       }
 
       )
+  }
+
+  openDialog() {
+
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.disableClose = false;
+    dialogConfig.autoFocus = true;
+
+    const dialogData = {
+      currentUserId: this.currentUserId$
+    }
+
+
+    dialogConfig.data = dialogData;
+    const dialogRef = this.matDialog.open(CreateChannelComponent, dialogConfig);
+
+    dialogRef.componentInstance.channelCreated
+      .pipe(rxjs.takeUntil(this.destroy$))
+      .subscribe((createdChannelDetails: any) => {
+        console.log(`created channel over mat dialog result: `, createdChannelDetails)
+      })
   }
 
 }

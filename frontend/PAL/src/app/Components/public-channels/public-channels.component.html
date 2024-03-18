@@ -1,34 +1,44 @@
+<div>
+    <p class="tooltips-colors">join a channel:
+        <button mat-icon-button (click)="openDialog()" matTooltip="Add new channel">
+            <mat-icon color="primary">add</mat-icon>
+        </button>
+    </p>
+</div>
+
 <div class="channel-types">
-<div class="public-channel">
-    <mat-list>
-        <mat-list-item *ngFor="let loadedPublicChannel of latestPublicChannels$ |async"
-            (click)="channelIdSelectedClickHandler(+loadedPublicChannel.id)">
-            <div class="user-data-fonts"
-                [ngClass]="{'selectedConversation': (selectedConversation | async) === loadedPublicChannel.id 
+    <div class="public-channel">
+        <mat-list>
+            <mat-list-item *ngFor="let loadedPublicChannel of latestPublicChannels$ |async"
+                (click)="channelIdSelectedClickHandler(+loadedPublicChannel.id)">
+                <div class="user-data-fonts" [ngClass]="{'selectedConversation': (selectedConversation | async) === loadedPublicChannel.id 
                 && (isDirectMessage | async) !== true  && (isDirectMessageOffline | async) !== true}">
-               
-                <span *ngIf="(SelectedChannel$ | async) === loadedPublicChannel.id">
-                    <mat-icon  style="font-size: 24px; vertical-align: middle;">label_important</mat-icon></span>
-              #{{ loadedPublicChannel.name }}
-            </div>
-        </mat-list-item>
-    </mat-list>
-</div>
-<div class="private-channel">
-    <mat-list>
-        <mat-list-item *ngFor="let loadedPrivateChannel of latestPrivateChannels$ |async" style="padding:0px;"
-        (click)="channelIdSelectedClickHandler(+loadedPrivateChannel.id)">
-        <div class="user-data-fonts"
-        [ngClass]="{'selectedConversation': (selectedConversation | async)  === loadedPrivateChannel.id 
-        && (isDirectMessage | async) !== true  && (isDirectMessageOffline | async) !== true}">
-        
-            <span *ngIf="(SelectedChannel$ | async) === loadedPrivateChannel.id">
-                <mat-icon style="font-size: 24px; vertical-align: middle;">label_important</mat-icon></span>
-            {{ loadedPrivateChannel.name }} 
-            <span *ngIf="loadedPrivateChannel.isOwner" (click)="this.userService.addUserToPrivateChannel(loadedPrivateChannel.id)"> <button mat-icon-button matTooltip="user list">
-                <mat-icon color="primary" style="font-size: 24px; vertical-align: middle;" >grade</mat-icon></button></span>
-        </div>
-        </mat-list-item>
-    </mat-list>
-</div>
+
+                    <span *ngIf="(SelectedChannel$ | async) === loadedPublicChannel.id">
+                        <mat-icon style="font-size: 24px; vertical-align: middle;">label_important</mat-icon></span>
+                    #{{ loadedPublicChannel.name }}
+                </div>
+            </mat-list-item>
+        </mat-list>
+    </div>
+    
+    <div class="private-channel">
+        <mat-list>
+            <mat-list-item *ngFor="let loadedPrivateChannel of latestPrivateChannels$ |async" style="padding:0px;"
+                (click)="channelIdSelectedClickHandler(+loadedPrivateChannel.id)">
+                <div class="user-data-fonts" [ngClass]="{'selectedConversation': (selectedConversation | async)  === loadedPrivateChannel.id 
+                && (isDirectMessage | async) !== true  && (isDirectMessageOffline | async) !== true}">
+
+                    <span *ngIf="(SelectedChannel$ | async) === loadedPrivateChannel.id">
+                        <mat-icon style="font-size: 24px; vertical-align: middle;">label_important</mat-icon></span>
+                    {{ loadedPrivateChannel.name }}
+                    <span *ngIf="loadedPrivateChannel.isOwner"
+                        (click)="this.userService.addUserToPrivateChannel(loadedPrivateChannel.id)"> <button
+                            mat-icon-button matTooltip="user list">
+                            <mat-icon color="primary"
+                                style="font-size: 24px; vertical-align: middle;">grade</mat-icon></button></span>
+                </div>
+            </mat-list-item>
+        </mat-list>
+    </div>
 </div>

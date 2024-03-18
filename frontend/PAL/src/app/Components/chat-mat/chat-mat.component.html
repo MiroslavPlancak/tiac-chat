@@ -2,18 +2,10 @@
     <div class="left-container">
         <app-user-info></app-user-info>
         <div class="sub-container-online-users" style="flex: 4;">
-
-            <app-online-users></app-online-users> <app-offline-users></app-offline-users>
-
+            <app-online-users></app-online-users>
+            <app-offline-users></app-offline-users>
         </div>
         <div class="sub-container-channels" style="flex: 5;">
-            <div>
-                <p class="tooltips-colors">join a channel:
-                    <button mat-icon-button (click)="openDialog()" matTooltip="Add new channel">
-                        <mat-icon color="primary">add</mat-icon>
-                    </button>
-                </p>
-            </div>
             <app-public-channels></app-public-channels>
         </div>
     </div>
@@ -34,7 +26,7 @@
                     <cdk-virtual-scroll-viewport #virtualScrollViewport itemSize="18" class="chat-body" autosize
                         (scrolledIndexChange)="privateAutoScroll($event)">
                         <button *ngIf="canLoadMorePrivateMessages$ |async" mat-raised-button color="primary"
-                            (click)="loadMorePrivateMessages()">Load More</button>
+                            (click)="this.messageService.loadMorePrivateMessages()">Load More</button>
                         <ng-container
                             *cdkVirtualFor="let privateMessage of this.messageService.receivedPrivateMessages$; let i = index;">
                             <div class="conversation-row">
@@ -69,11 +61,11 @@
                     <cdk-virtual-scroll-viewport #virtualScrollViewportPublic itemSize="18" class="chat-body" autosize
                         (scrolledIndexChange)="publicAutoScroll($event)">
                         <button *ngIf="canLoadMorePublicMessages$ |async" mat-raised-button color="primary"
-                            (click)="loadMorePublicMessages()">Load More</button>
+                            (click)="this.messageService.loadMorePublicMessages()">Load More</button>
                         <ng-container
                             *cdkVirtualFor="let receivedPublicMessage of receivedPublicMessages$; let i = index; let last = last; let count = count">
                             <div class="conversation-row"
-                                (click)="conversationIdSelectedClickHandler(receivedPublicMessage.sentFromUserDTO.id)">
+                                (click)="this.messageService.conversationIdSelectedClickHandler(receivedPublicMessage.sentFromUserDTO.id)">
                                 <div class="chater-font">
                                     <strong>{{ receivedPublicMessage.sentFromUserDTO.firstName }}: </strong>
                                 </div>

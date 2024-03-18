@@ -20,3 +20,8 @@
     display: flex;
     flex-direction: column;
 }
+
+.tooltips-colors{
+    font-family: cursive !important;
+    color: #7986cb;
+}

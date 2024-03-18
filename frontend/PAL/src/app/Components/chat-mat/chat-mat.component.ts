@@ -6,9 +6,7 @@ import { User, UserService } from '../../Services/user.service';
 import * as rxjs from 'rxjs';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { CreateChannelComponent } from '../create-channel/create-channel.component';
-import { AddUserToPrivateChannelComponent } from '../add-user-to-private-channel/add-user-to-private-channel.component';
+import { MatDialog} from '@angular/material/dialog';
 import { HubConnectionState } from '@microsoft/signalr';
 import { NotificationDialogService } from '../../Services/notification-dialog.service';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
@@ -97,7 +95,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
   receivedPrivateMessageNotification$ = new rxjs.BehaviorSubject<boolean>(false);
   canLoadMorePrivateMessages$ = this.messageService.canLoadMorePrivateMessages$
   canLoadMorePublicMessages$ = this.messageService.canLoadMorePublicMessages$
-  maxScrollValue$ = new rxjs.BehaviorSubject<number>(0);
+  maxScrollValue$ = this.messageService.maxScrollValue$
 
   currentUserName$ = this.userService.currentUserName$
   currentUserLogged$ = this.userService.currentUserLogged$
@@ -115,32 +113,13 @@ export class ChatMatComponent implements OnInit, OnDestroy {
   ) {
     this.channelType = this.channelTypes['public'];
     console.log(this.chatService.hubConnection.state)
-
+    this.messageService.virtualScrollViewPortTransport$.next(this.virtualScrollViewportPublic)
+    console.log(`viewport from component:`, this.virtualScrollViewport)
+    console.log(`viewport transported:`, this.messageService.virtualScrollViewPortTransport$.value)
+   
   }
 
 
-
-
-  openDialog() {
-
-    const dialogConfig = new MatDialogConfig();
-    dialogConfig.disableClose = false;
-    dialogConfig.autoFocus = true;
-
-    const dialogData = {
-      currentUserId: this.currentUserId$
-    }
-
-
-    dialogConfig.data = dialogData;
-    const dialogRef = this.matDialog.open(CreateChannelComponent, dialogConfig);
-
-    dialogRef.componentInstance.channelCreated
-      .pipe(rxjs.takeUntil(this.destroy$))
-      .subscribe((createdChannelDetails: any) => {
-        console.log(`created channel over mat dialog result: `, createdChannelDetails)
-      })
-  }
   ngOnInit(): void {
 
   
@@ -229,9 +208,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
           this.messageService.receivedPrivateMessages$.next([...this.receivedPrivateMessages$.value, newPrivateMessage])
         
         }
-        setTimeout(() => {
-          this.scrollToBottom()
-        })
+   
 
       })
 
@@ -243,22 +220,6 @@ export class ChatMatComponent implements OnInit, OnDestroy {
     this.destroy$.next(); 
     this.destroy$.complete();
   }
-
-  //token logic
-//unsure if this can be removed
-  // getAccessToken(): string | null {
-  //   return localStorage.getItem('access_token');
-  // }
-
-  // extractUserId(): number | null {
-
-  //   const accessToken = this.accessToken;
-  //   if (accessToken) {
-  //     const decodedToken = this.jwtHelper.decodeToken(accessToken);
-  //     return decodedToken ? +decodedToken.userId : null;
-  //   }
-  //   return null;
-  // }
 
   sendMessage(): void {
 
@@ -282,9 +243,9 @@ export class ChatMatComponent implements OnInit, OnDestroy {
       this.chatService.sendMessage(this.currentUserId$.getValue() as number, this.newPublicMessage, selectedChannel);
 
       const newPubMessage = this.newPublicMessage;
-      this.extractUserName(this.currentUserId$.getValue()).subscribe(firstName => {
+      this.messageService.extractUserName(this.currentUserId$.getValue()).subscribe(firstName => {
 
-        console.log(firstName)
+//        console.log(firstName)
         const publicMessage: any = {
           sentFromUserDTO: {
             firstName: firstName,
@@ -344,130 +305,13 @@ export class ChatMatComponent implements OnInit, OnDestroy {
         this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.privateConversationId$.getValue() as number)
 
         this.newPrivateMessage = '';
-        setTimeout(() => {
-          this.scrollToBottom()
-        })
+
       }
     })
 
 
 
   }
-
-  public conversationIdSelectedClickHandler(conversationId: number): void {
-    //make self unclickable in a public chat
-    if (conversationId !== this.currentUserId$.getValue()) {
-      //this was causing the improper loading
-      this.initialPublicMessageStartIndex$.next(0)
-      this.canLoadMorePrivateMessages$.next(false)
-      //this was causing the improper loading
-
-      this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, conversationId)
-      this.chatService.receiveLatestNumberOfPrivateMessages()
-        .pipe(
-          rxjs.first(),
-          rxjs.switchMap(totalMessagesNumber => {
-            this.totalPrivateConversationMessagesNumber$.next(totalMessagesNumber);
-
-            //displays the button if there are messages to be loaded/disappears it when there arent.
-
-            this.canLoadMorePrivateMessages$.next(totalMessagesNumber > 10);
-
-            const startIndex = 0
-            const endIndex = totalMessagesNumber - (totalMessagesNumber - 10);
-            this.initialPrivateMessageStartIndex$.next(endIndex)
-
-
-            return this.messageService.loadPaginatedPrivateMessages(
-              this.currentUserId$.getValue() as number,
-              conversationId,
-              startIndex,
-              endIndex
-            ).pipe(rxjs.first());
-          }),
-          rxjs.takeUntil(this.destroy$)
-        )
-        .subscribe(res => {
-
-          const privateMessages: any = res.map(async (message: any) => {
-            const senderId = await this.extractUserName(message.sentFromUserId).toPromise()
-            return {
-              isSeen: message.isSeen,
-              senderId: senderId,
-              message: message.body
-            }
-          })
-
-          Promise.all(privateMessages).then((messsages: any) => {
-            this.receivedPrivateMessages$.next(messsages)
-
-          })
-        });
-
-      //dissapearing `write to Client` logic is solved by filtering the private conversations by senderID not being equal to currently clicked conversationId
-      if (this.senderId$.value !== conversationId) {
-        this.isUserTyping$.next(false)
-      }
-
-      //changed this
-      if (this.currentUserId$.value !== conversationId) {
-        this.SelectedChannel$.next(undefined);
-      }
-
-      this.isDirectMessage.next(true)
-      this.isPrivateChannel.next(false)
-      this.privateNotification[conversationId] = false;
-
-      //seen logic 
-      this.messageService.loadPrivateMessages(this.currentUserId$.getValue() as number, conversationId as number).pipe(
-        rxjs.first(),
-        rxjs.map(allMessages => allMessages.filter((message: { isSeen: boolean; }) => !message.isSeen)),
-        rxjs.takeUntil(this.destroy$)
-      ).subscribe(filteredUnSeenMessages => {
-        //      console.log(`latest message sent:`, filteredUnSeenMessages
-        filteredUnSeenMessages.forEach((unSeenMessage: any) => {
-          this.chatService.notifyReceiverOfPrivateMessage(unSeenMessage)
-        });
-      }
-      )
-
-      //seen logic
-
-      if (conversationId !== this.currentUserId$.getValue()) {
-        this.privateConversationId$.next(conversationId);
-
-      }
-
-      //display the name of the user we want to write to
-      this.chatService.onlineUsers$.pipe(
-        rxjs.first(),
-        rxjs.map(users => users.find(user => user.id === conversationId)),
-        rxjs.takeUntil(this.destroy$)
-      ).subscribe(user => {
-        if (user) {
-          this.selectedConversation.next(user.id);
-          this.writingTo.next(`${user.firstName} ${user.lastName}`);
-          this.fullName = `write to ${user.firstName}:`
-          //this.senderCurrentlyTyping = user.firstName;
-        }
-      })
-
-    }
-  }
-
-
-
-  scrollToBottom(): void {
-    try {
-      if (this.chatBodyContainer) {
-        const chatBodyElement = this.chatBodyContainer.nativeElement;
-        chatBodyElement.scrollTop = chatBodyElement.scrollHeight;
-      }
-    } catch (err) {
-      console.log(`scroll error`, err)
-    }
-  }
-
 
 
 
@@ -506,63 +350,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
     }
   }
 
-  extractUserName(sentFromUserId: any): rxjs.Observable<string> {
-    return this.userService.getById(sentFromUserId).pipe(
-      rxjs.take(1),
-      rxjs.map(res => res.firstName)
-    );
 
-  }
-
-  loadMorePrivateMessages(): void {
-//    console.log('loading more private messages...')
-    const [currentUserId, privateConversationId] = [this.currentUserId$.getValue(), this.privateConversationId$.getValue()]
-    if (currentUserId !== null && privateConversationId !== undefined) {
-
-      if (this.messageService.canLoadMorePrivateMessages$.value !== false && privateConversationId !== undefined) {
-        let startIndex = this.messageService.initialPrivateMessageStartIndex$.value
-        let endIndex = startIndex + 10
-        this.messageService.initialPrivateMessageStartIndex$.next(endIndex)
-        console.log(`startIndex from loadMorePrivateMessages()`, startIndex)
-        console.log(`endIndex from loadMorePrivateMessages()`, endIndex)
-        // console.log(`loadingmore: start`, startIndex,`end`, endIndex)
-        this.messageService.loadPaginatedPrivateMessages(currentUserId, privateConversationId, startIndex, endIndex)
-          .pipe(
-            rxjs.take(1),
-            rxjs.map(messages => {
-              if (messages.length == 0) {
-                console.log(`no more messages left to load`)
-                this.messageService.canLoadMorePrivateMessages$.next(false)
-                console.log(`canLoadMore$`, this.messageService.canLoadMorePrivateMessages$.value)
-              }
-              return messages.map(message => {
-                return this.extractUserName(message.sentFromUserId).pipe(
-                  rxjs.map(senderId => ({
-                    isSeen: message.isSeen,
-                    senderId: senderId,
-                    message: message.body
-                  }))
-                )
-              })
-
-            }),
-            rxjs.switchMap(asyncOperations => {
-              return rxjs.forkJoin(asyncOperations)
-            }),
-            rxjs.takeUntil(this.destroy$)
-          ).subscribe(privateMesssages => {
-            this.receivedPrivateMessages$.next([
-              ...privateMesssages,
-              ...this.receivedPrivateMessages$.value
-            ])
-            this.virtualScrollViewport.scrollToIndex(2)
-
-            this.maxScrollValue$.next(endIndex - 1)
-            //    console.log('received private messages rxjs:', privateMesssages)
-          })
-      }
-    }
-  }
 
   scrollToEnd(index: number): void {
 
@@ -572,7 +360,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
   privateAutoScroll(event: any): void {
 
     if (event == 0) {
-      this.loadMorePrivateMessages()
+      this.messageService.loadMorePrivateMessages()
 
     }
   }
@@ -580,61 +368,9 @@ export class ChatMatComponent implements OnInit, OnDestroy {
   publicAutoScroll(event: any): void {
     //console.log(`scroll value:`,event)
     if (event == 0) {
-      this.loadMorePublicMessages()
+      this.messageService.loadMorePublicMessages()
 
     }
   }
 
-  loadMorePublicMessages() {
-    console.log(`loading more public messages...`)
-
-    const selectedChannelId = this.SelectedChannel$.value
-    console.log(`after`, this.messageService.canLoadMorePublicMessages$.value)
-    if (this.messageService.canLoadMorePublicMessages$.value !== false && selectedChannelId !== undefined) {
-
-      let startIndex = this.messageService.initialPublicMessageStartIndex$.value
-      let endIndex = startIndex + 10
-      this.messageService.initialPublicMessageStartIndex$.next(endIndex)
-      console.log(`startIndex from public`, startIndex)
-      console.log(`endIndex from public`, endIndex)
-      this.messageService.loadPaginatedPublicMessagesById(selectedChannelId as number, startIndex, endIndex)
-        .pipe(
-          rxjs.take(1),
-          rxjs.map(messages => {
-
-            if (messages.length == 0) {
-              console.log(`no more messages left to load..`)
-              this.messageService.canLoadMorePublicMessages$.next(false)
-              console.log(`canLoadMorePublicMessages$`, this.messageService.canLoadMorePublicMessages$.value)
-            }
-
-            return messages.map(message => {
-
-              return this.extractUserName(message.sentFromUserId).pipe(
-                rxjs.map(senderId => ({
-                  sentFromUserDTO: {
-                    id: message.sentFromUserId,
-                    firstName: senderId
-                  },
-                  body: message.body
-                }))
-              )
-            })
-          }),
-          rxjs.switchMap(asyncOperations => {
-
-            return rxjs.forkJoin(asyncOperations)
-          }),
-          rxjs.takeUntil(this.destroy$)
-        ).subscribe(publicMessages => {
-          this.receivedPublicMessages$.next([
-            ...publicMessages,
-            ...this.receivedPublicMessages$.value
-          ])
-
-          this.virtualScrollViewportPublic.scrollToIndex(2)
-          this.maxScrollValue$.next(endIndex - 1)
-        })
-    }
-  }
 }

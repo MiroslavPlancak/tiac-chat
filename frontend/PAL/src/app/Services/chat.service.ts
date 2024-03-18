@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { User, UserService } from './user.service';
 import { ChannelService } from './channel.service';
 import { NotificationDialogService } from './notification-dialog.service';
+import { MessageService } from './message.service';
 
 export interface PrivateMessage {
   isSeen: boolean
@@ -147,7 +148,8 @@ export class ChatService implements OnInit,OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private channelService: ChannelService,
-    private dialogService: NotificationDialogService
+    private dialogService: NotificationDialogService,
+   
 
   ) {
     //#this
@@ -473,8 +475,10 @@ export class ChatService implements OnInit,OnDestroy {
 
   //get latest number of public channel messages logic
   public getLatestNumberOfPublicChannelMessages = (channelId: number, currentUserId: number) => {
+    if(this.hubConnection.state == `Connected`){
     this.hubConnection?.invoke("GetLatestNumberOfPublicChannelMessages", channelId, currentUserId)
     .catch(err => console.log(err))
+  }
   }
 
   public receiveLatestNumberOfPublicChannelMessages = (): rxjs.Observable<number> => {
@@ -486,5 +490,6 @@ export class ChatService implements OnInit,OnDestroy {
   }
   //get latest number of public channel messages logic
 
+  //test
 
 }
