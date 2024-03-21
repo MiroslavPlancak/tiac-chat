@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, tap, BehaviorSubject } from 'rxjs';
 import { ChatService, PrivateMessage } from './chat.service';
@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
 @Injectable({
   providedIn: 'root'
 })
-export class MessageService implements OnDestroy {
+export class MessageService implements OnInit, OnDestroy {
 
   private destroy$ = new rxjs.Subject<void>();
   currentUserId$ = this.authService.userId$;
@@ -35,27 +35,52 @@ export class MessageService implements OnDestroy {
 
   SelectedChannel$ = this.channelService.SelectedChannel$
 
-  virtualScrollViewPortTransport$ = new rxjs.BehaviorSubject<CdkVirtualScrollViewport | null>(null)
+  endScrollValue$ = new rxjs.BehaviorSubject<number>(0);
   maxScrollValue$ = new rxjs.BehaviorSubject<number>(0);
+  virtualScrollViewportPublic$ = new rxjs.BehaviorSubject<number>(0);
+  virtualScrollViewportPrivate$ = new rxjs.BehaviorSubject<number>(0);
+  private virtualScrollViewport : CdkVirtualScrollViewport | undefined;
 
   private apiUrl = "http://localhost:5008/api/messages/";
 
-  constructor(private http: HttpClient,
+  
+
+  constructor(
+    private http: HttpClient,
     private channelService: ChannelService,
     private userService: UserService,
     private authService: AuthService, 
     private chatService: ChatService
   ) { }
+  ngOnInit(): void {
+  
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next()
     this.destroy$.complete()
   }
 
+  //setter and getter for the viewport
+  setVirtualScrollViewport(virtualScrollViewport: CdkVirtualScrollViewport): void {
+    this.virtualScrollViewport = virtualScrollViewport;
+  }
 
+  getVirtualScrollViewport(): CdkVirtualScrollViewport | undefined {
+    return this.virtualScrollViewport;
+  }
 
-
-
+  scrollToEndPrivate(index: number): void {
+  console.log(`this runs`,index)
+  console.log(`and virtual scroll is:`, this.getVirtualScrollViewport())
+    this.getVirtualScrollViewport()?.scrollToIndex(index)
+  }
+  
+  scrollToEndPrivateTest(index: number): void {
+    console.log(`this runs`,index)
+    console.log(`and virtual scroll is:`, this.getVirtualScrollViewport())
+      this.getVirtualScrollViewport()?.scrollToIndex(index)
+    }
 
   loadPaginatedPrivateMessages
     (senderId: number,
@@ -170,12 +195,13 @@ export class MessageService implements OnDestroy {
           ])
 
           //this logic needs to be looked at and made function correctly.
-
-          // this.virtualScrollViewportPublic.scrollToIndex(2)
+          //this.virtualScrollViewportPublic.scrollToIndex(2)
+          this.virtualScrollViewportPublic$.next(3)
 
           //this logic needs to be looked at and made function correctly.
-
+          
           this.maxScrollValue$.next(endIndex - 1)
+         
         })
     }
   }
@@ -189,8 +215,8 @@ export class MessageService implements OnDestroy {
             let startIndex = this.initialPrivateMessageStartIndex$.value
             let endIndex = startIndex + 10
             this.initialPrivateMessageStartIndex$.next(endIndex)
-            console.log(`startIndex from loadMorePrivateMessages()`, startIndex)
-            console.log(`endIndex from loadMorePrivateMessages()`, endIndex)
+           // console.log(`startIndex from loadMorePrivateMessages()`, startIndex)
+            // console.log(`endIndex from loadMorePrivateMessages()`, endIndex)
             // console.log(`loadingmore: start`, startIndex,`end`, endIndex)
             this.loadPaginatedPrivateMessages(currentUserId, privateConversationId, startIndex, endIndex)
               .pipe(
@@ -223,7 +249,7 @@ export class MessageService implements OnDestroy {
                 ])
 
                 //needs looking into to make it function properly 
-                // this.virtualScrollViewport.scrollToIndex(2)
+                 this.virtualScrollViewportPrivate$.next(3)
     
                 this.maxScrollValue$.next(endIndex - 1)
                 //    console.log('received private messages rxjs:', privateMesssages)
@@ -351,6 +377,7 @@ export class MessageService implements OnDestroy {
 
     }
   }
+
 
 
 }

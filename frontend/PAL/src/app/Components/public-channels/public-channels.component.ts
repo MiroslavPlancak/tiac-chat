@@ -20,8 +20,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   latestPublicChannels$ = this.chatService.latestPublicChannels$
   latestPrivateChannels$ = this.chatService.latestPrivateChannels$
   currentUserId$ = this.authService.userId$
-  curentlyClickedPrivateChannel: number = 0
-
+  curentlyClickedPrivateChannel = this.chanelService.curentlyClickedPrivateChannel$
   selectedConversation = this.chanelService.selectedConversation$
   isDirectMessage = this.messageService.isDirectMessage
   SelectedChannel$ = this.chanelService.SelectedChannel$
@@ -92,7 +91,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     
     this.getConcurrentNumberOfPublicChanelMessages();
 
-    this.curentlyClickedPrivateChannel = channelId;
+    this.curentlyClickedPrivateChannel.next(channelId)
   
     this.messageService.isDirectMessage.next(false);
     this.messageService.isDirectMessageOffline.next(false)

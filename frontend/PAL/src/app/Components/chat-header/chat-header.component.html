@@ -1,0 +1,11 @@
+
+
+                
+    <span *ngIf="(this.channelService.isPrivateChannel$ | async)" 
+    (click)="this.userService.addUserToPrivateChannel((this.channelService.curentlyClickedPrivateChannel$.value))"><button
+            mat-icon-button matTooltip="user list">
+            <mat-icon color="primary">group</mat-icon></button>
+            {{this.channelService.curentlyClickedPrivateChannel$.value}}
+    </span>
+
+

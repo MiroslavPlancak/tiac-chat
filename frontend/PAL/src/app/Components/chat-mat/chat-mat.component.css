@@ -164,6 +164,7 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     /* border for visualization */
     overflow-y: auto;
+    
 }
 
 .chat-name{
@@ -186,7 +187,7 @@
     max-height: calc(100vh - 203px); /* Set maximum height */
     /* TODO: This is dangureso to do*/
     padding: 10px;
-    display: flex;
+    display: flex; /*<<<<<<<<<<<<<<<<<<<PROBLEM when this is changed to block*/
     flex-direction: column;
     align-items: flex-start;
 }
@@ -251,6 +252,7 @@
 .user-data-fonts{
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif !important;
 }
+
 .chater-font{
     height: 100%;
     font-family: cursive !important;

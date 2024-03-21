@@ -15,7 +15,8 @@ export class ChannelService {
   selectedConversation$ = new rxjs.BehaviorSubject<number>(8);
   isCurrentUserOwner$ = new rxjs.BehaviorSubject<object>({});
   isOwnerOfPrivateChannel$ = new rxjs.BehaviorSubject<boolean>(false);
-
+  curentlyClickedPrivateChannel$ = new rxjs.BehaviorSubject<number>(0);
+  
   constructor(
     private http: HttpClient
   ) { }

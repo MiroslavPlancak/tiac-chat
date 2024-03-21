@@ -58,7 +58,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
     this.chatService.privateMessageReceived()
       .pipe(rxjs.takeUntil(this.destroy$))
       .subscribe(res => {
-        console.log(`seen`, res)
+        //console.log(`seen`, res)
         this.messageService.receivedPrivateMessages$.pipe(rxjs.take(1))
           .subscribe(messages => {
             messages.forEach(message => message.isSeen = true)

@@ -1,0 +1,11 @@
+.chat-name{
+    height: 45px;
+    line-height: 45px;
+    vertical-align: middle;
+    width: 100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    color: #7986cb;
+    font-family: cursive !important;
+    border-bottom: 2px solid #7986cb;
+    
+}

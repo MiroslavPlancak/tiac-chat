@@ -10,6 +10,7 @@ import { MatDialog} from '@angular/material/dialog';
 import { HubConnectionState } from '@microsoft/signalr';
 import { NotificationDialogService } from '../../Services/notification-dialog.service';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
+import { ChatBodyComponent } from '../chat-body/chat-body.component';
 
 
 
@@ -37,7 +38,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
   initialPrivateMessageStartIndex$ = new rxjs.BehaviorSubject<number>(0);
   initialPublicMessageStartIndex$ = new rxjs.BehaviorSubject<number>(0);
  
-
+  
 
   private destroy$ = new rxjs.Subject<void>();
   privateMessageSeenStatus$ = new rxjs.BehaviorSubject<boolean>(false)
@@ -102,27 +103,25 @@ export class ChatMatComponent implements OnInit, OnDestroy {
 
   constructor(
     public chatService: ChatService,
-    private jwtHelper: JwtHelperService,
     private authService: AuthService,
     public userService: UserService,
     public  messageService: MessageService,
     private channelService: ChannelService,
-    private matDialog: MatDialog,
-    private notificationDialog: NotificationDialogService,
+   
 
   ) {
     this.channelType = this.channelTypes['public'];
     console.log(this.chatService.hubConnection.state)
-    this.messageService.virtualScrollViewPortTransport$.next(this.virtualScrollViewportPublic)
-    console.log(`viewport from component:`, this.virtualScrollViewport)
-    console.log(`viewport transported:`, this.messageService.virtualScrollViewPortTransport$.value)
+   
+//    console.log(`viewport from component:`, this.virtualScrollViewport)
+    
    
   }
 
 
   ngOnInit(): void {
-
-  
+   
+    this.maxScrollValue$.subscribe(res => {console.log(`x`,res)})
 
     if (this.chatService.hubConnection.state === HubConnectionState.Disconnected) {
       this.chatService.hubConnection.start();
@@ -166,53 +165,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
 
       })
 
-    this.privateConversationUsers$ = rxjs.combineLatest([this.privateConversationId$, this.authService.userId$, this.chatService.allUsers$]).pipe(
-      rxjs.filter(([privateConversationId, userId]) => {
-        return privateConversationId != undefined && userId != undefined
-      }),
-      rxjs.map(([privateConversationId, userId, allUsers]) => {
-        return allUsers.filter(user => [privateConversationId, userId].includes(user.id))
-      })
-    )
 
-    this.privateConversationUsers$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
-
-    })
-
-
-
-
-    //receive private messages ###problem with the multicasting of private messages is here
-    this.chatService.receivePrivateMesages()
-      .pipe(
-        rxjs.withLatestFrom(this.privateConversationUsers$),
-        rxjs.takeUntil(this.destroy$)
-      )
-      .subscribe(([loadedPrivateMessages, users]) => {
-        const sender = users.find(user => user.id === +loadedPrivateMessages.senderId)
-
-
-        if (sender !== undefined) {
-          const newPrivateMessage: PrivateMessage = {
-            //this bit needs updating
-            isSeen: loadedPrivateMessages.isSeen,
-            message: loadedPrivateMessages.message,
-            senderId: sender?.firstName ?? '1'
-          }
-
-          //pop the first private message out of the BS[]
-          if (this.messageService.receivedPrivateMessages$.value.length >= this.messageService.initialPrivateMessageStartIndex$.value) {
-            this.messageService.receivedPrivateMessages$.value.shift()
-          }
-          //push the next one in
-          this.messageService.receivedPrivateMessages$.next([...this.receivedPrivateMessages$.value, newPrivateMessage])
-        
-        }
-   
-
-      })
-
-   
 
   }
 
@@ -223,17 +176,9 @@ export class ChatMatComponent implements OnInit, OnDestroy {
 
   sendMessage(): void {
 
-    this.maxScrollValue$.pipe(
-
-      rxjs.switchMap(maxScrollValue => {
-        return rxjs.of(maxScrollValue)
-      }),
-
-    ).subscribe((latestScrollValue) => {
-
-      setTimeout(() => {
-        this.scrollToEnd(latestScrollValue);
-      }, 10);
+    //scroll logic
+    this.messageService.maxScrollValue$.pipe(rxjs.take(1)).subscribe(maxScrollValue => {
+      this.messageService.endScrollValue$.next(maxScrollValue)
     })
 
     const selectedChannel = this.SelectedChannel$.getValue();
@@ -269,19 +214,6 @@ export class ChatMatComponent implements OnInit, OnDestroy {
 
   public sendPrivateMessage(): void {
 
-  //scroll logic
-    this.maxScrollValue$.pipe(
-
-      rxjs.switchMap(maxScrollValue => {
-        return rxjs.of(maxScrollValue)
-      }),
-
-    ).subscribe((latestScrollValue) => {
-
-      setTimeout(() => {
-        this.scrollToEnd(latestScrollValue);
-      }, 10);
-    })
 
     this.currentUserName$.pipe(
       rxjs.first(),
@@ -294,18 +226,24 @@ export class ChatMatComponent implements OnInit, OnDestroy {
           message: this.newPrivateMessage,
           isSeen: false
         }
-        
+
         if (this.messageService.receivedPrivateMessages$.value.length >= this.messageService.initialPrivateMessageStartIndex$.value) {
           this.messageService.receivedPrivateMessages$.value.shift()
         }
         this.messageService.receivedPrivateMessages$.next([...this.receivedPrivateMessages$.value, privateMessage])
-       // this.receivedPrivateMessages.push(privateMessage);
+
 
         //update the number of private messages
         this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.privateConversationId$.getValue() as number)
 
         this.newPrivateMessage = '';
-
+        
+        //scroll logic
+        this.messageService.maxScrollValue$.pipe(rxjs.take(1)).subscribe(maxScrollValue => {
+          
+        //  this.messageService.scrollToEndPrivate(maxScrollValue)
+         this.messageService.endScrollValue$.next(maxScrollValue)
+         })
       }
     })
 
@@ -350,27 +288,5 @@ export class ChatMatComponent implements OnInit, OnDestroy {
     }
   }
 
-
-
-  scrollToEnd(index: number): void {
-
-    this.virtualScrollViewport.scrollToIndex(index)
-  }
-
-  privateAutoScroll(event: any): void {
-
-    if (event == 0) {
-      this.messageService.loadMorePrivateMessages()
-
-    }
-  }
-
-  publicAutoScroll(event: any): void {
-    //console.log(`scroll value:`,event)
-    if (event == 0) {
-      this.messageService.loadMorePublicMessages()
-
-    }
-  }
 
 }

@@ -45,6 +45,8 @@ import { UserInfoComponent } from './Components/user-info/user-info.component';
 import { OnlineUsersComponent } from './Components/online-users/online-users.component';
 import { OfflineUsersComponent } from './Components/offline-users/offline-users.component';
 import { PublicChannelsComponent } from './Components/public-channels/public-channels.component';
+import { ChatHeaderComponent } from './Components/chat-header/chat-header.component';
+import { ChatBodyComponent } from './Components/chat-body/chat-body.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +62,8 @@ import { PublicChannelsComponent } from './Components/public-channels/public-cha
     OnlineUsersComponent,
     OfflineUsersComponent,
     PublicChannelsComponent,
+    ChatHeaderComponent,
+    ChatBodyComponent,
   
   ],
   imports: [
@@ -98,6 +102,7 @@ import { PublicChannelsComponent } from './Components/public-channels/public-cha
     ChatService,
     AuthService,
     UserService,
+    
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptorService,

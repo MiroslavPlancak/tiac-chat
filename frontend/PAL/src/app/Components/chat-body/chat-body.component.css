@@ -1,0 +1,83 @@
+
+:host {
+    flex-grow: 1;
+    overflow-x: hidden;
+    width: calc(100% - 20px);
+    overflow-y: auto; /* Add vertical scroll if needed */
+     /* Set maximum width to prevent overflow */
+    max-height: calc(100vh - 203px); /* Set maximum height */
+    /* TODO: This is dangureso to do*/
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+.chat-body-x {
+    flex-grow: 1;
+    overflow-x: hidden;
+    width: calc(100% - 20px);
+    overflow-y: auto; /* Add vertical scroll if needed */
+     /* Set maximum width to prevent overflow */
+    max-height: calc(100vh - 203px); /* Set maximum height */
+    /* TODO: This is dangureso to do*/
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.chat-body-x::-webkit-scrollbar {
+    width: 5px; /* Width of the scrollbar */
+}
+
+.chat-body-x::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Background color of the scrollbar track */
+}
+
+/* Style the scrollbar thumb (handle) */
+.chat-body-x::-webkit-scrollbar-thumb {
+    background: #7986cb; /* Color of the scrollbar thumb */
+    border-radius: 5px; /* Border radius of the scrollbar thumb */
+}
+
+/* Style the scrollbar thumb on hover */
+.chat-body-x::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color of the scrollbar thumb on hover */
+}
+.chat-body-x pre {
+    white-space: pre-wrap; /* Preserve line breaks and wrap long lines */
+    word-wrap: break-word; /* Wrap long words to prevent overflow */
+    word-break: break-all; /* Break long words if necessary */
+}
+
+.chat-body-x mat-list-item {
+    text-align: left;
+    justify-content: left;
+   
+  }
+
+  .conversation-row{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.chater-font{
+    height: 100%;
+    font-family: cursive !important;
+    display: flex;
+    flex-direction: row;
+}
+
+.chater-message{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: justify;
+    margin-bottom: 4px;
+}
+
+.currently-typing{
+    color:#7986cb ;
+    
+    transform: skew(-20deg);
+}
