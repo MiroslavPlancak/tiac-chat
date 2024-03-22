@@ -17,18 +17,13 @@ import { HubConnectionState } from '@microsoft/signalr';
 })
 export class ChatMatComponent implements OnInit, OnDestroy {
 
+  private destroy$ = new rxjs.Subject<void>();
+
   receivedPrivateMessages$ = this.messageService.receivedPrivateMessages$;
   receivedPublicMessages$ = this.messageService.receivedPublicMessages$
 
- 
-  private destroy$ = new rxjs.Subject<void>();
-  privateMessageSeenStatus$ = new rxjs.BehaviorSubject<boolean>(false)
-
   isUserTyping$ = this.chatService.isUserTyping$
   senderId$ = this.chatService.senderId$
-
-  //senderCurrentlyTyping$ = new rxjs.BehaviorSubject<string>('');
-  typingStatusMap = new Map<number, string>()
 
 
   privateConversationId$ = this.chatService.privateConversationId$ // <= 
@@ -49,34 +44,15 @@ export class ChatMatComponent implements OnInit, OnDestroy {
 
   channelType!: number;
   writingTo = this.userService.writingTo 
-  fullName: any = ""
-  writeToChannelName: any;
-  selectedConversation = this.channelService.selectedConversation$
-  isDirectMessage = this.messageService.isDirectMessage
-  isDirectMessageOffline = this.messageService.isDirectMessageOffline
-  isOwnerOfPrivateChannel = false;
-  curentlyClickedPrivateChannel: number = 0;
-  isPrivateChannel = this.channelService.isPrivateChannel$
-  isCurrentUserOwner: boolean = false;
-
-  offlineUserSearchTerm$ = new rxjs.BehaviorSubject<string | undefined>(undefined)     
-     
-
-  privateNotification: { [userId: number]: boolean } = this.chatService.privateNotification
-                              
-  offlineFilteredUsers$!: rxjs.Observable<User[]>;                                    
+                                 
 
   currentUserId$ = this.authService.userId$;   
-                               
-  typingTimeout!: any;
-  currentlyTypingUsers: number[] = [];
-  receivedPrivateMessageNotification$ = new rxjs.BehaviorSubject<boolean>(false);
-  canLoadMorePrivateMessages$ = this.messageService.canLoadMorePrivateMessages$
-  canLoadMorePublicMessages$ = this.messageService.canLoadMorePublicMessages$
+ 
+ 
   maxScrollValue$ = this.messageService.maxScrollValue$
 
   currentUserName$ = this.userService.currentUserName$
-  currentUserLogged$ = this.userService.currentUserLogged$
+ 
 
   constructor(
     public chatService: ChatService,
@@ -187,13 +163,6 @@ export class ChatMatComponent implements OnInit, OnDestroy {
       }
     })
 
-
-
   }
-
-
-
-
-
 
 }

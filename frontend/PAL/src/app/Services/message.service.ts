@@ -191,12 +191,7 @@ export class MessageService implements OnInit, OnDestroy {
             ...this.receivedPublicMessages$.value
           ])
 
-          //this logic needs to be looked at and made function correctly.
-          //this.virtualScrollViewportPublic.scrollToIndex(2)
           this.virtualScrollViewportPublic$.next(3)
-
-          //this logic needs to be looked at and made function correctly.
-          
           this.maxScrollValue$.next(endIndex - 1)
          
         })
@@ -204,7 +199,7 @@ export class MessageService implements OnInit, OnDestroy {
   }
 
   loadMorePrivateMessages(): void {
-    //    console.log('loading more private messages...')
+    
         const [currentUserId, privateConversationId] = [this.currentUserId$.getValue(), this.privateConversationId$.getValue()]
         if (currentUserId !== null && privateConversationId !== undefined) {
     

@@ -154,7 +154,6 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
           //set virtualScrollViewport to message service
     
       this.messageService.setVirtualScrollViewport(this.virtualScrollViewport);
-      console.log(`this.messageService.endScrollValue$.value`, this.messageService.endScrollValue$.value)
       this.messageService.scrollToEndPrivate(this.messageService.endScrollValue$.value)
 
     })

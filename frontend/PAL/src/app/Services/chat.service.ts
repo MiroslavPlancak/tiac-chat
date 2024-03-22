@@ -305,39 +305,6 @@ export class ChatService implements OnInit,OnDestroy {
 
   ngOnInit(): void {
 
-    // this.receiveTypingStatus()
-    //   .pipe(
-    //     rxjs.takeUntil(this.destroy$),
-
-    //   )
-    //   .subscribe(res => {
-
-    //     console.log('user is typing...', res.currentlyTypingList);
-    //     this.senderId$.next(res.senderId)
-    //     this.isUserTyping$.next(res.isTyping)
-    //     this.currentlyTypingUsers = res.currentlyTypingList
-
-    //     //this.typingStatusMap.clear();
-
-    //     // get user details for each senderId
-    //     res.currentlyTypingList.forEach((senderId: number) => {
-    //       this.userService.getById(senderId).pipe(
-    //         rxjs.switchMap((user) => {
-    //           if (user) {
-    //             const firstName = user.firstName;
-
-    //             // Update the typingStatusMap
-    //             this.typingStatusMap.set(senderId, firstName);
-    //           } else {
-    //             console.error(`User with senderId ${senderId} not found.`);
-    //           }
-    //           return rxjs.of(null);
-    //         }),
-    //         rxjs.takeUntil(this.destroy$)
-    //       ).subscribe();
-    //     });
-
-    //   })
   }
 
   ngOnDestroy(): void {
