@@ -77,6 +77,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
     this.maxScrollValue$.subscribe(res => {console.log(`x`,res)})
 
     if (this.chatService.hubConnection.state === HubConnectionState.Disconnected) {
+      console.log(`this block runs`)
       this.chatService.hubConnection.start();
     }
 

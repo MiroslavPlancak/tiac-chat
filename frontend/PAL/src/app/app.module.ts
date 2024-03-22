@@ -47,6 +47,7 @@ import { OfflineUsersComponent } from './Components/offline-users/offline-users.
 import { PublicChannelsComponent } from './Components/public-channels/public-channels.component';
 import { ChatHeaderComponent } from './Components/chat-header/chat-header.component';
 import { ChatBodyComponent } from './Components/chat-body/chat-body.component';
+import { ChatCommandsComponent } from './Components/chat-commands/chat-commands.component';
 
 @NgModule({
   declarations: [
@@ -64,6 +65,7 @@ import { ChatBodyComponent } from './Components/chat-body/chat-body.component';
     PublicChannelsComponent,
     ChatHeaderComponent,
     ChatBodyComponent,
+    ChatCommandsComponent,
   
   ],
   imports: [

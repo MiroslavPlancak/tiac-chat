@@ -1,0 +1,16 @@
+.flex-grow {
+ 
+    /* Optional: Add border for visualization */
+   width: 95.5%;
+   height: 100%;
+   
+}
+
+.custom-textarea {
+    
+    resize: both; /* Prevent resizing */
+    padding: -10px; /* Optional: Add padding for better appearance */
+    border: none; /* Optional: Remove border for better appearance */
+   /* Add scrollbar if content overflows */
+   
+}

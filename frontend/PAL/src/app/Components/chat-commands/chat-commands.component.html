@@ -1,0 +1,33 @@
+<div *ngIf="(privateConversationId$ | async) as privateConversationId">
+    <form class="message-form" (keydown.enter)="sendPrivateMessage()" #privateMessageForm="ngForm">
+        <mat-form-field appearance="fill" class="flex-grow">
+            <mat-label *ngIf="isUserTyping$.getValue() == false ">{{ this.userService.fullName
+                }}</mat-label>
+            <mat-label
+                *ngIf="(isUserTyping$ | async) && (senderId$ | async) == (privateConversationId$ | async)">
+                {{ this.userService.fullName.substring(this.userService.fullName.lastIndexOf(" ") + 1, this.userService.fullName.lastIndexOf(":")) }} is
+                typing...</mat-label>
+             
+            <textarea matInput id="privateMessage" [(ngModel)]="newPrivateMessage" name="privateMessage"
+                class="custom-textarea" (input)="this.chatService.onTypingPrivateMessage()"></textarea>
+        </mat-form-field>
+        <button mat-icon-button color="primary" type="submit" [disabled]="privateMessageForm.invalid"
+            (click)="sendPrivateMessage()">
+            <mat-icon>send</mat-icon>
+        </button>
+    </form>
+</div>
+<!-- Render public message form if privateConversationId$ does not have a value -->
+<div *ngIf="!(privateConversationId$ | async)">
+    <form class="message-form" (keydown.enter)="sendMessage()" #publicMessageForm="ngForm">
+        <mat-form-field appearance="fill" class="flex-grow">
+            <mat-label>{{ (this.userService.writeToChannelName | async )}}</mat-label>
+            <textarea matInput id="message" [(ngModel)]="newPublicMessage" name="message"
+                class="custom-textarea"></textarea>
+        </mat-form-field>
+        <button mat-icon-button color="primary" type="submit" [disabled]="publicMessageForm.invalid"
+            (click)="sendMessage()">
+            <mat-icon>send</mat-icon>
+        </button>
+    </form>
+</div>
