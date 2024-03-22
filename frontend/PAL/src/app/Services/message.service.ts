@@ -41,6 +41,9 @@ export class MessageService implements OnInit, OnDestroy {
   virtualScrollViewportPrivate$ = new rxjs.BehaviorSubject<number>(0);
   private virtualScrollViewport : CdkVirtualScrollViewport | undefined;
 
+  typingTimeout!: any;
+  
+
   private apiUrl = "http://localhost:5008/api/messages/";
 
   
@@ -75,12 +78,6 @@ export class MessageService implements OnInit, OnDestroy {
   console.log(`and virtual scroll is:`, this.getVirtualScrollViewport())
     this.getVirtualScrollViewport()?.scrollToIndex(index)
   }
-  
-  scrollToEndPrivateTest(index: number): void {
-    console.log(`this runs`,index)
-    console.log(`and virtual scroll is:`, this.getVirtualScrollViewport())
-      this.getVirtualScrollViewport()?.scrollToIndex(index)
-    }
 
   loadPaginatedPrivateMessages
     (senderId: number,
@@ -377,7 +374,6 @@ export class MessageService implements OnInit, OnDestroy {
 
     }
   }
-
 
 
 }

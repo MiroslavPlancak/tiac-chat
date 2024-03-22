@@ -31,8 +31,9 @@
                                 *ngIf="(isUserTyping$ | async) && (senderId$ | async) == (privateConversationId$ | async)">
                                 {{ this.userService.fullName.substring(this.userService.fullName.lastIndexOf(" ") + 1, this.userService.fullName.lastIndexOf(":")) }} is
                                 typing...</mat-label>
+                             
                             <textarea matInput id="privateMessage" [(ngModel)]="newPrivateMessage" name="privateMessage"
-                                class="custom-textarea" (input)="onTypingPrivateMessage()"></textarea>
+                                class="custom-textarea" (input)="this.chatService.onTypingPrivateMessage()"></textarea>
                         </mat-form-field>
                         <button mat-icon-button color="primary" type="submit" [disabled]="privateMessageForm.invalid"
                             (click)="sendPrivateMessage()">

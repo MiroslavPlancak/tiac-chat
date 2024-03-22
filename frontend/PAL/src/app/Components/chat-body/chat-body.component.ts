@@ -21,7 +21,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   private destroy$ = new rxjs.Subject<void>();
 
   //seen properties
-  currentlyTypingUsers: number[] = [];
+  currentlyTypingUsers = this.chatService.currentlyTypingUsers$
   senderId$ = new rxjs.BehaviorSubject<number | undefined>(0);
   isUserTyping$ = new rxjs.BehaviorSubject<boolean>(false)
   typingStatusMap = new Map<number, string>()
@@ -86,10 +86,10 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
       .subscribe(res => {
 
         //  console.log('user is typing...', res.currentlyTypingList);
-        this.senderId$.next(res.senderId)
-        this.isUserTyping$.next(res.isTyping)
-        this.currentlyTypingUsers = res.currentlyTypingList
-
+        this.chatService.senderId$.next(res.senderId)
+        this.chatService.isUserTyping$.next(res.isTyping)
+        this.chatService.currentlyTypingUsers$.next(res.currentlyTypingList)
+        console.log(this.currentlyTypingUsers)
         //this.typingStatusMap.clear();
 
         // get user details for each senderId
@@ -99,7 +99,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
               if (user) {
                 const firstName = user.firstName;
 
-                // Update the typingStatusMap
+                // Update the typingStatusMap   << need to make it behavior subject in the chatservice and implement it like that
                 this.typingStatusMap.set(senderId, firstName);
               } else {
                 console.error(`User with senderId ${senderId} not found.`);
@@ -183,8 +183,9 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   }
 
   scrollToEndPrivate(index: number): void {
-  
+   
     this.virtualScrollViewport.scrollToIndex(index)
+  
   }
 
   scrollToEndPublic(index: number): void {

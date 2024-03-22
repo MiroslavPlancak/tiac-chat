@@ -36,10 +36,13 @@ export class ChatService implements OnInit,OnDestroy {
 
   senderId$ = new rxjs.BehaviorSubject<number | undefined>(0);
   isUserTyping$ = new rxjs.BehaviorSubject<boolean>(false)
-  currentlyTypingUsers: number[] = [];
+  currentlyTypingUsers$ = new rxjs.BehaviorSubject<number[]>([])
   typingStatusMap = new Map<number, string>()
+  userNameTyping$ = new rxjs.BehaviorSubject<string>('')
+
   privateNotification: { [userId: number]: boolean } = {}
   privateConversationId$ = new rxjs.BehaviorSubject<number | undefined>(undefined)
+
 
   public onlineUserIdsWithoutSelf$ = rxjs.combineLatest([
     this.onlineUserIds$.pipe(rxjs.takeUntil(this.destroy$)),
@@ -141,6 +144,7 @@ export class ChatService implements OnInit,OnDestroy {
     }),
     rxjs.takeUntil(this.destroy$)
   )
+  typingTimeout: any;
 
 
 
@@ -301,39 +305,39 @@ export class ChatService implements OnInit,OnDestroy {
 
   ngOnInit(): void {
 
-    this.receiveTypingStatus()
-      .pipe(
-        rxjs.takeUntil(this.destroy$),
+    // this.receiveTypingStatus()
+    //   .pipe(
+    //     rxjs.takeUntil(this.destroy$),
 
-      )
-      .subscribe(res => {
+    //   )
+    //   .subscribe(res => {
 
-        //  console.log('user is typing...', res.currentlyTypingList);
-        this.senderId$.next(res.senderId)
-        this.isUserTyping$.next(res.isTyping)
-        this.currentlyTypingUsers = res.currentlyTypingList
+    //     console.log('user is typing...', res.currentlyTypingList);
+    //     this.senderId$.next(res.senderId)
+    //     this.isUserTyping$.next(res.isTyping)
+    //     this.currentlyTypingUsers = res.currentlyTypingList
 
-        //this.typingStatusMap.clear();
+    //     //this.typingStatusMap.clear();
 
-        // get user details for each senderId
-        res.currentlyTypingList.forEach((senderId: number) => {
-          this.userService.getById(senderId).pipe(
-            rxjs.switchMap((user) => {
-              if (user) {
-                const firstName = user.firstName;
+    //     // get user details for each senderId
+    //     res.currentlyTypingList.forEach((senderId: number) => {
+    //       this.userService.getById(senderId).pipe(
+    //         rxjs.switchMap((user) => {
+    //           if (user) {
+    //             const firstName = user.firstName;
 
-                // Update the typingStatusMap
-                this.typingStatusMap.set(senderId, firstName);
-              } else {
-                console.error(`User with senderId ${senderId} not found.`);
-              }
-              return rxjs.of(null);
-            }),
-            rxjs.takeUntil(this.destroy$)
-          ).subscribe();
-        });
+    //             // Update the typingStatusMap
+    //             this.typingStatusMap.set(senderId, firstName);
+    //           } else {
+    //             console.error(`User with senderId ${senderId} not found.`);
+    //           }
+    //           return rxjs.of(null);
+    //         }),
+    //         rxjs.takeUntil(this.destroy$)
+    //       ).subscribe();
+    //     });
 
-      })
+    //   })
   }
 
   ngOnDestroy(): void {
@@ -491,5 +495,42 @@ export class ChatService implements OnInit,OnDestroy {
   //get latest number of public channel messages logic
 
   //test
+  onTypingPrivateMessage() {
+    const receiverId = this.privateConversationId$.getValue();
+    this.senderId$.next(this.currentUserId$.getValue() as number);
+    // console.log(this.privateConversationId$.getValue())
+    // console.log(this.senderId$.getValue())
+    this.isUserTyping$.next(true)
+    //let userName = '';
+    //console.log('Typing started for receiverId:', senderId, receiverId, isTyping);
+
+    if (this.senderId$.getValue() !== null && receiverId !== undefined) {
+      // Clear existing timeout
+      if (this.typingTimeout) {
+        clearTimeout(this.typingTimeout);
+      }
+
+      //this  was causing the problem IMPORTANT 
+      //this.typingStatusMap.clear()
+      //this  was causing the problem IMPORTANT 
+      // Update typing status map
+      this.userService.getById(this.senderId$.getValue() as number).pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
+        this.userNameTyping$.next(res.firstName) 
+      })
+     // console.log(`firstname`,this.userNameTyping$.getValue())
+      this.typingStatusMap.set(this.senderId$.getValue() as number, this.userNameTyping$.getValue());
+     // console.log(`tping status map:`,this.typingStatusMap)
+      // Send typing status to the server
+      this.sendTypingStatus(this.isUserTyping$.getValue(), this.senderId$.getValue() as number, receiverId);
+
+      // Set timeout to mark user as not typing after 6000ms
+      this.typingTimeout = setTimeout(() => {
+        this.currentlyTypingUsers$.next([])
+        this.typingTimeout = null;
+        this.typingStatusMap.delete(this.senderId$.getValue() as number);
+        this.sendTypingStatus(false, this.senderId$.getValue() as number, receiverId);
+      }, 3000);
+    }
+  }
 
 }

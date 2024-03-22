@@ -1,16 +1,12 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChatService, PrivateMessage } from '../../Services/chat.service';
-import { JwtHelperService } from '@auth0/angular-jwt';
 import { AuthService } from '../../Services/auth.service';
 import { User, UserService } from '../../Services/user.service';
 import * as rxjs from 'rxjs';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
-import { MatDialog} from '@angular/material/dialog';
 import { HubConnectionState } from '@microsoft/signalr';
-import { NotificationDialogService } from '../../Services/notification-dialog.service';
-import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
-import { ChatBodyComponent } from '../chat-body/chat-body.component';
+
 
 
 
@@ -21,46 +17,27 @@ import { ChatBodyComponent } from '../chat-body/chat-body.component';
 })
 export class ChatMatComponent implements OnInit, OnDestroy {
 
-
-  @ViewChild('chatBodyContainer') chatBodyContainer!: ElementRef<HTMLElement>;
-  @ViewChild(CdkVirtualScrollViewport) virtualScrollViewport!: CdkVirtualScrollViewport;
-  @ViewChild(CdkVirtualScrollViewport) virtualScrollViewportPublic!: CdkVirtualScrollViewport;
-
-
-
-  public totalPrivateConversationMessagesNumber$ = new rxjs.BehaviorSubject<number>(0);
-  public totalPublicChannelMessagesNumber$ = new rxjs.BehaviorSubject<number>(0);
-
- 
   receivedPrivateMessages$ = this.messageService.receivedPrivateMessages$;
   receivedPublicMessages$ = this.messageService.receivedPublicMessages$
 
-  initialPrivateMessageStartIndex$ = new rxjs.BehaviorSubject<number>(0);
-  initialPublicMessageStartIndex$ = new rxjs.BehaviorSubject<number>(0);
  
-  
-
   private destroy$ = new rxjs.Subject<void>();
   privateMessageSeenStatus$ = new rxjs.BehaviorSubject<boolean>(false)
 
-  isUserTyping$ = new rxjs.BehaviorSubject<boolean>(false)
-  senderId$ = new rxjs.BehaviorSubject<number | undefined>(0);
+  isUserTyping$ = this.chatService.isUserTyping$
+  senderId$ = this.chatService.senderId$
 
   //senderCurrentlyTyping$ = new rxjs.BehaviorSubject<string>('');
   typingStatusMap = new Map<number, string>()
 
 
   privateConversationId$ = this.chatService.privateConversationId$ // <= 
-  privateConversationUsers$!: rxjs.Observable<User[]>;                             // <=
+  
   
 
   newPublicMessage: string = '';
   newPrivateMessage: string = '';
-  receivedPrivateMessages: PrivateMessage[] = [];
-  //accessToken = this.getAccessToken();
 
-  loadedPublicChannels: any[] = [];
-  loadedPrivateChannelsByUserId: any[] = [];
 
   SelectedChannel$ = this.channelService.SelectedChannel$           // <=
 
@@ -129,44 +106,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
 
     console.log(this.chatService.hubConnection.state)
     //testing http endpoint 
-   
-    //is typing logic
-    this.chatService.receiveTypingStatus()
-      .pipe(
-        rxjs.takeUntil(this.destroy$),
-
-      )
-      .subscribe(res => {
-
-        //  console.log('user is typing...', res.currentlyTypingList);
-        this.senderId$.next(res.senderId)
-        this.isUserTyping$.next(res.isTyping)
-        this.currentlyTypingUsers = res.currentlyTypingList
-
-        //this.typingStatusMap.clear();
-        
-        // get user details for each senderId
-        res.currentlyTypingList.forEach((senderId: number) => {
-          this.userService.getById(senderId).pipe(
-            rxjs.switchMap((user) => {
-              if (user) {
-                const firstName = user.firstName;
-
-                // Update the typingStatusMap
-                this.typingStatusMap.set(senderId, firstName);
-              } else {
-                console.error(`User with senderId ${senderId} not found.`);
-              }
-              return rxjs.of(null);
-            }),
-            rxjs.takeUntil(this.destroy$)
-          ).subscribe();
-        });
-
-      })
-
-
-
+ 
   }
 
   ngOnDestroy(): void {
@@ -253,40 +193,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
 
 
 
-  onTypingPrivateMessage() {
-    const receiverId = this.privateConversationId$.getValue();
-    const senderId = this.currentUserId$.getValue();
-    const isTyping = true;
-    let userName = '';
-    //console.log('Typing started for receiverId:', senderId, receiverId, isTyping);
 
-    if (senderId !== null && receiverId !== undefined) {
-      // Clear existing timeout
-      if (this.typingTimeout) {
-        clearTimeout(this.typingTimeout);
-      }
-
-      //this  was causing the problem IMPORTANT 
-      //this.typingStatusMap.clear()
-      //this  was causing the problem IMPORTANT 
-      // Update typing status map
-      this.userService.getById(senderId).pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
-        userName = res.firstName
-        //this.senderCurrentlyTyping$.next(userName)
-      })
-      this.typingStatusMap.set(senderId, userName);
-
-      // Send typing status to the server
-      this.chatService.sendTypingStatus(isTyping, senderId, receiverId);
-
-      // Set timeout to mark user as not typing after 6000ms
-      this.typingTimeout = setTimeout(() => {
-        this.typingTimeout = null;
-        this.typingStatusMap.delete(senderId);
-        this.chatService.sendTypingStatus(false, senderId, receiverId);
-      }, 3000);
-    }
-  }
 
 
 }
