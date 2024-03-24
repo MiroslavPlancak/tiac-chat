@@ -32,8 +32,9 @@
 
 
     <div *ngFor="let senderId of (currentlyTypingUsers |async)">
+        {{(currentlyTypingUsers |async)}}
         <span *ngIf=" senderId == (this.chatService.privateConversationId$| async)" class="currently-typing">
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ typingStatusMap.get(senderId)}} is typing...</span>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ this.chatService.typingStatusMap$.getValue().get(senderId)}} is typing...</span>
     </div>
 </ng-container>
 

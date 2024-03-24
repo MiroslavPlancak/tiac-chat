@@ -38,6 +38,7 @@ export class ChatService implements OnInit,OnDestroy {
   isUserTyping$ = new rxjs.BehaviorSubject<boolean>(false)
   currentlyTypingUsers$ = new rxjs.BehaviorSubject<number[]>([])
   typingStatusMap = new Map<number, string>()
+  typingStatusMap$ = new rxjs.BehaviorSubject<Map<number,string>>(new Map<number,string>)
   userNameTyping$ = new rxjs.BehaviorSubject<string>('')
 
   privateNotification: { [userId: number]: boolean } = {}
@@ -304,7 +305,7 @@ export class ChatService implements OnInit,OnDestroy {
 
 
   ngOnInit(): void {
-
+   
   }
 
   ngOnDestroy(): void {
@@ -463,13 +464,12 @@ export class ChatService implements OnInit,OnDestroy {
 
   //test
   onTypingPrivateMessage() {
+    console.log(`yy`,this.typingStatusMap$.getValue())
     const receiverId = this.privateConversationId$.getValue();
     this.senderId$.next(this.currentUserId$.getValue() as number);
-    // console.log(this.privateConversationId$.getValue())
-    // console.log(this.senderId$.getValue())
+
+
     this.isUserTyping$.next(true)
-    //let userName = '';
-    //console.log('Typing started for receiverId:', senderId, receiverId, isTyping);
 
     if (this.senderId$.getValue() !== null && receiverId !== undefined) {
       // Clear existing timeout
@@ -486,17 +486,30 @@ export class ChatService implements OnInit,OnDestroy {
       })
      // console.log(`firstname`,this.userNameTyping$.getValue())
       this.typingStatusMap.set(this.senderId$.getValue() as number, this.userNameTyping$.getValue());
+      // const currentStatusMap = this.typingStatusMap.set(this.senderId$.getValue() as number, this.userNameTyping$.getValue());
+      // this.typingStatusMap$.next(currentStatusMap);
      // console.log(`tping status map:`,this.typingStatusMap)
       // Send typing status to the server
       this.sendTypingStatus(this.isUserTyping$.getValue(), this.senderId$.getValue() as number, receiverId);
 
       // Set timeout to mark user as not typing after 6000ms
       this.typingTimeout = setTimeout(() => {
-        this.currentlyTypingUsers$.next([])
+      // this.currentlyTypingUsers$.next([0])
+        this.isUserTyping$.next(false)
         this.typingTimeout = null;
-        this.typingStatusMap.delete(this.senderId$.getValue() as number);
-        this.sendTypingStatus(false, this.senderId$.getValue() as number, receiverId);
-      }, 3000);
+        console.log(`xx`,this.typingStatusMap$.getValue())
+        this.currentlyTypingUsers$.next(this.currentlyTypingUsers$.value.filter(userId => userId !== this.currentUserId$.getValue()));
+       // this.typingStatusMap.delete(this.senderId$.getValue() as number);
+       console.log(`this.chatService.typingStatusMap$:`, this.typingStatusMap$.getValue())
+       console.log(`currently typing users`,this.currentlyTypingUsers$.value)
+        const currentStatusMap = new Map(this.typingStatusMap)
+        if(this.currentlyTypingUsers$.value.length == 0){ console.log(`its true!`)}
+        this.typingStatusMap$.next(currentStatusMap)
+       console.log(`currentUserId`, this.currentUserId$.getValue())
+       console.log(`receiverID`,receiverId)
+       console.log(`senderID`,this.senderId$.value)
+        this.sendTypingStatus(false, this.currentUserId$.getValue() as number, receiverId);
+      }, 6000);
     }
   }
 
