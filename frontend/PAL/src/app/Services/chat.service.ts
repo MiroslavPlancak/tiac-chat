@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { User, UserService } from './user.service';
 import { ChannelService } from './channel.service';
 import { NotificationDialogService } from './notification-dialog.service';
-import { MessageService } from './message.service';
+
 
 export interface PrivateMessage {
   isSeen: boolean

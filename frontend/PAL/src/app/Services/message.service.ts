@@ -42,7 +42,8 @@ export class MessageService implements OnInit, OnDestroy {
   private virtualScrollViewport : CdkVirtualScrollViewport | undefined;
 
   typingTimeout!: any;
-  
+  conversationId: number = 0
+  selectedConversation = this.channelService.selectedConversation$
 
   private apiUrl = "http://localhost:5008/api/messages/";
 
@@ -204,12 +205,11 @@ export class MessageService implements OnInit, OnDestroy {
         if (currentUserId !== null && privateConversationId !== undefined) {
     
           if (this.canLoadMorePrivateMessages$.value !== false && privateConversationId !== undefined) {
+
             let startIndex = this.initialPrivateMessageStartIndex$.value
             let endIndex = startIndex + 10
             this.initialPrivateMessageStartIndex$.next(endIndex)
-           // console.log(`startIndex from loadMorePrivateMessages()`, startIndex)
-            // console.log(`endIndex from loadMorePrivateMessages()`, endIndex)
-            // console.log(`loadingmore: start`, startIndex,`end`, endIndex)
+
             this.loadPaginatedPrivateMessages(currentUserId, privateConversationId, startIndex, endIndex)
               .pipe(
                 rxjs.take(1),
@@ -250,12 +250,7 @@ export class MessageService implements OnInit, OnDestroy {
         }
       }
 
-  extractUserName(sentFromUserId: any): rxjs.Observable<string> {
-    return this.userService.getById(sentFromUserId).pipe(
-      rxjs.take(1),
-      rxjs.map(res => res.firstName)
-    );
-  }
+
 
   // scrollToBottom(): void {
   //   try {
@@ -269,6 +264,21 @@ export class MessageService implements OnInit, OnDestroy {
   // }
 
   public conversationIdSelectedClickHandler(conversationId: number): void {
+    //this if statements ensure that when a client sends a private message to first user and then switches the conversation
+    //to second user and starts typing to that second user, the `client is typing...` for the first user is cleared properly
+    const currentlyTypingFilteredConvoId = this.chatService.currentlyTypingUsers$.value.filter(correctUser => correctUser !== conversationId)
+    if (+currentlyTypingFilteredConvoId !== conversationId) {
+
+      this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, +currentlyTypingFilteredConvoId)
+    }
+
+    if (this.chatService.currentlyTypingUsers$.value.length == 0) {
+
+      this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, this.selectedConversation.getValue());
+    }
+    
+    this.conversationId = conversationId;
+
     //make self unclickable in a public chat
     if (conversationId !== this.currentUserId$.getValue()) {
       //this was causing the improper loading
@@ -276,47 +286,7 @@ export class MessageService implements OnInit, OnDestroy {
       this.canLoadMorePrivateMessages$.next(false)
       //this was causing the improper loading
 
-      this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, conversationId)
-      this.chatService.receiveLatestNumberOfPrivateMessages()
-        .pipe(
-          rxjs.first(),
-          rxjs.switchMap(totalMessagesNumber => {
-            this.totalPrivateConversationMessagesNumber$.next(totalMessagesNumber);
-
-            //displays the button if there are messages to be loaded/disappears it when there arent.
-
-            this.canLoadMorePrivateMessages$.next(totalMessagesNumber > 10);
-
-            const startIndex = 0
-            const endIndex = totalMessagesNumber - (totalMessagesNumber - 10);
-            this.initialPrivateMessageStartIndex$.next(endIndex)
-
-
-            return this.loadPaginatedPrivateMessages(
-              this.currentUserId$.getValue() as number,
-              conversationId,
-              startIndex,
-              endIndex
-            ).pipe(rxjs.first());
-          }),
-          rxjs.takeUntil(this.destroy$)
-        )
-        .subscribe(res => {
-
-          const privateMessages: any = res.map(async (message: any) => {
-            const senderId = await this.extractUserName(message.sentFromUserId).toPromise()
-            return {
-              isSeen: message.isSeen,
-              senderId: senderId,
-              message: message.body
-            }
-          })
-
-          Promise.all(privateMessages).then((messsages: any) => {
-            this.receivedPrivateMessages$.next(messsages)
-
-          })
-        });
+      this.getConcurrentNumberOfMessages();
 
       //dissapearing `write to Client` logic is solved by filtering the private conversations by senderID not being equal to currently clicked conversationId
       if (this.chatService.senderId$.value !== conversationId) {
@@ -334,17 +304,7 @@ export class MessageService implements OnInit, OnDestroy {
 
 
       //seen logic 
-      this.loadPrivateMessages(this.currentUserId$.getValue() as number, conversationId as number).pipe(
-        rxjs.first(),
-        rxjs.map(allMessages => allMessages.filter((message: { isSeen: boolean; }) => !message.isSeen)),
-        rxjs.takeUntil(this.destroy$)
-      ).subscribe(filteredUnSeenMessages => {
-        //      console.log(`latest message sent:`, filteredUnSeenMessages
-        filteredUnSeenMessages.forEach((unSeenMessage: any) => {
-          this.chatService.notifyReceiverOfPrivateMessage(unSeenMessage)
-        });
-      }
-      )
+     this.seenMessageStatus()
 
       //seen logic
 
@@ -354,21 +314,91 @@ export class MessageService implements OnInit, OnDestroy {
       }
 
       //display the name of the user we want to write to
-      this.chatService.onlineUsers$.pipe(
-        rxjs.first(),
-        rxjs.map(users => users.find(user => user.id === conversationId)),
-        rxjs.takeUntil(this.destroy$)
-      ).subscribe(user => {
-        if (user) {
-          this.channelService.selectedConversation$.next(user.id);
-          this.userService.writingTo.next(`${user.firstName} ${user.lastName}`);
-          this.userService.fullName = `write to ${user.firstName}:`
-          //this.senderCurrentlyTyping = user.firstName;
-        }
-      })
+      this.displayUserNameToWriteTo()
 
     }
   }
 
+  getConcurrentNumberOfMessages(): void {
+
+    this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId)
+    this.chatService.receiveLatestNumberOfPrivateMessages()
+      .pipe(
+        rxjs.first(),
+        rxjs.switchMap(totalMessagesNumber => {
+          this.totalPrivateConversationMessagesNumber$.next(totalMessagesNumber);
+
+          //displays the button if there are messages to be loaded/disappears it when there arent.
+          this.canLoadMorePrivateMessages$.next(totalMessagesNumber > 10);
+
+          const startIndex = 0
+          const endIndex = totalMessagesNumber - (totalMessagesNumber - 10);
+          this.initialPrivateMessageStartIndex$.next(endIndex)
+
+          return this.loadPaginatedPrivateMessages(
+            this.currentUserId$.getValue() as number,
+            this.conversationId,
+            startIndex,
+            endIndex
+          ).pipe(rxjs.first());
+        }),
+        rxjs.takeUntil(this.destroy$)
+      )
+      .subscribe(res => {
+
+        const privateMessages: any = res.map(async (message: any) => {
+          const senderId = await this.extractUserName(message.sentFromUserId).toPromise()
+          return {
+            isSeen: message.isSeen,
+            senderId: senderId,
+            message: message.body
+          }
+        })
+        Promise.all(privateMessages).then((messsages: any) => {
+
+          this.receivedPrivateMessages$.next(messsages)
+          //console.log(this.messageService.receivedPrivateMessages$.value)
+        })
+      });
+  }
+
+  seenMessageStatus(): void {
+
+    this.loadPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId as number).pipe(
+      rxjs.first(),
+      rxjs.map(allMessages => allMessages.filter((message: { isSeen: boolean; }) => !message.isSeen)),
+      rxjs.takeUntil(this.destroy$)
+    ).subscribe(filteredUnSeenMessages => {
+      filteredUnSeenMessages.forEach((unSeenMessage: any) => {
+        this.chatService.notifyReceiverOfPrivateMessage(unSeenMessage)
+      });
+    }
+    )
+  }
+
+
+  displayUserNameToWriteTo(): void {
+
+    this.chatService.onlineUsers$.pipe(
+      rxjs.first(),
+      rxjs.map(users => users.find(user => user.id === this.conversationId)),
+      rxjs.takeUntil(this.destroy$)
+    ).subscribe(user => {
+      if (user) {
+        this.selectedConversation.next(user.id)
+        this.userService.writingTo.next(`${user.firstName} ${user.lastName}`);
+        this.userService.fullName = `write to ${user.firstName}:`
+      }
+    })
+  }
+
+
+  extractUserName(sentFromUserId: any): rxjs.Observable<string> {
+    return this.userService.getById(sentFromUserId).pipe(
+      rxjs.take(1),
+      rxjs.map(res => res.firstName)
+    );
+
+  }
 
 }

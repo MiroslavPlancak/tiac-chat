@@ -6,7 +6,6 @@ import { MessageService } from '../../Services/message.service';
 import { AuthService } from '../../Services/auth.service';
 import * as rxjs from 'rxjs';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { AddUserToPrivateChannelComponent } from '../add-user-to-private-channel/add-user-to-private-channel.component';
 import { CreateChannelComponent } from '../create-channel/create-channel.component';
 
 @Component({

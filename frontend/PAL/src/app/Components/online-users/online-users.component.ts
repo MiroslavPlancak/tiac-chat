@@ -31,7 +31,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
     (
       private chatService: ChatService,
       private authService: AuthService,
-      private messageService: MessageService,
+      public messageService: MessageService,
       private userService: UserService,
       private channelService: ChannelService
     ) { }
@@ -95,142 +95,67 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
 
   filterOnlineUsers($event: any) {
     const value = $event.target.value;
-    this.onlineUserSearchTerm$.next(value === '' ? undefined : value)  
+    this.onlineUserSearchTerm$.next(value === '' ? undefined : value)
   }
 
-  public conversationIdSelectedClickHandler(conversationId: number): void {
+  // public conversationIdSelectedClickHandler(conversationId: number): void {
 
-     //this if statements ensure that when a client sends a private message to first user and then switches the conversation
-    //to second user and starts typing to that second user, the `client is typing...` for the first user is cleared properly
-   const currentlyTypingFilteredConvoId = this.chatService.currentlyTypingUsers$.value.filter(correctUser => correctUser !== conversationId)
-    if(+currentlyTypingFilteredConvoId !== conversationId ){
+  //   //this if statements ensure that when a client sends a private message to first user and then switches the conversation
+  //   //to second user and starts typing to that second user, the `client is typing...` for the first user is cleared properly
+  //   const currentlyTypingFilteredConvoId = this.chatService.currentlyTypingUsers$.value.filter(correctUser => correctUser !== conversationId)
+  //   if (+currentlyTypingFilteredConvoId !== conversationId) {
 
-      this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number,+currentlyTypingFilteredConvoId)
-    }
+  //     this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, +currentlyTypingFilteredConvoId)
+  //   }
 
-    if(this.chatService.currentlyTypingUsers$.value.length == 0){
-    
-    this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, this.selectedConversation.getValue());
-    }
-    ///////////////////
+  //   if (this.chatService.currentlyTypingUsers$.value.length == 0) {
 
-    this.conversationId = conversationId;
+  //     this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, this.selectedConversation.getValue());
+  //   }
+  //   ///////////////////
 
-    //make self unclickable in a public chat
-    if (conversationId !== this.currentUserId$.getValue()) {
+  //   this.conversationId = conversationId;
 
-      //this was causing the improper loading
-      this.initialPublicMessageStartIndex$.next(0)
-      this.canLoadMorePrivateMessages$.next(false)
+  //   //make self unclickable in a public chat
+  //   if (conversationId !== this.currentUserId$.getValue()) {
 
-      this.getConcurrentNumberOfMessages()
+  //     //this was causing the improper loading
+  //     this.initialPublicMessageStartIndex$.next(0)
+  //     this.canLoadMorePrivateMessages$.next(false)
 
-      //dissapearing `write to Client` logic is solved by filtering the private conversations by senderID not being equal to currently clicked conversationId
-      if (this.chatService.senderId$.value !== conversationId) {
-        this.chatService.isUserTyping$.next(false)
-      }
+  //     this.messageService.getConcurrentNumberOfMessages()
 
-      //changed this
-      if (this.currentUserId$.value !== conversationId) {
-        this.channelService.SelectedChannel$.next(undefined);
-      }
+  //     //dissapearing `write to Client` logic is solved by filtering the private conversations by senderID not being equal to currently clicked conversationId
+  //     if (this.chatService.senderId$.value !== conversationId) {
+  //       this.chatService.isUserTyping$.next(false)
+  //     }
 
-      this.isDirectMessage.next(true);
-      this.channelService.isPrivateChannel$.next(false);
-      this.chatService.privateNotification[conversationId] = false;
+  //     //changed this
+  //     if (this.currentUserId$.value !== conversationId) {
+  //       this.channelService.SelectedChannel$.next(undefined);
+  //     }
 
-      //seen logic
+  //     this.isDirectMessage.next(true);
+  //     this.channelService.isPrivateChannel$.next(false);
+  //     this.chatService.privateNotification[conversationId] = false;
 
-      this.seenMessageStatus()
+  //     //seen logic
+
+  //     this.messageService.seenMessageStatus()
 
 
-      if (conversationId !== this.currentUserId$.getValue()) {
-        this.privateConversationId$.next(conversationId);
-      }
+  //     if (conversationId !== this.currentUserId$.getValue()) {
+  //       this.privateConversationId$.next(conversationId);
+  //     }
 
-      //display the name of the user we want to write to
-      this.displayUserNameToWriteTo()
+  //     //display the name of the user we want to write to
+  //     this.messageService.displayUserNameToWriteTo()
 
-    }
-  }
+  //   }
+  // }
 
-  extractUserName(sentFromUserId: any): rxjs.Observable<string> {
-    return this.userService.getById(sentFromUserId).pipe(
-      rxjs.take(1),
-      rxjs.map(res => res.firstName)
-    );
 
-  }
 
-  displayUserNameToWriteTo(): void {
 
-    this.chatService.onlineUsers$.pipe(
-      rxjs.first(),
-      rxjs.map(users => users.find(user => user.id === this.conversationId)),
-      rxjs.takeUntil(this.destroy$)
-    ).subscribe(user => {
-      if (user) {
-        this.selectedConversation.next(user.id)
-        this.userService.writingTo.next(`${user.firstName} ${user.lastName}`);
-        this.userService.fullName = `write to ${user.firstName}:`
-      }
-    })
-  }
 
-  seenMessageStatus(): void {
-   
-    this.messageService.loadPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId as number).pipe(
-      rxjs.first(),
-      rxjs.map(allMessages => allMessages.filter((message: { isSeen: boolean; }) => !message.isSeen)),
-      rxjs.takeUntil(this.destroy$)
-    ).subscribe(filteredUnSeenMessages => {
-      filteredUnSeenMessages.forEach((unSeenMessage: any) => {
-        this.chatService.notifyReceiverOfPrivateMessage(unSeenMessage)
-      });
-    }
-    )
-  }
-
-  getConcurrentNumberOfMessages(): void {
-
-    this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId)
-    this.chatService.receiveLatestNumberOfPrivateMessages()
-      .pipe(
-        rxjs.first(),
-        rxjs.switchMap(totalMessagesNumber => {
-          this.messageService.totalPrivateConversationMessagesNumber$.next(totalMessagesNumber);
-
-          //displays the button if there are messages to be loaded/disappears it when there arent.
-          this.messageService.canLoadMorePrivateMessages$.next(totalMessagesNumber > 10);
-
-          const startIndex = 0
-          const endIndex = totalMessagesNumber - (totalMessagesNumber - 10);
-          this.messageService.initialPrivateMessageStartIndex$.next(endIndex)
-
-          return this.messageService.loadPaginatedPrivateMessages(
-            this.currentUserId$.getValue() as number,
-            this.conversationId,
-            startIndex,
-            endIndex
-          ).pipe(rxjs.first());
-        }),
-        rxjs.takeUntil(this.destroy$)
-      )
-      .subscribe(res => {
-
-        const privateMessages: any = res.map(async (message: any) => {
-          const senderId = await this.extractUserName(message.sentFromUserId).toPromise()
-          return {
-            isSeen: message.isSeen,
-            senderId: senderId,
-            message: message.body
-          }
-        })
-        Promise.all(privateMessages).then((messsages: any) => {
-
-          this.messageService.receivedPrivateMessages$.next(messsages)
-          //console.log(this.messageService.receivedPrivateMessages$.value)
-        })
-      });
-  }
 }

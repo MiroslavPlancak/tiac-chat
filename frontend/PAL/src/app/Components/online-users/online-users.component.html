@@ -3,7 +3,7 @@
     <mat-icon color="primary" style="font-size: 24px; vertical-align: middle;">search</mat-icon>
     <mat-list>
         <mat-list-item *ngFor="let user of onlineFilteredUsers$ |async"
-            (click)="conversationIdSelectedClickHandler(user.id)">
+            (click)="this.messageService.conversationIdSelectedClickHandler(user.id)">
           
             <div class="user-data-fonts"
                 [ngClass]="{'selectedConversation': (selectedConversation | async) === user.id && (isDirectMessage | async)}">
