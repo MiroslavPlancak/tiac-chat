@@ -464,7 +464,7 @@ export class ChatService implements OnInit,OnDestroy {
 
   //test
   onTypingPrivateMessage() {
-    console.log(`yy`,this.typingStatusMap$.getValue())
+    
     const receiverId = this.privateConversationId$.getValue();
     this.senderId$.next(this.currentUserId$.getValue() as number);
 
@@ -477,37 +477,29 @@ export class ChatService implements OnInit,OnDestroy {
         clearTimeout(this.typingTimeout);
       }
 
-      //this  was causing the problem IMPORTANT 
-      //this.typingStatusMap.clear()
-      //this  was causing the problem IMPORTANT 
-      // Update typing status map
       this.userService.getById(this.senderId$.getValue() as number).pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
         this.userNameTyping$.next(res.firstName) 
       })
-     // console.log(`firstname`,this.userNameTyping$.getValue())
+     
       this.typingStatusMap.set(this.senderId$.getValue() as number, this.userNameTyping$.getValue());
-      // const currentStatusMap = this.typingStatusMap.set(this.senderId$.getValue() as number, this.userNameTyping$.getValue());
-      // this.typingStatusMap$.next(currentStatusMap);
-     // console.log(`tping status map:`,this.typingStatusMap)
+   
       // Send typing status to the server
       this.sendTypingStatus(this.isUserTyping$.getValue(), this.senderId$.getValue() as number, receiverId);
 
       // Set timeout to mark user as not typing after 6000ms
       this.typingTimeout = setTimeout(() => {
-      // this.currentlyTypingUsers$.next([0])
-        this.isUserTyping$.next(false)
+   
+
         this.typingTimeout = null;
-        console.log(`xx`,this.typingStatusMap$.getValue())
+       
         this.currentlyTypingUsers$.next(this.currentlyTypingUsers$.value.filter(userId => userId !== this.currentUserId$.getValue()));
-       // this.typingStatusMap.delete(this.senderId$.getValue() as number);
-       console.log(`this.chatService.typingStatusMap$:`, this.typingStatusMap$.getValue())
-       console.log(`currently typing users`,this.currentlyTypingUsers$.value)
-        const currentStatusMap = new Map(this.typingStatusMap)
-        if(this.currentlyTypingUsers$.value.length == 0){ console.log(`its true!`)}
-        this.typingStatusMap$.next(currentStatusMap)
-       console.log(`currentUserId`, this.currentUserId$.getValue())
-       console.log(`receiverID`,receiverId)
-       console.log(`senderID`,this.senderId$.value)
+      
+     
+        if(this.isUserTyping$.value == false){
+          const currentStatusMap = new Map(this.typingStatusMap)
+          this.typingStatusMap$.next(currentStatusMap)
+        }
+
         this.sendTypingStatus(false, this.currentUserId$.getValue() as number, receiverId);
       }, 6000);
     }

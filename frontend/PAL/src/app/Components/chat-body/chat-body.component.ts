@@ -86,32 +86,30 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
       )
       .subscribe(res => {
 
-        //  console.log('user is typing...', res.currentlyTypingList);
         this.chatService.senderId$.next(res.senderId)
         this.chatService.isUserTyping$.next(res.isTyping)
         this.chatService.currentlyTypingUsers$.next(res.currentlyTypingList)
-        console.log(this.chatService.currentlyTypingUsers$.value)
+      //  console.log(`receive:`,this.chatService.currentlyTypingUsers$.value)
         //this.typingStatusMap.clear();
 
         // get user details for each senderId
+       
+
+        //investigate what happens with senderId through the flow
         res.currentlyTypingList.forEach((senderId: number) => {
           this.userService.getById(senderId).pipe(
             rxjs.switchMap((user) => {
               if (user) {
                 const firstName = user.firstName;
-
-                // Update the typingStatusMap   << need to make it behavior subject in the chatservice and implement it like that
-                console.log(`this runs`)
                 
-                // this.typingStatusMap.set(senderId, firstName);
+ 
+               // console.log(`receive:this runs`)
+              
                 const currentMap = this.typingStatusMap.set(senderId,firstName)
               
                 this.chatService.typingStatusMap$.next(currentMap)
-                console.log(`this runs + typingStatusMap$.value`, this.chatService.typingStatusMap$.getValue())
-               // this.chatService.currentlyTypingUsers$.next(this.chatService.currentlyTypingUsers$.value.filter(userId => userId !== this.senderId$.getValue()));
-                // console.log(`this.typingStatusMap()`, this.typingStatusMap)
-                // console.log(`this.chatService.typingStatusMap$:`, this.chatService.typingStatusMap$.getValue())
-           
+               // console.log(`receive:this runs + typingStatusMap$.value`, this.chatService.typingStatusMap$.getValue())
+  
               } else {
                 console.error(`User with senderId ${senderId} not found.`);
               }

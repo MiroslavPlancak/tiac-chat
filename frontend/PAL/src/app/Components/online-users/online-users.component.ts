@@ -99,11 +99,20 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
   }
 
   public conversationIdSelectedClickHandler(conversationId: number): void {
-    //this line ensures that when a client sends a private message to first user and then switches the conversation
-    //to second user and starts typing to the second user, the `client is typing...` for the first user dissapears 
-    //console.log(`duzina`,this.chatService.currentlyTypingUsers$.value.length)
+
+     //this if statements ensure that when a client sends a private message to first user and then switches the conversation
+    //to second user and starts typing to that second user, the `client is typing...` for the first user is cleared properly
+   const currentlyTypingFilteredConvoId = this.chatService.currentlyTypingUsers$.value.filter(correctUser => correctUser !== conversationId)
+    if(+currentlyTypingFilteredConvoId !== conversationId ){
+
+      this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number,+currentlyTypingFilteredConvoId)
+    }
+
     if(this.chatService.currentlyTypingUsers$.value.length == 0){
-    this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, this.selectedConversation.getValue());}
+    
+    this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, this.selectedConversation.getValue());
+    }
+    ///////////////////
 
     this.conversationId = conversationId;
 
