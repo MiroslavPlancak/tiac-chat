@@ -24,7 +24,7 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router,
     private matDialog: MatDialog,
-    private chatService: ChatService
+   // private chatService: ChatService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],

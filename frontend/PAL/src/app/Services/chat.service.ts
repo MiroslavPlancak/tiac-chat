@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { User, UserService } from './user.service';
 import { ChannelService } from './channel.service';
 import { NotificationDialogService } from './notification-dialog.service';
+import { ConnectionService } from './connection.service';
 
 
 export interface PrivateMessage {
@@ -19,7 +20,7 @@ export interface PrivateMessage {
 
 export class ChatService implements OnInit,OnDestroy {
 
-  public hubConnection: signalR.HubConnection;
+  public hubConnection = this.connectionService.hubConnection
   currentUserId$ = this.authService.userId$;
   public onlineUserIds$ = new rxjs.BehaviorSubject<number[]>([]);
     //channel logic TODO:add private channels as well 
@@ -154,7 +155,8 @@ export class ChatService implements OnInit,OnDestroy {
     private userService: UserService,
     private channelService: ChannelService,
     private dialogService: NotificationDialogService,
-   
+    private connectionService:ConnectionService
+
 
   ) {
     //#this
@@ -163,19 +165,19 @@ export class ChatService implements OnInit,OnDestroy {
     .pipe(rxjs.takeUntil(this.destroy$))
     .subscribe(/*console.log(`getAllPrivateChannelsByUserId$ constructor`,res)*/)
     
+  
     
-    console.log(`currentUserId$`, this.currentUserId$.getValue())
-    this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('http://localhost:5008/Chathub', {
-        accessTokenFactory: () => {
-          const token = this.authService.getAccessToken();
-          if (token) {
-            return token;
-          }
-          throw new Error("Cannot establish connection without access token.");
-        }
-      })
-      .build();
+    // this.hubConnection = new signalR.HubConnectionBuilder()
+    //   .withUrl('http://localhost:5008/Chathub', {
+    //     accessTokenFactory: () => {
+    //       const token = this.authService.getAccessToken();
+    //       if (token) {
+    //         return token;
+    //       }
+    //       throw new Error("Cannot establish connection without access token.");
+    //     }
+    //   })
+    //   .build();
 
     this.authService.loggedOut$.subscribe((isLoggedOut) => {
       if (isLoggedOut) {
@@ -185,20 +187,20 @@ export class ChatService implements OnInit,OnDestroy {
     })
 
 
-    this.hubConnection
-      .start()
-      .then(() => {
+    // this.hubConnection
+    //   .start()
+    //   .then(() => {
 
-        if (this.hubConnection.connectionId != undefined) {
+    //     if (this.hubConnection.connectionId != undefined) {
 
-          console.log("connection started with connectionId:", this.hubConnection.connectionId);
+    //       console.log("connection started with connectionId:", this.hubConnection.connectionId);
         
-        }
+    //     }
         
-      })
-      .catch(err => {
-        console.log('Error while starting connection:' + err)
-      })
+    //   })
+    //   .catch(err => {
+    //     console.log('Error while starting connection:' + err)
+    //   })
 
 
     this.hubConnection.on("YourConnectionId", (connection: Record<string, string>, userId: number, fullName:string) => {
@@ -240,10 +242,10 @@ export class ChatService implements OnInit,OnDestroy {
       
     })
 
-    this.hubConnection.onclose((error) => {
-      console.log('Connection closed.');
-      console.log(error);
-    });
+    // this.hubConnection.onclose((error) => {
+    //   console.log('Connection closed.');
+    //   console.log(error);
+    // });
 
 
 

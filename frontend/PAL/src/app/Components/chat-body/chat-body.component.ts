@@ -58,15 +58,16 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
 
    //scroll after loading more public messages
-
+   //enclosing if might create a problem, need to investigate it further.
+ if(this.scrollIndexPublic$.value !== 3){
     this.scrollIndexPublic$.subscribe(res => {
      
       if(res !== undefined && res !==null && res !==0){
-        //console.log(res)
+       console.log(res)
       this.virtualScrollViewportPublic.scrollToIndex(res)
      }
     })
-
+  }
   //scroll after loading more private messages
 
   this.scrollIndexPrivate$.subscribe(res => {

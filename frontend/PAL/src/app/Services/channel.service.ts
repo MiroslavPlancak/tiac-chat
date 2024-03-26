@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import * as rxjs from 'rxjs';
+import { ConnectionService } from './connection.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,8 @@ export class ChannelService {
   curentlyClickedPrivateChannel$ = new rxjs.BehaviorSubject<number>(0);
   
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+  
   ) { }
 
  getListOfChannels():Observable<any>{
@@ -63,6 +65,6 @@ export class ChannelService {
   return this.http.delete(url);
  }
 
- 
+
  
 }

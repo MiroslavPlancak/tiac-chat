@@ -1,11 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChatService, PrivateMessage } from '../../Services/chat.service';
 import { AuthService } from '../../Services/auth.service';
-import { User, UserService } from '../../Services/user.service';
+import { UserService } from '../../Services/user.service';
 import * as rxjs from 'rxjs';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
 import { HubConnectionState } from '@microsoft/signalr';
+
 
 
 
@@ -60,15 +61,11 @@ export class ChatMatComponent implements OnInit, OnDestroy {
     public userService: UserService,
     public  messageService: MessageService,
     private channelService: ChannelService,
-   
+   //private connectionService:ConnectionService
 
   ) {
     this.channelType = this.channelTypes['public'];
     console.log(this.chatService.hubConnection.state)
-   
-//    console.log(`viewport from component:`, this.virtualScrollViewport)
-    
-   
   }
 
 
