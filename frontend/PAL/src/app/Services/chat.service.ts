@@ -45,54 +45,7 @@ export class ChatService implements OnInit,OnDestroy {
   privateConversationId$ = new rxjs.BehaviorSubject<number | undefined>(undefined)
 
 
-  public onlineUserIdsWithoutSelf$ = rxjs.combineLatest([
-    this.onlineUserIds$.pipe(rxjs.takeUntil(this.destroy$)),
-    this.authService.userId$.pipe(rxjs.takeUntil(this.destroy$))
-  ])
-    .pipe(
 
-      rxjs.map(([onlineUserIds, currentUserId]) => onlineUserIds.filter(onlineUserId => onlineUserId !== currentUserId)),
-      //rxjs.tap(res => console.log(`onlineUserIdsWithtoutSelf$`, res))
-      rxjs.takeUntil(this.destroy$)
-    )
-
-  
-  
-  public allUsers$ = this.userService.getAllUsers().pipe(
-   //rxjs.tap(res => console.log(`allUsers$/chat.service.ts:`, res))
-   rxjs.takeUntil(this.destroy$)
-  );
-
-
-
-
-  //////////////////////////
-
-  public onlineUsers$ = rxjs.combineLatest([
-    this.onlineUserIdsWithoutSelf$,
-    this.userService.allUsersSubject$,
-
-  ]).pipe(
-    rxjs.map(([onlineUserIds,allUsers]) => {
-     
-      return allUsers.filter(user => onlineUserIds.includes(user.id))
-    }),
-//   rxjs.tap(res => console.log(`onlineUsers$/chat.service.ts:`,res)),
-    rxjs.takeUntil(this.destroy$)
-  )
-
-  public offlineUsers$ = rxjs.combineLatest([
-
-    //if offline list is not filtering correctly its is due to this change, return -onlineUserIdsWithoutSelf$
-    this.onlineUserIds$,
-    this.userService.allUsersSubject$,
-    
-  ]).pipe(
-    rxjs.map(([onlineUserIds, allUsers]) => {
-      return allUsers.filter(user => !onlineUserIds.includes(user.id))
-    }),
-    rxjs.takeUntil(this.destroy$)
-  )
   typingTimeout: any;
 
 
@@ -100,62 +53,10 @@ export class ChatService implements OnInit,OnDestroy {
   constructor(
     private authService: AuthService,
     private userService: UserService,
-    private channelService: ChannelService,
-    private dialogService: NotificationDialogService,
     private connectionService:ConnectionService
 
 
-  ) {
-
-
-    this.authService.loggedOut$.subscribe((isLoggedOut) => {
-      if (isLoggedOut) {
-        this.hubConnection.stop()
-        this.destroy$.next()
-      }
-    })
-
-    this.hubConnection.on("YourConnectionId", (connection: Record<string, string>, userId: number, fullName:string) => {
-      console.log(`new connection established:${JSON.stringify(connection)}`);
-
-    this.userService.getAllUsersBS$()
-    .pipe(rxjs.takeUntil(this.destroy$))
-    .subscribe(res => console.log( /*`getAllUsersBS$: chat.service.ts constructor`,res*/));
-      
-      const userIds = Object.keys(connection).map(strUserId => +strUserId);
-      this.onlineUserIds$.next(userIds);
-//      console.log(`onlineUserIds$`, this.onlineUserIds$.getValue(), userId)
-
-      if(this.currentUserId$.getValue() !== userId){
-        
-      this.dialogService.openOnlineNotification(
-        `${fullName} just came online.`,
-        ``,
-        ``,
-        {top:`0%`,left:`80%`},
-        3000 
-      )}
-    
-    })
-
-    this.hubConnection.on('UserDisconnected', (connections, userId, fullName) => {
-      const userIds = Object.keys(connections).map(userId => +userId)
-      this.onlineUserIds$.next(userIds);
-
-      if(this.currentUserId$.getValue() !== userId){
-        
-        this.dialogService.openOnlineNotification(
-          `${fullName} just went offline.`,
-          ``,
-          ``,
-          {top:`0%`,left:`80%`},
-          3000 
-        )}
-      
-    })
-
-
-  }
+  ) { }
 
 
   ngOnInit(): void {

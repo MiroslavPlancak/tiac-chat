@@ -37,7 +37,7 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
 
     this.offlineFilteredUsers$ = rxjs.combineLatest([
-      this.chatService.offlineUsers$,
+      this.userService.offlineUsers$,
       this.offlineUserSearchTerm$
     ])
     .pipe(
@@ -134,7 +134,7 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
   }
 
   displayOfflineUserNameToWriteTo(): void {
-    this.chatService.offlineUsers$.pipe(
+    this.userService.offlineUsers$.pipe(
       rxjs.first()
     ).subscribe(offlineUsers => {
       const offlineUser = offlineUsers.find(user => user.id === this.conversationId);

@@ -60,7 +60,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     public chatService: ChatService,
     private jwtHelper: JwtHelperService,
     private authService: AuthService,
-    private userService: UserService,
+    public userService: UserService,
     private messageService: MessageService,
     private channelService: ChannelService
   ) {

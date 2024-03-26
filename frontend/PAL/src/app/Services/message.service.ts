@@ -379,7 +379,7 @@ export class MessageService implements OnInit, OnDestroy {
 
   displayUserNameToWriteTo(): void {
 
-    this.chatService.onlineUsers$.pipe(
+    this.userService.onlineUsers$.pipe(
       rxjs.first(),
       rxjs.map(users => users.find(user => user.id === this.conversationId)),
       rxjs.takeUntil(this.destroy$)

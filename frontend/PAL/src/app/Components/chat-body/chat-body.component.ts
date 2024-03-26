@@ -122,7 +122,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
       })
 
-      this.privateConversationUsers$ = rxjs.combineLatest([this.chatService.privateConversationId$, this.authService.userId$, this.chatService.allUsers$]).pipe(
+      this.privateConversationUsers$ = rxjs.combineLatest([this.chatService.privateConversationId$, this.authService.userId$, this.userService.allUsers$]).pipe(
         rxjs.filter(([privateConversationId, userId]) => {
           return privateConversationId != undefined && userId != undefined
         }),

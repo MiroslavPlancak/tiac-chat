@@ -98,6 +98,8 @@ export class ChannelService implements OnDestroy {
     this.destroy$.complete()
   }
 
+ /////HTTP endpoint methods/////
+
   getListOfChannels(): Observable<any> {
     const url = `${this.apiUrl}/getAll`
     return this.http.get(url);
@@ -114,6 +116,7 @@ export class ChannelService implements OnDestroy {
     //console.log("channel service side:",channel)
     return this.http.post(url, channel);
   }
+
 
   getListOfPrivateChannelsByUserId(loggedUserId: number): Observable<any> {
     const url = `${this.apiUrl}/privateChannels?userId=${loggedUserId}`
@@ -139,6 +142,9 @@ export class ChannelService implements OnDestroy {
     const url = `${this.apiUrl}/userchannel?userId=${userId}&channelId=${channelId}`
     return this.http.delete(url);
   }
+////HTTP endpoint methods//////////
+
+/////service methods/////
 
   //private channels
   public getAllPrivateChannelsByUserId$ = this.currentUserId$.pipe(
@@ -192,4 +198,6 @@ export class ChannelService implements OnDestroy {
     rxjs.takeUntil(this.destroy$)
     //    rxjs.tap(channels => console.log('Latest public channels:', channels))
   )
+
+  /////service methods/////
 }
