@@ -1,6 +1,5 @@
 import { Injectable, OnDestroy, OnInit } from '@angular/core';
 import * as rxjs from 'rxjs';
-import * as signalR from '@microsoft/signalr';
 import { AuthService } from './auth.service';
 import { User, UserService } from './user.service';
 import { ChannelService } from './channel.service';
@@ -66,58 +65,6 @@ export class ChatService implements OnInit,OnDestroy {
 
 
 
- //private channels
- public getAllPrivateChannelsByUserId$ = this.currentUserId$.pipe(
-  rxjs.filter(currentUserId => currentUserId != undefined),
-  rxjs.switchMap(currentUserId => {
-    return this.channelService.getListOfPrivateChannelsByUserId(currentUserId as number).pipe(
-    
-      rxjs.map(privatelyOwnedChannels => {
-        
-        return privatelyOwnedChannels.map((channel: { createdBy: number; }) =>
-          ({ ...channel, isOwner: channel.createdBy === currentUserId }))
-      })
-    )
-  }),
-  rxjs.takeUntil(this.destroy$)
-);
-
-
-  public latestPrivateChannels$ = rxjs.combineLatest([
-    this.getAllPrivateChannelsByUserId$,
-    this.newlyCreatedPrivateChannel$,
-    this.removeChannelId$
-  ]).pipe(
-    rxjs.map(([getAllPrivateChannelsByUserId, newlyCreatedPrivateChannel, removeChannelId]) => {
-      
-      return [
-        ...getAllPrivateChannelsByUserId,
-        ...newlyCreatedPrivateChannel
-      ];
-    }),
-    rxjs.takeUntil(this.destroy$),
-    rxjs.tap(res => console.log(/*`87.latestPrivateChannels$:`, res*/)),
-   
-  );
-
-  //public channels
-  public allPublicChannels$ = this.channelService.getListOfChannels().pipe(
-    rxjs.map(publicChannels => publicChannels.filter((channel: { visibility: number; }) => channel.visibility !== 0)),
-    rxjs.takeUntil(this.destroy$)
-  )
-
-  public latestPublicChannels$ = rxjs.combineLatest([
-    this.allPublicChannels$,
-    this.newlyCreatedPublicChannel$
-  ]).pipe(
-    rxjs.map(([allPublicChannels, newlyCreatedChannel]) => [
-      ...allPublicChannels,
-      ...newlyCreatedChannel
-    ]),
-    rxjs.takeUntil(this.destroy$)
-//    rxjs.tap(channels => console.log('Latest public channels:', channels))
-  )
-
 
   //////////////////////////
 
@@ -159,25 +106,7 @@ export class ChatService implements OnInit,OnDestroy {
 
 
   ) {
-    //#this
-  
-    this.getAllPrivateChannelsByUserId$
-    .pipe(rxjs.takeUntil(this.destroy$))
-    .subscribe(/*console.log(`getAllPrivateChannelsByUserId$ constructor`,res)*/)
-    
-  
-    
-    // this.hubConnection = new signalR.HubConnectionBuilder()
-    //   .withUrl('http://localhost:5008/Chathub', {
-    //     accessTokenFactory: () => {
-    //       const token = this.authService.getAccessToken();
-    //       if (token) {
-    //         return token;
-    //       }
-    //       throw new Error("Cannot establish connection without access token.");
-    //     }
-    //   })
-    //   .build();
+
 
     this.authService.loggedOut$.subscribe((isLoggedOut) => {
       if (isLoggedOut) {
@@ -185,23 +114,6 @@ export class ChatService implements OnInit,OnDestroy {
         this.destroy$.next()
       }
     })
-
-
-    // this.hubConnection
-    //   .start()
-    //   .then(() => {
-
-    //     if (this.hubConnection.connectionId != undefined) {
-
-    //       console.log("connection started with connectionId:", this.hubConnection.connectionId);
-        
-    //     }
-        
-    //   })
-    //   .catch(err => {
-    //     console.log('Error while starting connection:' + err)
-    //   })
-
 
     this.hubConnection.on("YourConnectionId", (connection: Record<string, string>, userId: number, fullName:string) => {
       console.log(`new connection established:${JSON.stringify(connection)}`);
@@ -242,66 +154,6 @@ export class ChatService implements OnInit,OnDestroy {
       
     })
 
-    // this.hubConnection.onclose((error) => {
-    //   console.log('Connection closed.');
-    //   console.log(error);
-    // });
-
-
-
-
-
-    //add user to private conversation
-    this.hubConnection.on('YouHaveBeenAdded', (channelId, userId,entireChannel) => {
-      console.log(`You have been added to private channel ${channelId} by ${userId}`)
-      this.newlyCreatedPrivateChannel$.next([...this.newlyCreatedPrivateChannel$.value, entireChannel])
-
-      this.dialogService.openNotificationDialog(
-        `joined private channel`,
-        `You have been added to private channel ${entireChannel.name}`,
-        `Close`
-      )
-     
-    })
-
-    //kick user from private conversation    
-    this.hubConnection.on('YouHaveBeenKicked', (channelId,userId) => {
-
-      console.log(`You have been kicked from private channel: ${channelId}/${userId}`);
-      const updateChannelList = this.newlyCreatedPrivateChannel$.value.filter(
-        (channel: {id: number | null})=> 
-         channel.id !== channelId 
-       )
-      //here I need to remove the user from the private channel that has no more access  as he has been kicked
-      this.newlyCreatedPrivateChannel$.next(updateChannelList)
-      this.removeChannelId$.next(channelId)
-
-      this.dialogService.openNotificationDialog(
-        `Kicked from private channel`,
-        `You have been kicked from private channel ${channelId}`,
-        `Close`
-      )
-    });
-
-  //create new channel
-    this.hubConnection.on("NewChannelCreated", (newChannel) => {
-      console.log('new channel from constructor of chat service:', newChannel)
-      if (newChannel.visibility === 1) {
-
-        this.newlyCreatedPublicChannel$.next([...this.newlyCreatedPublicChannel$.value, newChannel])
-
-      }
-      else if (newChannel.visibility === 0) {
-        const newPrivateChannel = 
-        {
-          ...newChannel,
-          isOwner: true
-        }
-        this.newlyCreatedPrivateChannel$.next([...this.newlyCreatedPrivateChannel$.value, newPrivateChannel])
-      }
-    })
-
- 
 
   }
 

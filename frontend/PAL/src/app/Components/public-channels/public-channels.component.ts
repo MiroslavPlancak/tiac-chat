@@ -16,8 +16,8 @@ import { CreateChannelComponent } from '../create-channel/create-channel.compone
 export class PublicChannelsComponent implements OnInit,OnDestroy {
 
   private destroy$ = new rxjs.Subject<void>();
-  latestPublicChannels$ = this.chatService.latestPublicChannels$
-  latestPrivateChannels$ = this.chatService.latestPrivateChannels$
+  latestPublicChannels$ = this.chanelService.latestPublicChannels$
+  latestPrivateChannels$ = this.chanelService.latestPrivateChannels$
   currentUserId$ = this.authService.userId$
   curentlyClickedPrivateChannel = this.chanelService.curentlyClickedPrivateChannel$
   selectedConversation = this.chanelService.selectedConversation$
@@ -141,8 +141,8 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   }
 
   loadPrivateChannels():void{
-
-    this.chatService.getAllPrivateChannelsByUserId$
+//changed this
+    this.chanelService.getAllPrivateChannelsByUserId$
     .pipe(rxjs.takeUntil(this.destroy$))
     .subscribe(loadedPrivateChannels => {
       const ownedChannels = loadedPrivateChannels.filter((channel: { isOwner: any; }) => channel.isOwner);

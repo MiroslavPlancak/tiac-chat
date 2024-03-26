@@ -1,70 +1,195 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { AuthService } from './auth.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import * as rxjs from 'rxjs';
 import { ConnectionService } from './connection.service';
+import { NotificationDialogService } from './notification-dialog.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ChannelService {
+export class ChannelService implements OnDestroy {
 
   private apiUrl = "http://localhost:5008/api/channels"
-  SelectedChannel$ = new rxjs.BehaviorSubject<number | undefined>(8); 
+  private destroy$ = new rxjs.Subject<void>();
+
+  SelectedChannel$ = new rxjs.BehaviorSubject<number | undefined>(8);
   isPrivateChannel$ = new rxjs.BehaviorSubject<boolean>(false);
   selectedConversation$ = new rxjs.BehaviorSubject<number>(8);
   isCurrentUserOwner$ = new rxjs.BehaviorSubject<object>({});
   isOwnerOfPrivateChannel$ = new rxjs.BehaviorSubject<boolean>(false);
   curentlyClickedPrivateChannel$ = new rxjs.BehaviorSubject<number>(0);
-  
+
+  currentUserId$ = this.authService.userId$;
+
+  public newlyCreatedPrivateChannel$ = new rxjs.BehaviorSubject<any[]>([]);
+  public newlyCreatedPublicChannel$ = new rxjs.BehaviorSubject<any[]>([]);
+
+  public removeChannelId$ = new rxjs.BehaviorSubject<number>(0);
+
+
   constructor(
     private http: HttpClient,
+    private authService: AuthService,
+    private connectionService: ConnectionService,
+    private dialogService: NotificationDialogService,
+  ) {
+
+    this.getAllPrivateChannelsByUserId$
+      .pipe(rxjs.takeUntil(this.destroy$))
+      .subscribe(/*console.log(`getAllPrivateChannelsByUserId$ constructor`,res)*/)
+
+    ///////////////////Hub methods//////////////////////////
+
+      //create new channel
+      this.connectionService.hubConnection.on("NewChannelCreated", (newChannel) => {
+        console.log('new channel from constructor of chat service:', newChannel)
+        if (newChannel.visibility === 1) {
   
-  ) { }
+          this.newlyCreatedPublicChannel$.next([...this.newlyCreatedPublicChannel$.value, newChannel])
+  
+        }
+        else if (newChannel.visibility === 0) {
+          const newPrivateChannel = 
+          {
+            ...newChannel,
+            isOwner: true
+          }
+          this.newlyCreatedPrivateChannel$.next([...this.newlyCreatedPrivateChannel$.value, newPrivateChannel])
+        }
+      })
 
- getListOfChannels():Observable<any>{
-  const url = `${this.apiUrl}/getAll`
-  return this.http.get(url);
- }
+    //add user to private conversation
+    this.connectionService.hubConnection.on('YouHaveBeenAdded', (channelId, userId, entireChannel) => {
+      console.log(`You have been added to private channel ${channelId} by ${userId}`)
+      this.newlyCreatedPrivateChannel$.next([...this.newlyCreatedPrivateChannel$.value, entireChannel])
 
- createNewChannel(name:string,visibility:number, createdBy:number):Observable<any>{
-  const url =`${this.apiUrl}`
-  const channel:any =
-  {
-    name: name,
-    visibility: visibility,
-    createdBy: createdBy
+      this.dialogService.openNotificationDialog(
+        `joined private channel`,
+        `You have been added to private channel ${entireChannel.name}`,
+        `Close`
+      )
+    })
+    
+    //kick user from private conversation    
+    this.connectionService.hubConnection.on('YouHaveBeenKicked', (channelId, userId) => {
+
+      console.log(`You have been kicked from private channel: ${channelId}/${userId}`);
+      const updateChannelList = this.newlyCreatedPrivateChannel$.value.filter(
+        (channel: { id: number | null }) =>
+          channel.id !== channelId
+      )
+      //here I need to remove the user from the private channel that has no more access  as he has been kicked
+      this.newlyCreatedPrivateChannel$.next(updateChannelList)
+      this.removeChannelId$.next(channelId)
+
+      this.dialogService.openNotificationDialog(
+        `Kicked from private channel`,
+        `You have been kicked from private channel ${channelId}`,
+        `Close`
+      )
+    });
+    ///////////////////Hub methods//////////////////////////
   }
-  //console.log("channel service side:",channel)
-  return this.http.post(url,channel);
- }
 
- getListOfPrivateChannelsByUserId(loggedUserId:number):Observable<any>{
-  const url = `${this.apiUrl}/privateChannels?userId=${loggedUserId}`
-  return this.http.get(url)
- }
+  ngOnDestroy(): void {
+    this.destroy$.next()
+    this.destroy$.complete()
+  }
 
- addUserToPrivateChannel(userChannel:any):Observable<any>{
-  const url = `${this.apiUrl}/userChannel`;
-  return this.http.post(url,userChannel);
- }
+  getListOfChannels(): Observable<any> {
+    const url = `${this.apiUrl}/getAll`
+    return this.http.get(url);
+  }
 
- getListOfPrivateChannelsUserhasAccessTo(userId: number):Observable<any>{
-  const url =`${this.apiUrl}/privateChannels?userId=${userId}`
-  return this.http.get(url);
- }
+  createNewChannel(name: string, visibility: number, createdBy: number): Observable<any> {
+    const url = `${this.apiUrl}`
+    const channel: any =
+    {
+      name: name,
+      visibility: visibility,
+      createdBy: createdBy
+    }
+    //console.log("channel service side:",channel)
+    return this.http.post(url, channel);
+  }
 
- getParticipantsOfPrivateChannel(channelId: number):Observable<any>{
-  const url = `${this.apiUrl}/participants?channelId=${channelId}`
-  return this.http.get(url);
- }
+  getListOfPrivateChannelsByUserId(loggedUserId: number): Observable<any> {
+    const url = `${this.apiUrl}/privateChannels?userId=${loggedUserId}`
+    return this.http.get(url)
+  }
 
- removeUserFromPrivateConversation(userId: number, channelId:number):Observable<any>{
-  const url=`${this.apiUrl}/userchannel?userId=${userId}&channelId=${channelId}`
-  return this.http.delete(url);
- }
+  addUserToPrivateChannel(userChannel: any): Observable<any> {
+    const url = `${this.apiUrl}/userChannel`;
+    return this.http.post(url, userChannel);
+  }
+
+  getListOfPrivateChannelsUserhasAccessTo(userId: number): Observable<any> {
+    const url = `${this.apiUrl}/privateChannels?userId=${userId}`
+    return this.http.get(url);
+  }
+
+  getParticipantsOfPrivateChannel(channelId: number): Observable<any> {
+    const url = `${this.apiUrl}/participants?channelId=${channelId}`
+    return this.http.get(url);
+  }
+
+  removeUserFromPrivateConversation(userId: number, channelId: number): Observable<any> {
+    const url = `${this.apiUrl}/userchannel?userId=${userId}&channelId=${channelId}`
+    return this.http.delete(url);
+  }
+
+  //private channels
+  public getAllPrivateChannelsByUserId$ = this.currentUserId$.pipe(
+    rxjs.filter(currentUserId => currentUserId != undefined),
+    rxjs.switchMap(currentUserId => {
+      return this.getListOfPrivateChannelsByUserId(currentUserId as number).pipe(
+
+        rxjs.map(privatelyOwnedChannels => {
+
+          return privatelyOwnedChannels.map((channel: { createdBy: number; }) =>
+            ({ ...channel, isOwner: channel.createdBy === currentUserId }))
+        })
+      )
+    }),
+    rxjs.takeUntil(this.destroy$)
+  );
+
+  //add the newest created private channel to the list dynamicaly 
+  public latestPrivateChannels$ = rxjs.combineLatest([
+    this.getAllPrivateChannelsByUserId$,
+    this.newlyCreatedPrivateChannel$,
+    this.removeChannelId$
+  ]).pipe(
+    rxjs.map(([getAllPrivateChannelsByUserId, newlyCreatedPrivateChannel, removeChannelId]) => {
+
+      return [
+        ...getAllPrivateChannelsByUserId,
+        ...newlyCreatedPrivateChannel
+      ];
+    }),
+    rxjs.takeUntil(this.destroy$),
+    rxjs.tap(res => console.log(/*`87.latestPrivateChannels$:`, res*/)),
+
+  );
 
 
- 
+  //public channels
+  public allPublicChannels$ = this.getListOfChannels().pipe(
+    rxjs.map(publicChannels => publicChannels.filter((channel: { visibility: number; }) => channel.visibility !== 0)),
+    rxjs.takeUntil(this.destroy$)
+  )
+
+  public latestPublicChannels$ = rxjs.combineLatest([
+    this.allPublicChannels$,
+    this.newlyCreatedPublicChannel$
+  ]).pipe(
+    rxjs.map(([allPublicChannels, newlyCreatedChannel]) => [
+      ...allPublicChannels,
+      ...newlyCreatedChannel
+    ]),
+    rxjs.takeUntil(this.destroy$)
+    //    rxjs.tap(channels => console.log('Latest public channels:', channels))
+  )
 }
