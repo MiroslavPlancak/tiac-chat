@@ -56,7 +56,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
       console.log(`kicked from component's constructor`, channelId)
     })
 
-    this.chatService.receiveMessage().pipe(
+    this.messageService.receiveMessage().pipe(
       rxjs.filter(message => message.sentToChannelId === this.SelectedChannel$.getValue()),
       rxjs.takeUntil(this.destroy$)
     )

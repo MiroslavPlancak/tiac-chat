@@ -66,13 +66,13 @@ export class CreateChannelComponent implements OnDestroy {
     //console.log(`mat component`, this.matData);
     if (this.channelName !== undefined && this.channelType !== null && this.matData.currentUserId !== null) {
                           
-       this.chatService.createNewChannel(this.channelName, this.channelType, this.matData.currentUserId.getValue())
+       this.channelService.createChannel(this.channelName, this.channelType, this.matData.currentUserId.getValue())
        
        if(this.newChannelSubscription){
         this.newChannelSubscription.unsubscribe();
        }
        
-       this.newChannelSubscription = this.chatService.newChannelCreated().subscribe(newChannel => {
+       this.newChannelSubscription = this.channelService.channelCreated().subscribe(newChannel => {
         
         const createdChannelDetails ={
           id: newChannel.id,

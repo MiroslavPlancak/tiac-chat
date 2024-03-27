@@ -114,7 +114,7 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     const isOwner = false;
 
     //this bit needs changing into behavior subject
-    this.chatService.inviteUser(selectedUser, privateChannelId)
+    this.userService.inviteUser(selectedUser, privateChannelId)
 
     const userChannel = {
       user_id: +selectedUser,
@@ -189,7 +189,7 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     console.log(`passing of the value:`, this.selectedPrivateChannelId)
 
     //this bit needs changing into behavior subject
-    this.chatService.kickUser(userId, this.selectedPrivateChannelId)
+    this.userService.kickUser(userId, this.selectedPrivateChannelId)
  
   }
 

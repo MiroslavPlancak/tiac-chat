@@ -42,23 +42,23 @@ export class ChannelService implements OnDestroy {
 
     ///////////////////Hub methods//////////////////////////
 
-      //create new channel
-      this.connectionService.hubConnection.on("NewChannelCreated", (newChannel) => {
-        console.log('new channel from constructor of chat service:', newChannel)
-        if (newChannel.visibility === 1) {
-  
-          this.newlyCreatedPublicChannel$.next([...this.newlyCreatedPublicChannel$.value, newChannel])
-  
+    //create new channel
+    this.connectionService.hubConnection.on("NewChannelCreated", (newChannel) => {
+      console.log('new channel from constructor of chat service:', newChannel)
+      if (newChannel.visibility === 1) {
+
+        this.newlyCreatedPublicChannel$.next([...this.newlyCreatedPublicChannel$.value, newChannel])
+
+      }
+      else if (newChannel.visibility === 0) {
+        const newPrivateChannel =
+        {
+          ...newChannel,
+          isOwner: true
         }
-        else if (newChannel.visibility === 0) {
-          const newPrivateChannel = 
-          {
-            ...newChannel,
-            isOwner: true
-          }
-          this.newlyCreatedPrivateChannel$.next([...this.newlyCreatedPrivateChannel$.value, newPrivateChannel])
-        }
-      })
+        this.newlyCreatedPrivateChannel$.next([...this.newlyCreatedPrivateChannel$.value, newPrivateChannel])
+      }
+    })
 
     //add user to private conversation
     this.connectionService.hubConnection.on('YouHaveBeenAdded', (channelId, userId, entireChannel) => {
@@ -90,6 +90,7 @@ export class ChannelService implements OnDestroy {
         `Close`
       )
     });
+
     ///////////////////Hub methods//////////////////////////
   }
 
@@ -146,7 +147,7 @@ export class ChannelService implements OnDestroy {
 
 /////service methods/////
 
-  //private channels
+  //private channels obs$
   public getAllPrivateChannelsByUserId$ = this.currentUserId$.pipe(
     rxjs.filter(currentUserId => currentUserId != undefined),
     rxjs.switchMap(currentUserId => {
@@ -162,7 +163,7 @@ export class ChannelService implements OnDestroy {
     rxjs.takeUntil(this.destroy$)
   );
 
-  //add the newest created private channel to the list dynamicaly 
+  //add the newest created private channel to the list dynamicaly obs$ 
   public latestPrivateChannels$ = rxjs.combineLatest([
     this.getAllPrivateChannelsByUserId$,
     this.newlyCreatedPrivateChannel$,
@@ -181,7 +182,7 @@ export class ChannelService implements OnDestroy {
   );
 
 
-  //public channels
+  //public channels obs$
   public allPublicChannels$ = this.getListOfChannels().pipe(
     rxjs.map(publicChannels => publicChannels.filter((channel: { visibility: number; }) => channel.visibility !== 0)),
     rxjs.takeUntil(this.destroy$)
@@ -200,4 +201,29 @@ export class ChannelService implements OnDestroy {
   )
 
   /////service methods/////
+
+ /////Hub methods/////
+
+  //create a channel
+  public createChannel = (
+    channelName: string,
+    channelType: number,
+    creatorId: number
+  ) => {
+    this.connectionService.hubConnection?.invoke("CreateNewChannel", channelName, +channelType, creatorId)
+      .catch(err => console.log(err))
+  }
+
+  // response from the server of channel creation
+  public channelCreated = (): rxjs.Observable<any> => {
+    return new rxjs.Observable<any>(observer => {
+      this.connectionService.hubConnection?.on("NewChannelCreated", (newChannel) => {
+
+        observer.next(newChannel)
+
+      })
+    }).pipe(rxjs.takeUntil(this.destroy$))
+  }
+  
+  /////Hub methods/////
 }

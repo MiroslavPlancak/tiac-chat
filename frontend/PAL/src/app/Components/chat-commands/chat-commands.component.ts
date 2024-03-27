@@ -53,7 +53,7 @@ export class ChatCommandsComponent implements OnInit,OnDestroy {
     ).subscribe((currentUserName) => {
       if (this.newPrivateMessage !== undefined && this.privateConversationId$.getValue() !== undefined) {
         
-        this.chatService.sendPrivateMessage(this.privateConversationId$.getValue(), this.newPrivateMessage as string)
+        this.messageService.sendPrivateMessage(this.privateConversationId$.getValue(), this.newPrivateMessage as string)
         const privateMessage: PrivateMessage = {
           senderId: currentUserName,
           message: this.newPrivateMessage,
@@ -93,7 +93,7 @@ export class ChatCommandsComponent implements OnInit,OnDestroy {
 
     if (this.currentUserId$.getValue() && this.newPublicMessage && selectedChannel) {
 
-      this.chatService.sendMessage(this.currentUserId$.getValue() as number, this.newPublicMessage, selectedChannel);
+      this.messageService.sendMessage(this.currentUserId$.getValue() as number, this.newPublicMessage, selectedChannel);
 
       const newPubMessage = this.newPublicMessage;
       this.messageService.extractUserName(this.currentUserId$.getValue()).subscribe(firstName => {

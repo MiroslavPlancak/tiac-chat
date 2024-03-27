@@ -40,10 +40,10 @@ export class UserService implements OnDestroy {
     private http: HttpClient,
     private chanelService: ChannelService,
     private matDialog: MatDialog,
-    private connectionService:ConnectionService,
+    private connectionService: ConnectionService,
     private dialogService: NotificationDialogService,
-  ) { 
-    
+  ) {
+
 
     this.authService.loggedOut$.subscribe((isLoggedOut) => {
       if (isLoggedOut) {
@@ -52,48 +52,53 @@ export class UserService implements OnDestroy {
         this.destroy$.complete()
       }
     })
-    /////Hub methods/////
+    /////On hub methods/////
 
-    this.connectionService.hubConnection.on("YourConnectionId", (connection: Record<string, string>, userId: number, fullName:string) => {
+    //user connected
+    this.connectionService.hubConnection.on("YourConnectionId", (connection: Record<string, string>, userId: number, fullName: string) => {
+
       console.log(`new connection established:${JSON.stringify(connection)}`);
 
-    this.getAllUsersBS$()
-    .pipe(rxjs.takeUntil(this.destroy$))
-    .subscribe(res => console.log( /*`getAllUsersBS$: chat.service.ts constructor`,res*/));
-      
+      this.getAllUsersBS$()
+        .pipe(rxjs.takeUntil(this.destroy$))
+        .subscribe(res => console.log( /*`getAllUsersBS$: chat.service.ts constructor`,res*/));
+
       const userIds = Object.keys(connection).map(strUserId => +strUserId);
       this.onlineUserIds$.next(userIds);
-      //console.log(`onlineUserIds$`, this.onlineUserIds$.getValue(), userId)
 
-      if(this.currentUserId$.getValue() !== userId){
-        
-      this.dialogService.openOnlineNotification(
-        `${fullName} just came online.`,
-        ``,
-        ``,
-        {top:`0%`,left:`80%`},
-        3000 
-      )}
-    
+      if (this.currentUserId$.getValue() !== userId) {
+
+        this.dialogService.openOnlineNotification(
+          `${fullName} just came online.`,
+          ``,
+          ``,
+          { top: `0%`, left: `80%` },
+          3000
+        )
+      }
+
     })
-   
+
+    //user disconnected
     this.connectionService.hubConnection.on('UserDisconnected', (connections, userId, fullName) => {
       const userIds = Object.keys(connections).map(userId => +userId)
       this.onlineUserIds$.next(userIds);
 
-      if(this.currentUserId$.getValue() !== userId){
-        
+      if (this.currentUserId$.getValue() !== userId) {
+
         this.dialogService.openOnlineNotification(
           `${fullName} just went offline.`,
           ``,
           ``,
-          {top:`0%`,left:`80%`},
-          3000 
-        )}
-      
+          { top: `0%`, left: `80%` },
+          3000
+        )
+      }
+
     })
-    /////Hub methods/////
-    
+
+    /////On hub methods/////
+
   }
 
   ngOnDestroy(): void {
@@ -106,7 +111,6 @@ export class UserService implements OnDestroy {
   getById(userId: number): Observable<User> {
     if (!userId) { throw new Error() }
     const url = `${this.apiUrl}${userId}`;
-    // const token = this.auth.getAccessToken();
     return this.http.get<any>(url);
   }
 
@@ -126,10 +130,12 @@ export class UserService implements OnDestroy {
 
   /////Service methods/////
 
+  // get all users obs$
   public allUsers$ = this.getAllUsers().pipe(
     rxjs.takeUntil(this.destroy$)
   );
 
+  // filter self out of all users obs$
   public onlineUserIdsWithoutSelf$ = rxjs.combineLatest([
     this.onlineUserIds$.pipe(rxjs.takeUntil(this.destroy$)),
     this.authService.userId$.pipe(rxjs.takeUntil(this.destroy$))
@@ -139,24 +145,23 @@ export class UserService implements OnDestroy {
       rxjs.takeUntil(this.destroy$)
     )
 
+  // online users obs$
   public onlineUsers$ = rxjs.combineLatest([
     this.onlineUserIdsWithoutSelf$,
     this.allUsersSubject$,
-
   ]).pipe(
     rxjs.map(([onlineUserIds, allUsers]) => {
-
       return allUsers.filter(user => onlineUserIds.includes(user.id))
     }),
     //   rxjs.tap(res => console.log(`onlineUsers$/chat.service.ts:`,res)),
     rxjs.takeUntil(this.destroy$)
   )
 
+  // offline users obs$
   public offlineUsers$ = rxjs.combineLatest([
     //if offline list is not filtering correctly its is due to this change, return -onlineUserIdsWithoutSelf$
     this.onlineUserIds$,
     this.allUsersSubject$,
-
   ]).pipe(
     rxjs.map(([onlineUserIds, allUsers]) => {
       return allUsers.filter(user => !onlineUserIds.includes(user.id))
@@ -164,6 +169,7 @@ export class UserService implements OnDestroy {
     rxjs.takeUntil(this.destroy$)
   )
 
+  // current user logged details obs$
   currentUserLogged$ = this.authService.userId$.pipe(
     rxjs.filter(userId => userId != null),
     rxjs.distinctUntilChanged(),
@@ -179,7 +185,7 @@ export class UserService implements OnDestroy {
     }),
     rxjs.takeUntil(this.destroy$)
   )
-
+  // current user name obs$
   currentUserName$ = this.authService.userId$.pipe(
     rxjs.filter((userId: any) => userId != null),
     rxjs.distinctUntilChanged(),
@@ -190,6 +196,7 @@ export class UserService implements OnDestroy {
     rxjs.takeUntil(this.destroy$)
   )
 
+  // add user to private channel helper method()
   addUserToPrivateChannel(channelId: number) {
 
     const dialogConfig = new MatDialogConfig()
@@ -210,4 +217,26 @@ export class UserService implements OnDestroy {
   }
 
   /////Service methods/////
+
+  /////Invoke hub methods/////
+
+  //kick user from private conversation 
+  public kickUser = (userId: number, channelId: number) => {
+    this.connectionService.hubConnection?.invoke("RemoveUserFromPrivateConversation", userId, channelId)
+      .catch(err => console.log(err))
+    console.log('kicked user info:')
+  }
+
+  //invite user to private conversation
+  public inviteUser = (userId: number, channelId: number) => {
+    this.connectionService.hubConnection?.invoke("AddUserToPrivateConversation", userId, channelId)
+      .catch(err => console.log(err))
+    console.log('added user info:')
+  }
+
+  //logout user
+  public LogoutUser = () => {
+    this.connectionService.hubConnection?.invoke("LogoutUserAsync").catch(err => console.log(err));
+  }
+  /////Invoke hub methods/////
 }

@@ -34,7 +34,7 @@ constructor
   //methods
   logout() {
     this.notificationDialog.closeAllDialogs()
-    this.chatService.LogoutUser();
+    this.userService.LogoutUser();
     this.authService.logout();
 }
 }

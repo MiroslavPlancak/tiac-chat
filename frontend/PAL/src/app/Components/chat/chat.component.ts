@@ -71,7 +71,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
 
     // receive public messages
-    this.chatService.receiveMessage().subscribe((message: any) => {
+    this.messageService.receiveMessage().subscribe((message: any) => {
 
       this.receivedPublicMessages.push(message);
       //console.log(message);
@@ -151,7 +151,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
 
     //receive private messages
-    const receivedPrivateMessagesSubscription = this.chatService.receivePrivateMesages()
+    const receivedPrivateMessagesSubscription = this.messageService.receivePrivateMesages()
       .pipe(withLatestFrom(this.privateConversationUsers$))
       .subscribe(([loadedPrivateMessages, users]) => {
         const sender = users.find(user => user.id === +loadedPrivateMessages.senderId)
@@ -181,7 +181,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     const selectedChannel = this.SelectedChannel$.getValue();
     if (this.currentUserId && this.newPublicMessage && selectedChannel) {
 
-      this.chatService.sendMessage(this.currentUserId, this.newPublicMessage, selectedChannel);
+      this.messageService.sendMessage(this.currentUserId, this.newPublicMessage, selectedChannel);
 
       console.log(selectedChannel)
       //clear the input for the next message
@@ -220,7 +220,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       first()
     ).subscribe((currentUserName) => {
       if (this.tempMessage !== undefined && this.privateConversationId$.getValue() !== undefined) {
-        this.chatService.sendPrivateMessage(this.privateConversationId$.getValue(), this.tempMessage as string)
+        this.messageService.sendPrivateMessage(this.privateConversationId$.getValue(), this.tempMessage as string)
         const privateMessage: PrivateMessage = {
           isSeen: false,
           senderId: currentUserName,

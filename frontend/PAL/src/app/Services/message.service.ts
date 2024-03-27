@@ -7,6 +7,7 @@ import { ChannelService } from './channel.service';
 import { UserService } from './user.service';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { AuthService } from './auth.service';
+import { ConnectionService } from './connection.service';
 
 @Injectable({
   providedIn: 'root'
@@ -39,25 +40,25 @@ export class MessageService implements OnInit, OnDestroy {
   maxScrollValue$ = new rxjs.BehaviorSubject<number>(0);
   virtualScrollViewportPublic$ = new rxjs.BehaviorSubject<number>(0);
   virtualScrollViewportPrivate$ = new rxjs.BehaviorSubject<number>(0);
-  private virtualScrollViewport : CdkVirtualScrollViewport | undefined;
+  private virtualScrollViewport: CdkVirtualScrollViewport | undefined;
 
-  typingTimeout!: any;
   conversationId: number = 0
   selectedConversation = this.channelService.selectedConversation$
 
   private apiUrl = "http://localhost:5008/api/messages/";
 
-  
+
 
   constructor(
     private http: HttpClient,
     private channelService: ChannelService,
     private userService: UserService,
-    private authService: AuthService, 
-    private chatService: ChatService
+    private authService: AuthService,
+    private chatService: ChatService,
+    private connectionService: ConnectionService
   ) { }
   ngOnInit(): void {
-  
+
   }
 
   ngOnDestroy(): void {
@@ -65,20 +66,9 @@ export class MessageService implements OnInit, OnDestroy {
     this.destroy$.complete()
   }
 
-  //setter and getter for the viewport
-  setVirtualScrollViewport(virtualScrollViewport: CdkVirtualScrollViewport): void {
-    this.virtualScrollViewport = virtualScrollViewport;
-  }
 
-  getVirtualScrollViewport(): CdkVirtualScrollViewport | undefined {
-    return this.virtualScrollViewport;
-  }
 
-  scrollToEndPrivate(index: number): void {
-  console.log(`this runs`,index)
-  console.log(`and virtual scroll is:`, this.getVirtualScrollViewport())
-    this.getVirtualScrollViewport()?.scrollToIndex(index)
-  }
+  ///// HTTP end point methods /////
 
   loadPaginatedPrivateMessages
     (senderId: number,
@@ -115,7 +105,7 @@ export class MessageService implements OnInit, OnDestroy {
   }
 
   loadPrivateMessages(senderId: number, receiverId: number): Observable<any> {
-    //return this.http.get(this.apiUrl+`sender:${senderId}receiver:${receiverId}`);
+  
     if (receiverId !== undefined) {
       return this.http.get(this.apiUrl, {
         params: {
@@ -126,7 +116,6 @@ export class MessageService implements OnInit, OnDestroy {
     }
     else {
       throw new Error();
-
     }
   }
 
@@ -144,7 +133,48 @@ export class MessageService implements OnInit, OnDestroy {
     }
   }
 
+  ///// HTTP end point methods /////
 
+  ///// Hub methods /////
+
+  /// send public message ()
+  public sendMessage = (user: number, message: string, selectedChannel: number) => {
+    this.connectionService.hubConnection?.invoke("SendPublicMessageTest", user, message, selectedChannel)
+   // .then(() => console.log('public message sent successfully. response from the server!'))
+      .catch(err => console.log(err));
+  }
+
+  /// recieve public message()
+  public receiveMessage = (): rxjs.Observable<any> => {
+    return new rxjs.Observable<any>(observer => {
+      this.connectionService.hubConnection?.on("ReceiveMessage", (message) => {
+        observer.next(message);
+      })
+    }).pipe(rxjs.takeUntil(this.destroy$))
+  }
+
+  /// send private message()
+  public sendPrivateMessage = (
+    recipientId: number | null | undefined,
+    message: string) => {
+    this.connectionService.hubConnection?.invoke("SendPrivateMessage", recipientId, message)
+      .catch(err => console.log(err));
+  }
+
+  /// recieve private message()
+  public receivePrivateMesages = (): rxjs.Observable<PrivateMessage> => {
+    return new rxjs.Observable<PrivateMessage>(observer => {
+      this.connectionService.hubConnection?.on("ReceivePrivateMessages", (senderId, message, messageId, isSeen) => {
+        observer.next({ senderId, message, isSeen });
+      })
+    })
+  }
+
+  ///// Hub methods /////
+
+  ///// Service methods /////
+
+  // load more public messages method()
   loadMorePublicMessages() {
     console.log(`loading more public messages...`)
 
@@ -182,7 +212,6 @@ export class MessageService implements OnInit, OnDestroy {
             })
           }),
           rxjs.switchMap(asyncOperations => {
-
             return rxjs.forkJoin(asyncOperations)
           }),
           rxjs.takeUntil(this.destroy$)
@@ -194,89 +223,74 @@ export class MessageService implements OnInit, OnDestroy {
 
           this.virtualScrollViewportPublic$.next(3)
           this.maxScrollValue$.next(endIndex - 1)
-         
+
         })
     }
   }
-
+  // load more private messages method()
   loadMorePrivateMessages(): void {
-    
-        const [currentUserId, privateConversationId] = [this.currentUserId$.getValue(), this.privateConversationId$.getValue()]
-        if (currentUserId !== null && privateConversationId !== undefined) {
-    
-          if (this.canLoadMorePrivateMessages$.value !== false && privateConversationId !== undefined) {
 
-            let startIndex = this.initialPrivateMessageStartIndex$.value
-            let endIndex = startIndex + 10
-            this.initialPrivateMessageStartIndex$.next(endIndex)
+    const [currentUserId, privateConversationId] = [this.currentUserId$.getValue(), this.privateConversationId$.getValue()]
+    if (currentUserId !== null && privateConversationId !== undefined) {
 
-            this.loadPaginatedPrivateMessages(currentUserId, privateConversationId, startIndex, endIndex)
-              .pipe(
-                rxjs.take(1),
-                rxjs.map(messages => {
-                  if (messages.length == 0) {
-                    console.log(`no more messages left to load`)
-                    this.canLoadMorePrivateMessages$.next(false)
-                    console.log(`canLoadMore$`, this.canLoadMorePrivateMessages$.value)
-                  }
-                  return messages.map(message => {
-                    return this.extractUserName(message.sentFromUserId).pipe(
-                      rxjs.map(senderId => ({
-                        isSeen: message.isSeen,
-                        senderId: senderId,
-                        message: message.body
-                      }))
-                    )
-                  })
-    
-                }),
-                rxjs.switchMap(asyncOperations => {
-                  return rxjs.forkJoin(asyncOperations)
-                }),
-                rxjs.takeUntil(this.destroy$)
-              ).subscribe(privateMesssages => {
-                this.receivedPrivateMessages$.next([
-                  ...privateMesssages,
-                  ...this.receivedPrivateMessages$.value
-                ])
+      if (this.canLoadMorePrivateMessages$.value !== false && privateConversationId !== undefined) {
 
-                //needs looking into to make it function properly 
-                 this.virtualScrollViewportPrivate$.next(3)
-    
-                this.maxScrollValue$.next(endIndex - 1)
-                //    console.log('received private messages rxjs:', privateMesssages)
+        let startIndex = this.initialPrivateMessageStartIndex$.value
+        let endIndex = startIndex + 10
+        this.initialPrivateMessageStartIndex$.next(endIndex)
+
+        this.loadPaginatedPrivateMessages(currentUserId, privateConversationId, startIndex, endIndex)
+          .pipe(
+            rxjs.take(1),
+            rxjs.map(messages => {
+              if (messages.length == 0) {
+                console.log(`no more messages left to load`)
+                this.canLoadMorePrivateMessages$.next(false)
+                console.log(`canLoadMore$`, this.canLoadMorePrivateMessages$.value)
+              }
+              return messages.map(message => {
+                return this.extractUserName(message.sentFromUserId).pipe(
+                  rxjs.map(senderId => ({
+                    isSeen: message.isSeen,
+                    senderId: senderId,
+                    message: message.body
+                  }))
+                )
               })
-          }
-        }
+
+            }),
+            rxjs.switchMap(asyncOperations => {
+              return rxjs.forkJoin(asyncOperations)
+            }),
+            rxjs.takeUntil(this.destroy$)
+          ).subscribe(privateMesssages => {
+            this.receivedPrivateMessages$.next([
+              ...privateMesssages,
+              ...this.receivedPrivateMessages$.value
+            ])
+
+            //needs looking into to make it function properly 
+            this.virtualScrollViewportPrivate$.next(3)
+            this.maxScrollValue$.next(endIndex - 1)
+          })
       }
+    }
+  }
 
-
-
-  // scrollToBottom(): void {
-  //   try {
-  //     if (this.chatBodyContainer) {
-  //       const chatBodyElement = this.chatBodyContainer.nativeElement;
-  //       chatBodyElement.scrollTop = chatBodyElement.scrollHeight;
-  //     }
-  //   } catch (err) {
-  //     console.log(`scroll error`, err)
-  //   }
-  // }
-
+  // select user for private messaging directly from public chat method()
   public conversationIdSelectedClickHandler(conversationId: number): void {
-    //this if statements ensure that when a client sends a private message to first user and then switches the conversation
-    //to second user and starts typing to that second user, the `client is typing...` for the first user is cleared properly
-    const currentlyTypingFilteredConvoId = this.chatService.currentlyTypingUsers$.value.filter(correctUser => correctUser !== conversationId)
-    if (+currentlyTypingFilteredConvoId !== conversationId) {
 
+    // these if statements ensure proper clean up of `is typing` if a different conversation is selected
+    const currentlyTypingFilteredConvoId = this.chatService.currentlyTypingUsers$.value.filter(correctUser => correctUser !== conversationId)
+
+    if (+currentlyTypingFilteredConvoId !== conversationId) {
       this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, +currentlyTypingFilteredConvoId)
     }
 
     if (this.chatService.currentlyTypingUsers$.value.length == 0) {
-
       this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, this.selectedConversation.getValue());
     }
-    
+
     this.conversationId = conversationId;
 
     //make self unclickable in a public chat
@@ -293,7 +307,6 @@ export class MessageService implements OnInit, OnDestroy {
         this.chatService.isUserTyping$.next(false)
       }
 
-      //changed this
       if (this.currentUserId$.value !== conversationId) {
         this.channelService.SelectedChannel$.next(undefined);
       }
@@ -302,18 +315,12 @@ export class MessageService implements OnInit, OnDestroy {
       this.channelService.isPrivateChannel$.next(false)
       this.chatService.privateNotification[conversationId] = false;
 
-
-      //seen logic 
-     this.seenMessageStatus()
-
-      //seen logic
+      this.seenMessageStatus()
 
       if (conversationId !== this.currentUserId$.getValue()) {
         this.privateConversationId$.next(conversationId);
-
       }
 
-      //display the name of the user we want to write to
       this.displayUserNameToWriteTo()
 
     }
@@ -401,4 +408,20 @@ export class MessageService implements OnInit, OnDestroy {
 
   }
 
+  //setter and getter for the viewport
+  setVirtualScrollViewport(virtualScrollViewport: CdkVirtualScrollViewport): void {
+    this.virtualScrollViewport = virtualScrollViewport;
+  }
+
+  getVirtualScrollViewport(): CdkVirtualScrollViewport | undefined {
+    return this.virtualScrollViewport;
+  }
+
+  scrollToEndPrivate(index: number): void {
+    console.log(`this runs`, index)
+    console.log(`and virtual scroll is:`, this.getVirtualScrollViewport())
+    this.getVirtualScrollViewport()?.scrollToIndex(index)
+  }
+  
+  ///// Service methods /////
 }

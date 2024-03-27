@@ -137,7 +137,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
 
       //receive private messages ###problem with the multicasting of private messages is here
-    this.chatService.receivePrivateMesages()
+    this.messageService.receivePrivateMesages()
     .pipe(
       rxjs.withLatestFrom(this.privateConversationUsers$),
       rxjs.takeUntil(this.destroy$)

@@ -66,7 +66,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
       });
 
     //this is where we update "seen" logic instantly if the proper conversation is selected.
-    this.chatService.receivePrivateMesages().pipe(rxjs.takeUntil(this.destroy$)).subscribe(privateMessage => {
+    this.messageService.receivePrivateMesages().pipe(rxjs.takeUntil(this.destroy$)).subscribe(privateMessage => {
 
       // Handle the received private message (e.g., update UI)
       if (this.privateConversationId$.value) {
