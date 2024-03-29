@@ -6,9 +6,9 @@ using TiacChat.DAL.Entities;
 namespace TiacChat.DAL.Repositories
 {
     public class UserRepository : IUserRepository
-    {   
+    {
         private readonly ILogger _logger;
-        private readonly DataContext _dataContext;   
+        private readonly DataContext _dataContext;
 
         public UserRepository(ILogger<User> logger, DataContext dataContext)
         {
@@ -20,9 +20,9 @@ namespace TiacChat.DAL.Repositories
         {
             try
             {
-               return await _dataContext.Users.ToListAsync();     
+                return await _dataContext.Users.ToListAsync();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 throw;
@@ -32,14 +32,14 @@ namespace TiacChat.DAL.Repositories
         public async Task<User> GetByIdAsync(int id)
         {
             try
-            {  
+            {
                 var user = await _dataContext.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id ==id);
-                 
+                .FirstOrDefaultAsync(u => u.Id == id);
+
                 return user;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 throw;
@@ -54,7 +54,7 @@ namespace TiacChat.DAL.Repositories
                 await _dataContext.SaveChangesAsync();
                 return user.Entity;
             }
-            catch(DbUpdateException dbUpdateException)
+            catch (DbUpdateException dbUpdateException)
             {
                 _logger.LogError(dbUpdateException.ToString());
                 return null;
@@ -63,10 +63,10 @@ namespace TiacChat.DAL.Repositories
 
         public async Task<User> UpdateAsync(User updatedUser)
         {
-            try 
+            try
             {
                 var userTOUpdate = await GetByIdAsync(updatedUser.Id);
-                if(userTOUpdate != null) 
+                if (userTOUpdate != null)
                 {
                     userTOUpdate = new User(updatedUser);
                     _dataContext.Users.Update(updatedUser);
@@ -77,11 +77,12 @@ namespace TiacChat.DAL.Repositories
                 {
                     return null;
                 }
-            }catch(Exception e) 
-             {
-                    _logger.LogError(e.ToString());
-                    throw;
-             }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                throw;
+            }
         }
 
         public async Task<int?> DeleteAsync(int id)
@@ -90,18 +91,18 @@ namespace TiacChat.DAL.Repositories
             {
                 var userToDelete = await GetByIdAsync(id);
 
-                if(userToDelete != null)
+                if (userToDelete != null)
                 {
                     _dataContext.Users.Remove(userToDelete);
                     await _dataContext.SaveChangesAsync();
                     return id;
                 }
-                else 
+                else
                 {
                     return null;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 throw;
@@ -110,11 +111,11 @@ namespace TiacChat.DAL.Repositories
         public async Task<bool> IsValidUserAsync(UserLogin users)
         {
             var u = await _dataContext.Users.FirstOrDefaultAsync(
-                o => o.Email == users.Email && 
+                o => o.Email == users.Email &&
                 o.Password == users.Password);
 
-            if(u != null)
-            
+            if (u != null)
+
                 return true;
             else
                 return false;
@@ -127,13 +128,29 @@ namespace TiacChat.DAL.Repositories
             return userRefreshToken;
         }
 
+        public async Task<UserRefreshToken?> checkIfRefreshTokenExistsByUserIdAsync(int userId)
+        {
+            try
+            {
+                return await _dataContext.UserRefreshTokens
+                      .FirstOrDefaultAsync(
+                          u => u.UserId == userId
+                      );
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                throw;
+            }
+
+        }
         public async Task<UserRefreshToken?> GetSavedRefreshTokensAsync(int userId, string refreshToken)
         {
             return await _dataContext.UserRefreshTokens
             .FirstOrDefaultAsync(
                 x => x.UserId == userId &&
                 x.RefreshToken == refreshToken &&
-                 x.IsActive == true );
+                 x.IsActive == true);
         }
 
         public void DeleteUserRefreshTokenAsync(int userId, string refreshToken)
@@ -145,7 +162,8 @@ namespace TiacChat.DAL.Repositories
                 _dataContext.Remove(item);
 
                 _dataContext.SaveChanges();
-            }else 
+            }
+            else
             {
                 throw new Exception($"Refresh token not found by UserID: {userId} and refresh token {refreshToken}");
             }

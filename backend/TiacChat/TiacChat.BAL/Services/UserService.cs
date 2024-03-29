@@ -81,7 +81,8 @@ namespace TiacChat.BAL.Services
                 throw;
             }
         }
-        
+
+        //token logic
        public async Task<bool> IsValidUsers(UserLogin users)
        {
          var isValid = await _repository.IsValidUserAsync(users);
@@ -93,7 +94,20 @@ namespace TiacChat.BAL.Services
             var userRefreshToken = await _repository.GetSavedRefreshTokensAsync(userId, refreshToken);
             return userRefreshToken;
         }
+        public async Task<UserRefreshToken> checkIfRefreshTokenExistsByUserIdAsync(int userId)
+        {
+            try
+            {
+                var existingRefreshTokenByUserId = await _repository.checkIfRefreshTokenExistsByUserIdAsync(userId);
+                return existingRefreshTokenByUserId;
+            }catch(Exception e)
+            {
+                _logger.LogError(e.ToString());
+                throw;
+            }
 
+
+        }
         public Task<UserRefreshToken> AddUserRefreshTokensAsync(UserRefreshToken user)
         {
             var addUserRefreshTokens = _repository.AddUserRefreshTokensAsync(user);

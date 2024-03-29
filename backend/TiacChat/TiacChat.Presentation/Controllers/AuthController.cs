@@ -80,21 +80,29 @@ namespace TiacChat.Presentation.Controllers
                  return BadRequest("Invalid username/password");
             }
             
+           
             //does not get generated
-            var token = _jWTManager.GenerateToken(user.Id, user.Email);
+            var token = await _jWTManager.GenerateToken(user.Id, user.Email);
 
             if(token == null)
             {
                 return Unauthorized("Invalid attempt");
             }
-
-            UserRefreshToken newUserRefreshToken = new UserRefreshToken
+            
+            var checkIfRefreshTokenExists = await _services.checkIfRefreshTokenExistsByUserIdAsync(user.Id);
+            if(checkIfRefreshTokenExists == null)
             {
-                RefreshToken = token.RefreshToken,
-                UserId = user.Id,
-                ExpirationDate = DateTime.Now.AddDays(7)
-            };
-            await _services.AddUserRefreshTokensAsync(newUserRefreshToken);
+                UserRefreshToken newUserRefreshToken = new UserRefreshToken
+                {
+                    RefreshToken = token.RefreshToken,
+                    UserId = user.Id,
+                    ExpirationDate = DateTime.Now.AddDays(7)
+                };
+                await _services.AddUserRefreshTokensAsync(newUserRefreshToken);
+            }else if(checkIfRefreshTokenExists.RefreshToken != null){
+                token.RefreshToken = checkIfRefreshTokenExists.RefreshToken;
+            }
+
             return Ok(token);
         }
 
@@ -104,9 +112,9 @@ namespace TiacChat.Presentation.Controllers
         [ProducesResponseType(typeof(Tokens), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Refresh(Tokens oldToken)
+        public async Task<IActionResult> Refresh(Tokens oldTokens)
         {
-            var principal = _jWTManager.GetPrincipalFromExpiredToken(oldToken.AccessToken);
+            var principal = _jWTManager.GetPrincipalFromExpiredToken(oldTokens.AccessToken);
             var email = principal.Identity?.Name;
             var user = await _services.GetUserByEmailAsync(email);
 
@@ -115,19 +123,20 @@ namespace TiacChat.Presentation.Controllers
                 return BadRequest("Invalid refresh token");
             }
 
-            var savedRefreshToken = await _services.GetSavedRefreshTokensAsync(user.Id, oldToken.RefreshToken);
-            if(savedRefreshToken == null || savedRefreshToken.RefreshToken != oldToken.RefreshToken)
+            var savedRefreshToken = await _services.GetSavedRefreshTokensAsync(user.Id, oldTokens.RefreshToken);
+            if(savedRefreshToken == null || savedRefreshToken.RefreshToken != oldTokens.RefreshToken)
             {
-                return Unauthorized("Invalid attempt1");
+                return Unauthorized("Your refresh token has expired, please login again.");
             }
            
-            var newJwtToken = _jWTManager.GenerateRefreshToken(user.Id, email);
+            var newJwtToken = await _jWTManager.GenerateRefreshToken(user.Id, email); // make new method which will refresh only access token and retrieve already existing refresh token
             
             if(newJwtToken == null)
             {
                 return Unauthorized("Invalid attempt2!");
             }
 
+            // this needs to be reworked 
             UserRefreshToken newUserRefreshToken = new UserRefreshToken
             {
                 RefreshToken = newJwtToken.RefreshToken,
@@ -135,8 +144,8 @@ namespace TiacChat.Presentation.Controllers
                 ExpirationDate = DateTime.Now.AddDays(7)
             };
 
-            _services.DeleteUserRefreshToken(user.Id, oldToken.RefreshToken);
-          await  _services.AddUserRefreshTokensAsync(newUserRefreshToken);
+        //          _services.DeleteUserRefreshToken(user.Id, oldTokens.RefreshToken);
+        //   await  _services.AddUserRefreshTokensAsync(newUserRefreshToken);
 
            
            

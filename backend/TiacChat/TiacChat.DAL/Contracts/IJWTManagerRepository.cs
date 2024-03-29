@@ -6,8 +6,8 @@ namespace TiacChat.DAL.Contracts
 {
     public interface IJWTManagerRepository
     {
-         Tokens GenerateToken (int userId, string email);
-         Tokens GenerateRefreshToken(int userId, string email);
+         Task<Tokens> GenerateToken (int userId, string email);
+         Task<Tokens> GenerateRefreshToken(int userId, string email);
          ClaimsPrincipal GetPrincipalFromExpiredToken(string email);
     }
 }

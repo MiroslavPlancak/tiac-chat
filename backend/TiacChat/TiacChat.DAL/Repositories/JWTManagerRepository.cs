@@ -2,9 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using TiacChat.DAL.Contracts;
+using TiacChat.DAL.Entities;
 using TiacChat.DAL.Entities.Enums;
 
 namespace TiacChat.DAL.Repositories
@@ -12,22 +16,28 @@ namespace TiacChat.DAL.Repositories
     public class JWTManagerRepository : IJWTManagerRepository
     {
         private readonly IConfiguration _configuration;
-        public JWTManagerRepository(IConfiguration configuration)
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<JWTManagerRepository> _logger;
+        public JWTManagerRepository(IConfiguration configuration,ILogger<JWTManagerRepository> logger, IServiceProvider serviceProvider)
         {
-            _configuration = configuration;
+            _configuration = configuration; 
+            _logger = logger;
+            _serviceProvider = serviceProvider;
+           
+           
         }
 
-        public Tokens GenerateRefreshToken(int userId,string email)
+        public Task<Tokens> GenerateRefreshToken(int userId,string email)
         {
             return GenerateJWTTokens( userId, email);
         }
 
-        public Tokens GenerateToken(int userId, string email)
+        public Task<Tokens> GenerateToken(int userId, string email)
         {
             return GenerateJWTTokens(userId, email);
         }
 
-        private Tokens GenerateJWTTokens(int userId, string email)
+        private async Task<Tokens> GenerateJWTTokens(int userId, string email)
         {
             try
             {
@@ -40,12 +50,24 @@ namespace TiacChat.DAL.Repositories
                     new Claim(ClaimTypes.Name, email),
                     new Claim("userId", userId.ToString())
                 }),
-                Expires = DateTime.Now.AddMinutes(100),
+                Expires = DateTime.Now.AddMinutes(1),
                 SigningCredentials = new SigningCredentials (new SymmetricSecurityKey(tokenKey),SecurityAlgorithms.HmacSha256Signature)
               };
-
+                
               var token = tokenHandler.CreateToken(tokenDescriptor);
-              var refreshToken = GenerateRefreshToken();
+
+                // Check if refresh token exists
+                var existingRefreshToken = await checkIfRefreshTokenExistsByUserIdAsync(userId);
+                string refreshToken;
+                if (existingRefreshToken == null)
+                {
+                    refreshToken = GenerateRefreshToken();
+                }
+                else
+                {   Console.WriteLine("XXXXXXXXXXXXXXXXXXX");
+                    refreshToken = existingRefreshToken.RefreshToken;
+                }
+                    
               return new Tokens{ AccessToken = tokenHandler.WriteToken(token), RefreshToken = refreshToken};
             }
             catch(Exception e)
@@ -54,6 +76,23 @@ namespace TiacChat.DAL.Repositories
             }
         }
 
+        public async Task<UserRefreshToken?> checkIfRefreshTokenExistsByUserIdAsync(int userId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+                try
+                {
+                    return await dataContext.UserRefreshTokens
+                        .FirstOrDefaultAsync(u => u.UserId == userId);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.ToString());
+                    throw;
+                }
+            }
+        }
         private string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
@@ -92,4 +131,6 @@ namespace TiacChat.DAL.Repositories
            return principal;
         }
     }
+
+
 }

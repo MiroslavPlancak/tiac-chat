@@ -19,6 +19,8 @@ export class AuthService {
 
   
   public userId$ = new BehaviorSubject<number | null>(null);
+  public accessTokenExpirationTimer = new BehaviorSubject<number>(59);
+
   public loggedOut$ = new Subject<boolean>();
   // private logoutSubject$ = new Subject<void>();
 
@@ -33,6 +35,12 @@ export class AuthService {
   ) {
     
     this.userId$.next(this.extractUserId());
+   
+    console.log(`BS exp time:`, this.accessTokenExpirationTimer.value)
+
+    // setTimeout(() => {
+    //   this.refreshTokens(this.getAccessToken() as string, this.getRefreshToken() as string)
+    // }, this.accessTokenExpirationTimer.value);
   }
 
   createNewUser(userRegInfo: UserRegister): Observable<UserRegister> {
@@ -55,14 +63,19 @@ export class AuthService {
 
 
   //promeniti u http interceptor logiku
-  refreshTokens(accesToken: string, refreshToken: string): Observable<any> {
-    const tokens = { accesToken, refreshToken };
-    return this.http.post<any>(`${this.apiUrl}refresh-token`, tokens).pipe(
+  refreshTokens(accessToken: string, refreshToken: string): Observable<any> {
+    const body = {
+      accessToken: accessToken,
+      refreshToken: refreshToken
+    };
+    return this.http.post<any>(`${this.apiUrl}refresh-token`, body).pipe(
       tap(response => {
+        console.log('Response from refresh token request:', response);
         this.storeTokens(response);
       })
     );
   }
+  
 
 
   logout(): void {
@@ -93,7 +106,8 @@ export class AuthService {
     return localStorage.getItem('refresh_token');
   }
 
-  private storeTokens(tokens: any): void {
+  public storeTokens(tokens: any): void {
+    localStorage.removeItem('access_token'); 
     localStorage.setItem('access_token', tokens.accessToken);
     localStorage.setItem('refresh_token', tokens.refreshToken)
   }
@@ -111,6 +125,20 @@ export class AuthService {
     return null; // Default value
   }
 
+  getAccessTokenExpTime():any{
+    const accessToken = this.getAccessToken()
+    if(accessToken){
+      const decodedToken = this.jwtHelper.decodeToken(accessToken);
+
+      console.log(`created time:`, decodedToken.nbf)
+      console.log(`expiration time:`, decodedToken.exp)
+      console.log(`token duration calc:`, decodedToken.exp - decodedToken.nbf)
+
+        this.accessTokenExpirationTimer.next(decodedToken.exp - decodedToken.nbf)
+        
+     
+    }
+  }
 
 
 

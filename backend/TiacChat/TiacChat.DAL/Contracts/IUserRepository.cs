@@ -9,6 +9,7 @@ namespace TiacChat.DAL.Contracts
          Task<bool> IsValidUserAsync(UserLogin users);
          Task<UserRefreshToken> AddUserRefreshTokensAsync(UserRefreshToken user);
          Task<UserRefreshToken?> GetSavedRefreshTokensAsync(int userId, string refreshToken);
+         Task<UserRefreshToken?> checkIfRefreshTokenExistsByUserIdAsync(int userId);
          void DeleteUserRefreshTokenAsync(int userId, string refreshToken);
          Task<User> GetUserByEmailAsyncAsync(string email); 
     }

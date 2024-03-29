@@ -13,7 +13,7 @@ namespace TiacChat.DAL.Extensions
             services.AddScoped<IChannelRepository, ChannelsRepository>();
             services.AddScoped<IJWTManagerRepository, JWTManagerRepository>();
             services.AddScoped<IUserChannelRepository, UserChannelRepository>();
-          
+           
         }
     }
 }

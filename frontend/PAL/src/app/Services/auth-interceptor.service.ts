@@ -18,9 +18,11 @@ export class AuthInterceptorService implements HttpInterceptor {
       return handler.handle(request);
     }
 
-   // console.log("Interceptor - interceptor request.");
+    //console.log("Interceptor - interceptor request.");
+    //console.log(request)
+    
     const accessToken = this.authService.getAccessToken();
-
+    
     if (accessToken) {
       request = this.addToken(request, accessToken);
     }
@@ -38,15 +40,22 @@ export class AuthInterceptorService implements HttpInterceptor {
   }
 
   addToken(request: HttpRequest<any>, accessToken: string): HttpRequest<any> {
-    return request.clone({
+   
+    const requestWithTokenAttached = request.clone({
       setHeaders: {
         Authorization: `Bearer ${accessToken}`
       }
     });
+   
+    return requestWithTokenAttached
   }
-  handle401Error(request: HttpRequest<any>, next: HttpHandler, accessToken: string): Observable<HttpEvent<any>> {
-    const refreshToken = this.authService.getRefreshToken();
 
+
+  handle401Error(request: HttpRequest<any>, next: HttpHandler, accessToken: string): Observable<HttpEvent<any>> {
+   
+    const refreshToken = this.authService.getRefreshToken();
+    console.log(refreshToken)
+    
     if (!refreshToken) {
       this.authService.logout();
       return throwError("No refresh token available.");
