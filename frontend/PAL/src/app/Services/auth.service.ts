@@ -18,11 +18,12 @@ export class AuthService {
 
   
   public userId$ = new BehaviorSubject<number | null>(null);
-  public accessTokenExpirationTimer = new BehaviorSubject<number>(59);
+  public accessTokenExpirationTimer = new BehaviorSubject<number>(0);
   public refreshTokenStatus = new BehaviorSubject<boolean>(true)
   public loggedOut$ = new Subject<boolean>();
   // private logoutSubject$ = new Subject<void>();
-
+  public tokenRefreshTimer$!: BehaviorSubject<any>;
+  public updateTokenRefreshTimer$  = new BehaviorSubject<number>(0);
 
   constructor(
 
@@ -34,7 +35,9 @@ export class AuthService {
   ) {
     
     this.userId$.next(this.extractUserId());
-   
+
+    //instantiate tokenRefreshTimer bs
+    this.tokenRefreshTimer$ = new BehaviorSubject<any>(null);
     console.log(`BS exp time:`, this.accessTokenExpirationTimer.value)
 
     // setTimeout(() => {
@@ -86,6 +89,7 @@ export class AuthService {
     localStorage.removeItem('refresh_token');
     this.router.navigate(['/login']);
     this.loggedOut$.next(true);   
+    window.location.reload();
   }
 
   // logoutDynamic():void{
@@ -141,9 +145,11 @@ export class AuthService {
       console.log(`expiration time:`, decodedToken.exp)
       console.log(`token duration calc:`, decodedToken.exp - decodedToken.nbf)
 
-        this.accessTokenExpirationTimer.next(decodedToken.exp - decodedToken.nbf)
+        const expirationTime = decodedToken.exp - decodedToken.nbf;
+
+        this.accessTokenExpirationTimer.next(expirationTime)
         
-     
+        this.updateTokenRefreshTimer$.next(expirationTime)
     }
   }
 

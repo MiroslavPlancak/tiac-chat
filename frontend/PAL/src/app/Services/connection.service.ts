@@ -50,7 +50,13 @@ export class ConnectionService implements OnInit, OnDestroy{
       if (this.hubConnection.connectionId != undefined) {
         console.log("connection started with connectionId:", this.hubConnection.connectionId);
        // console.log(`expiration time of access token`, this.authService.accessTokenExpirationTime.subscribe(res => console.log(res)))
-
+       this.setupTokenRefreshTimer()
+        this.authService.tokenRefreshTimer$.subscribe(timer => {
+          if (timer) {
+            console.log('Token refresh timer:', timer);
+            // Put any logic that depends on the timer here
+          }
+        });
       }
       
     })
@@ -61,11 +67,11 @@ export class ConnectionService implements OnInit, OnDestroy{
     this.hubConnection.onclose((error) => {
       console.log('Connection closed.');
       console.log(error);
-      //clearInterval(this.tokenRefreshTimer); 
+     // clearInterval(this.tokenRefreshTimer); 
+   
     });
     console.log(`connection state:`, this.hubConnection.state)
-    this.setupTokenRefreshTimer()
-
+    
   }
 
   ngOnInit(): void {
@@ -78,24 +84,29 @@ export class ConnectionService implements OnInit, OnDestroy{
     
   }
     // method to set up token refresh timer
-    private setupTokenRefreshTimer(): void {
-      this.tokenRefreshTimer = setInterval(() => {
+   private setupTokenRefreshTimer(): void {
+
+    if(this.authService.tokenRefreshTimer$){
+      clearInterval(this.authService.tokenRefreshTimer$.getValue())
+    }
+
+    this.authService.tokenRefreshTimer$.next(setInterval(() => {
         console.log('Token refresh timer triggered');
         console.log(this.authService.accessTokenExpirationTimer.value);
         const accessToken = this.authService.getAccessToken();
         const refreshToken = this.authService.getRefreshToken();
-        if(accessToken && refreshToken){
-        this.authService.refreshTokens(accessToken,refreshToken)
-        .pipe(rxjs.take(1))
-          .subscribe({
-            next: () => {
-              console.log('Access token refreshed successfully');
-            },
-            error: (err) => {
-              console.log('Error refreshing access token:', err);
-            }
-          });
+        if (accessToken && refreshToken) {
+            this.authService.refreshTokens(accessToken, refreshToken)
+                .pipe(rxjs.take(1))
+                .subscribe({
+                    next: () => {
+                        console.log('Access token refreshed successfully');
+                    },
+                    error: (err) => {
+                        console.log('Error refreshing access token:', err);
+                    }
+                });
         }
-      }, (this.authService.accessTokenExpirationTimer.value * 1000)- 3);
-    }
+    }, (this.authService.accessTokenExpirationTimer.value * 1000) - 3));
+}
 }
