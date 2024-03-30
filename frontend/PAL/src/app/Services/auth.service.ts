@@ -4,9 +4,8 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { User, User as any } from './user.service';
 import { UserRegister } from '../Components/register-user/register-user.component';
-import { NotificationDialogService } from './notification-dialog.service';
+
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +19,7 @@ export class AuthService {
   
   public userId$ = new BehaviorSubject<number | null>(null);
   public accessTokenExpirationTimer = new BehaviorSubject<number>(59);
-
+  public refreshTokenStatus = new BehaviorSubject<boolean>(true)
   public loggedOut$ = new Subject<boolean>();
   // private logoutSubject$ = new Subject<void>();
 
@@ -70,8 +69,11 @@ export class AuthService {
     };
     return this.http.post<any>(`${this.apiUrl}refresh-token`, body).pipe(
       tap(response => {
+        
         console.log('Response from refresh token request:', response);
         this.storeTokens(response);
+        this.refreshTokenStatus.next(response.isRefreshTokenValid)
+
       })
     );
   }
@@ -106,10 +108,15 @@ export class AuthService {
     return localStorage.getItem('refresh_token');
   }
 
+  getRefreshTokenStatus(): string | null {
+    return localStorage.getItem(`isRefreshTokenValid`);
+  }
+
   public storeTokens(tokens: any): void {
     localStorage.removeItem('access_token'); 
     localStorage.setItem('access_token', tokens.accessToken);
-    localStorage.setItem('refresh_token', tokens.refreshToken)
+    localStorage.setItem('refresh_token', tokens.refreshToken);
+    localStorage.setItem('isRefreshTokenValid', tokens.isRefreshTokenValid)
   }
 
   //userId logic

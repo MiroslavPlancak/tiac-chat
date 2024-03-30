@@ -149,8 +149,8 @@ namespace TiacChat.DAL.Repositories
             return await _dataContext.UserRefreshTokens
             .FirstOrDefaultAsync(
                 x => x.UserId == userId &&
-                x.RefreshToken == refreshToken &&
-                 x.IsActive == true);
+                x.RefreshToken == refreshToken
+                );
         }
 
         public void DeleteUserRefreshTokenAsync(int userId, string refreshToken)

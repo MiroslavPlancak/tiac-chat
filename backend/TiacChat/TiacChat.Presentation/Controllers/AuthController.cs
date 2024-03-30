@@ -13,6 +13,7 @@ using TiacChat.DAL.Entities;
 using TiacChat.DAL.Entities.Enums;
 using TiacChat.Presentation.Validators;
 using BCrypt.Net;
+using System.Globalization;
 namespace TiacChat.Presentation.Controllers
 {
     [Route("api/[controller]")]
@@ -96,7 +97,8 @@ namespace TiacChat.Presentation.Controllers
                 {
                     RefreshToken = token.RefreshToken,
                     UserId = user.Id,
-                    ExpirationDate = DateTime.Now.AddDays(7)
+                    //ExpirationDate = DateTime.Now.AddDays(7)
+                    ExpirationDate = DateTime.Now.AddMinutes(2)
                 };
                 await _services.AddUserRefreshTokensAsync(newUserRefreshToken);
             }else if(checkIfRefreshTokenExists.RefreshToken != null){
@@ -128,8 +130,27 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Unauthorized("Your refresh token has expired, please login again.");
             }
+            //check if the refresh token has expired logic  
+            DateTime currentTime = DateTime.Now;
            
-            var newJwtToken = await _jWTManager.GenerateRefreshToken(user.Id, email); // make new method which will refresh only access token and retrieve already existing refresh token
+             Console.WriteLine("The current time is:" + currentTime);
+            
+             Console.WriteLine("refresh token expiration time is:" + savedRefreshToken.ExpirationDate);
+             Console.WriteLine("state of refresh token:"+ savedRefreshToken.IsActive);
+
+            if (currentTime > savedRefreshToken.ExpirationDate)
+            {
+                
+                Console.WriteLine("refresh token has expired!!!!");
+                if (savedRefreshToken.IsActive)
+                {
+                    await _jWTManager.flagExpiredRefreshTokenAsInactive(savedRefreshToken.Id);
+                }
+                await _jWTManager.deleteExpiredRefreshToken(savedRefreshToken.Id);
+            }
+
+            //check if the refresh token has expired logic
+            var newJwtToken = await _jWTManager.GenerateRefreshToken(user.Id, email); 
             
             if(newJwtToken == null)
             {

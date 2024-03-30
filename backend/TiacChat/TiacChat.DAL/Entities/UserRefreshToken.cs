@@ -7,6 +7,7 @@ namespace TiacChat.DAL.Entities
         public string RefreshToken { get; set;}
         public bool IsActive { get; set;} = true;
         public DateTime ExpirationDate { get; set; }
-        
+
+  
     }
 }

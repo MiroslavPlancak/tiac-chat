@@ -19,6 +19,16 @@ export class ConnectionService implements OnInit, OnDestroy{
     //extract the expiration time of access token and set the BS of it to that value
     this.authService.getAccessTokenExpTime()
 
+    // set the status of the RefreshToken by subscription to refreshTokenStatus bs
+    this.authService.refreshTokenStatus
+    .subscribe(res => {
+      console.log(`refreshTokenStatus from connection:`, res)
+      if(res == null){
+        this.authService.logout()
+      }
+     
+    })
+
     console.log(`currentUserId$`, this.currentUserId$.getValue())
    
     this.hubConnection = new signalR.HubConnectionBuilder()
@@ -51,7 +61,7 @@ export class ConnectionService implements OnInit, OnDestroy{
     this.hubConnection.onclose((error) => {
       console.log('Connection closed.');
       console.log(error);
-      clearInterval(this.tokenRefreshTimer); 
+      //clearInterval(this.tokenRefreshTimer); 
     });
     console.log(`connection state:`, this.hubConnection.state)
     this.setupTokenRefreshTimer()

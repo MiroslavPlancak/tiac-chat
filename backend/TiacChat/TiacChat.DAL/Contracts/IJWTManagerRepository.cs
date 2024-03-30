@@ -9,5 +9,7 @@ namespace TiacChat.DAL.Contracts
          Task<Tokens> GenerateToken (int userId, string email);
          Task<Tokens> GenerateRefreshToken(int userId, string email);
          ClaimsPrincipal GetPrincipalFromExpiredToken(string email);
+         Task flagExpiredRefreshTokenAsInactive(int refreshTokenId);
+         Task deleteExpiredRefreshToken(int refreshTokenId);
     }
 }

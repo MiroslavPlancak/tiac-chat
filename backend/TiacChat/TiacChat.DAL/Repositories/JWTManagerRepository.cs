@@ -68,14 +68,36 @@ namespace TiacChat.DAL.Repositories
                     refreshToken = existingRefreshToken.RefreshToken;
                 }
                     
-              return new Tokens{ AccessToken = tokenHandler.WriteToken(token), RefreshToken = refreshToken};
+              return new Tokens{ AccessToken = tokenHandler.WriteToken(token), RefreshToken = refreshToken, IsRefreshTokenValid = existingRefreshToken?.IsActive};
             }
             catch(Exception e)
             {
                 return null;
             }
         }
-
+        public async Task deleteExpiredRefreshToken(int refreshTokenId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+                try
+                {
+                    var selectRefreshTokenForDeletion = await dataContext.UserRefreshTokens
+                    .FirstOrDefaultAsync(rtd => rtd.Id == refreshTokenId);
+                    if(selectRefreshTokenForDeletion != null)
+                    {
+                         dataContext.Remove(selectRefreshTokenForDeletion);
+                         dataContext.SaveChanges();
+                    }
+                   
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.ToString());
+                    throw;
+                }
+            }
+        }
         public async Task<UserRefreshToken?> checkIfRefreshTokenExistsByUserIdAsync(int userId)
         {
             using (var scope = _serviceProvider.CreateScope())
@@ -87,6 +109,35 @@ namespace TiacChat.DAL.Repositories
                         .FirstOrDefaultAsync(u => u.UserId == userId);
                 }
                 catch (Exception e)
+                {
+                    _logger.LogError(e.ToString());
+                    throw;
+                }
+            }
+        }
+
+        public async Task flagExpiredRefreshTokenAsInactive(int refreshTokenId)
+        {
+            using(var scope = _serviceProvider.CreateScope())
+            {
+                var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+                try
+                {
+                    var selectRefreshToken = await dataContext.UserRefreshTokens
+                    .FirstOrDefaultAsync(rt => rt.Id == refreshTokenId);
+                  
+                    if (selectRefreshToken != null && selectRefreshToken.IsActive != false)
+                    {
+                        
+                        selectRefreshToken.IsActive = false;
+
+                        
+                        await dataContext.SaveChangesAsync();
+                    }
+ 
+                    
+                }
+                catch(Exception e)
                 {
                     _logger.LogError(e.ToString());
                     throw;
