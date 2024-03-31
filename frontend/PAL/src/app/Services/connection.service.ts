@@ -84,7 +84,7 @@ export class ConnectionService implements OnInit, OnDestroy{
     
   }
     // method to set up token refresh timer
-   private setupTokenRefreshTimer(): void {
+   public setupTokenRefreshTimer(): void {
 
     if(this.authService.tokenRefreshTimer$){
       clearInterval(this.authService.tokenRefreshTimer$.getValue())

@@ -4,6 +4,8 @@ import { UserService } from '../../Services/user.service';
 import * as rxjs from 'rxjs';
 import { MessageService } from '../../Services/message.service';
 import { HubConnectionState } from '@microsoft/signalr';
+import { ConnectionService } from '../../Services/connection.service';
+import { AuthService } from '../../Services/auth.service';
 
 
 @Component({
@@ -30,6 +32,8 @@ export class ChatMatComponent implements OnInit, OnDestroy {
     public chatService: ChatService,
     public userService: UserService,
     public messageService: MessageService,
+    public connectionService: ConnectionService,
+    public authService: AuthService
   ) {
     this.channelType = this.channelTypes['public'];
     console.log(this.chatService.hubConnection.state)
@@ -41,6 +45,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
     this.maxScrollValue$.subscribe(res => { console.log(`x`, res) })
 
     if (this.chatService.hubConnection.state === HubConnectionState.Disconnected) {
+      this.connectionService.setupTokenRefreshTimer()
       console.log(`this block runs`)
       this.chatService.hubConnection.start();
     }
@@ -52,6 +57,9 @@ export class ChatMatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if(this.authService.tokenRefreshTimer$){
+      clearInterval(this.authService.tokenRefreshTimer$.getValue())
+    }
   }
 
 

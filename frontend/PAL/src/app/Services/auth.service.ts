@@ -89,7 +89,7 @@ export class AuthService {
     localStorage.removeItem('refresh_token');
     this.router.navigate(['/login']);
     this.loggedOut$.next(true);   
-    window.location.reload();
+   // window.location.reload();
   }
 
   // logoutDynamic():void{
