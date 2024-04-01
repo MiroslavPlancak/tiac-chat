@@ -39,30 +39,40 @@ SignalR Hub: For real-time communication needs, such as live messaging and notif
 
 `How do I install it?`
 
-The Tiac Chat application relies on the following dependencies:
+### 1. Clone the Repository
+Begin by cloning the repository to your local machine. You can do this by executing the following command in your terminal or command prompt:
 
-### Presentation access layer's .csproj file:
+`git clone https://github.com/MiroslavPlancak/tiac-chat.git`
 
-- Bcrypt.Net-Next (v4.0.3)
-- FluentAssertions (v6.12.0)
-- FluentValidation (v11.9.0)
-- Microsoft.AspNetCore.Authentication.JwtBearer (v8.0.1)
-- Microsoft.AspNetCore.SignalR.Client (v8.0.1)
-- Microsoft.NET.Test.Sdk (v17.8.0)
-- Newtonsoft.Json (v13.0.3)
-- NSubstitute (v5.1.0)
-- NuGet.Frameworks (v6.5.0)
-- Swashbuckle.AspNetCore (v6.4.0)
-- xunit (v2.6.6)
-- xunit.runner.visualstudio (v2.5.3)
+### 2. Install Dependencies
+Navigate to the `tiac-chat\frontend\PAL` directory in your terminal and install the necessary dependencies by running:
 
-### Data access layer's .csproj file:
+`npm install`
 
-- Microsoft.AspNetCore.Identity.EntityFrameworkCore (v8.0.1)
-- Microsoft.EntityFrameworkCore (v8.0.1)
-- Microsoft.EntityFrameworkCore.Relational (v8.0.1)
-- Microsoft.EntityFrameworkCore.SqlServer (v8.0.1)
+### 3. Import SQL Script
+Locate the `tiac_chat_db_script.sql` script file within the root folder of the cloned repository. Import this script into a new database of your choice. Ensure to make any necessary adjustments to your connection string. Example of a connection string:
 
-### Database script file (tiac_chat_db_script.sql)
+```typescript
+"ConnectionStrings": {
+    "DefaultConnection": "server=localhost; database=TiacChat; user id=Miroslav; password=1234; Encrypt=false; TrustServerCertificate=true;"
+}
+```
 
-Import the .sql script file found inside the root folder of this repository.
+### 4. Run Backend Server
+Navigate to `backend\TiacChat\TiacChat.Presentation` directory and execute the following command to run the backend server:
+
+`dotnet run `
+
+### 5. Serve Angular Application
+Move to the `frontend\PAL\src` directory in your terminal. To simulate multiple clients for development purposes, serve the Angular application locally on different ports.For instance, you can achieve this by running the following commands:
+
+`ng serve --port 4200`
+`ng serve --port 4201`
+`ng serve --port 4202`
+
+### 6. Register and Login Users
+Finally, register three new users and log in with each one locally on different ports using the following URLs:
+
+`User 1: http://localhost:4200/login`
+`User 2: http://localhost:4201/login`
+`User 3: http://localhost:4202/login`

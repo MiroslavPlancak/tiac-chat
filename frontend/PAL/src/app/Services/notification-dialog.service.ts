@@ -11,7 +11,7 @@ export class NotificationDialogService {
   constructor(private dialog: MatDialog) { }
   public dialogCollection: MatDialogRef<NotificationDialogComponent>[] = [];
 
-  openNotificationDialog(title: string, message: string, buttonText: string): MatDialogRef<NotificationDialogComponent> {
+  openNotificationDialog(title: string, message: string, buttonText: string, titleExists:boolean): MatDialogRef<NotificationDialogComponent> {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.disableClose = false;
     dialogConfig.autoFocus = true;
@@ -20,7 +20,8 @@ export class NotificationDialogService {
       title: title,
       message: message,
       buttonText: buttonText,
-      buttonExists: true
+      buttonExists: true,
+      titleExists: titleExists
     }
     const dialogRef = this.dialog.open(NotificationDialogComponent, dialogConfig)
     this.dialogCollection.push(dialogRef)

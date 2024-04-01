@@ -2,6 +2,7 @@ import { Injectable, OnDestroy, OnInit } from '@angular/core';
 import * as rxjs from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { AuthService } from './auth.service';
+import { NotificationDialogService } from './notification-dialog.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,10 @@ export class ConnectionService implements OnInit, OnDestroy{
   currentUserId$ = this.authService.userId$;
   private tokenRefreshTimer: any; // Timer variable
 
-  constructor(private authService: AuthService) {
+  constructor(
+    private authService: AuthService,
+    private dialogService:NotificationDialogService
+    ) {
 
     //extract the expiration time of access token and set the BS of it to that value
     this.authService.getAccessTokenExpTime()
@@ -25,6 +29,12 @@ export class ConnectionService implements OnInit, OnDestroy{
       console.log(`refreshTokenStatus from connection:`, res)
       if(res == null){
         this.authService.logout()
+        this.dialogService.openNotificationDialog(
+          `Your session expired`,
+          `please log in again.`,
+          `okay`,
+          true
+          )
       }
      
     })

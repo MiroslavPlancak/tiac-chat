@@ -66,9 +66,11 @@ export class ChannelService implements OnDestroy {
       this.newlyCreatedPrivateChannel$.next([...this.newlyCreatedPrivateChannel$.value, entireChannel])
 
       this.dialogService.openNotificationDialog(
+       
         `joined private channel`,
         `You have been added to private channel ${entireChannel.name}`,
-        `Close`
+        `Close`,
+        true
       )
     })
     
@@ -87,7 +89,8 @@ export class ChannelService implements OnDestroy {
       this.dialogService.openNotificationDialog(
         `Kicked from private channel`,
         `You have been kicked from private channel ${channelId}`,
-        `Close`
+        `Close`,
+        true
       )
     });
 
