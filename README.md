@@ -45,12 +45,12 @@ Begin by cloning the repository to your local machine. You can do this by execut
 `git clone https://github.com/MiroslavPlancak/tiac-chat.git`
 
 ### 2. Install Dependencies
-Navigate to the `tiac-chat\frontend\PAL` directory in your terminal and install the necessary dependencies by running:
+Navigate to the <span style="color:blue;">*tiac-chat\frontend\PAL*</span> directory in your terminal and install the necessary dependencies by running:
 
 `npm install`
 
 ### 3. Import SQL Script
-Locate the `tiac_chat_db_script.sql` script file within the root folder of the cloned repository. Import this script into a new database of your choice. Ensure to make any necessary adjustments to your connection string. Example of a connection string:
+Locate the <span style="color:blue;">*tiac_chat_db_script.sql*</span> script file within the root folder of the cloned repository. Import this script into a new database of your choice. Ensure to make any necessary adjustments to your connection string. Example of a connection string:
 
 ```typescript
 "ConnectionStrings": {
@@ -59,12 +59,12 @@ Locate the `tiac_chat_db_script.sql` script file within the root folder of the c
 ```
 
 ### 4. Run Backend Server
-Navigate to `backend\TiacChat\TiacChat.Presentation` directory and execute the following command to run the backend server:
+Navigate to <span style="color:blue;">*backend\TiacChat\TiacChat.Presentation*</span> directory and execute the following command to run the backend server:
 
 `dotnet run `
 
 ### 5. Serve Angular Application
-Move to the `frontend\PAL\src` directory in your terminal. To simulate multiple clients for development purposes, serve the Angular application locally on different ports.For instance, you can achieve this by running the following commands:
+Move to the <span style="color:blue;">*frontend\PAL\src*</span> directory in your terminal. To simulate multiple clients for development purposes, serve the Angular application locally on different ports.For instance, you can achieve this by running the following commands:
 
 `ng serve --port 4200`
 
