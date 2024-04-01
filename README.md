@@ -67,12 +67,16 @@ Navigate to `backend\TiacChat\TiacChat.Presentation` directory and execute the f
 Move to the `frontend\PAL\src` directory in your terminal. To simulate multiple clients for development purposes, serve the Angular application locally on different ports.For instance, you can achieve this by running the following commands:
 
 `ng serve --port 4200`
+
 `ng serve --port 4201`
+
 `ng serve --port 4202`
 
 ### 6. Register and Login Users
 Finally, register three new users and log in with each one locally on different ports using the following URLs:
 
 `User 1: http://localhost:4200/login`
+
 `User 2: http://localhost:4201/login`
+
 `User 3: http://localhost:4202/login`
