@@ -133,9 +133,20 @@ namespace TiacChat.BAL.Services
            try
            {
                var sentMessage = messageDTO.ToMessage();
-               var userThatSentsMessage = await _userRepository.GetByIdAsync(sentMessage.SentFromUserId);
+               if(sentMessage.SentToUserId == 0)
+               {
+                 sentMessage.SentToUserId = null;
+               }
+               if(sentMessage.SentToChannelId == 0)
+               {
+                  sentMessage.SentToChannelId = null;
+               }
+               
+
+               var sender = await _userRepository.GetByIdAsync(sentMessage.SentFromUserId);
                var newMessage = await _repository.CreateAsync(sentMessage);
-               newMessage.SentFromUser = userThatSentsMessage;
+               
+               newMessage.SentFromUser = sender;
                return newMessage.ToDto();
            }
            catch(Exception e)

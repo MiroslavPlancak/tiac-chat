@@ -50,7 +50,7 @@ namespace TiacChat.DAL.Repositories
                     new Claim(ClaimTypes.Name, email),
                     new Claim("userId", userId.ToString())
                 }),
-                Expires = DateTime.Now.AddSeconds(20),
+                Expires = DateTime.Now.AddMinutes(5),
                 SigningCredentials = new SigningCredentials (new SymmetricSecurityKey(tokenKey),SecurityAlgorithms.HmacSha256Signature)
               };
                 

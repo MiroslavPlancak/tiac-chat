@@ -113,7 +113,7 @@ namespace TiacChat.Presentation.Hubs
                     Body = message,
                     SentFromUserId = sender ,
                     SentToUserId = recipientUserId,
-                    SentToChannelId = 7,
+                   // SentToChannelId = 7,
                     Time = DateTime.Now,
                     IsSeen = false
                 };
@@ -168,7 +168,7 @@ namespace TiacChat.Presentation.Hubs
                 {
                     Body = message,
                     SentFromUserId = userId,
-                    SentToUserId = 14,
+                    //SentToUserId = 0,
                     SentToChannelId = SentToChannel,
                     Time = DateTime.Now
                 };

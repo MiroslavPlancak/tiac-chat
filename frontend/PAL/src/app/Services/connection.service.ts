@@ -33,7 +33,7 @@ export class ConnectionService implements OnInit, OnDestroy{
           `Your session expired`,
           `please log in again.`,
           `okay`,
-          true
+          true,
           )
       }
      

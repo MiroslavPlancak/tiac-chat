@@ -5,8 +5,8 @@ namespace TiacChat.DAL.Entities
         public int Id { get; set; } 
         public string Body { get; set; }   
         public int SentFromUserId { get; set; }   
-        public int SentToUserId { get; set; } 
-        public int SentToChannelId { get; set; }
+        public int? SentToUserId { get; set; } 
+        public int? SentToChannelId { get; set; }
         public bool IsSeen {get;set;}
         public DateTime Time { get; set; }
         public User SentFromUser { get;set; } 
