@@ -8,8 +8,8 @@ namespace TiacChat.BAL.Services
         public Task<bool> IsValidUsers(UserLogin users);
         public Task<UserRefreshToken?> GetSavedRefreshTokensAsync(int userId, string refreshToken);
         public Task<UserRefreshToken> checkIfRefreshTokenExistsByUserIdAsync(int userId);
-        Task<UserRefreshToken> AddUserRefreshTokensAsync(UserRefreshToken user);
+        public Task<UserRefreshToken> AddUserRefreshTokensAsync(UserRefreshToken user);
         void DeleteUserRefreshToken(int userId, string refreshToken);
-        Task<UserDTO> GetUserByEmailAsync(string email); 
+        public Task<UserDTO> GetUserByEmailAsync(string email); 
     }
 }

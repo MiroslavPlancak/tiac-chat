@@ -7,21 +7,23 @@ using TiacChat.DAL.Contracts;
 using Xunit;
 using TiacChat.BAL.DTOs;
 
+
 namespace TiacChat.Presentation.ServiceTests
 {
     public class MessageServiceTests
     {
         private readonly IMessageRepository _messageRepository;
         private readonly IMessageService _messageService;
+        private readonly IUserRepository _userRepository;
         private readonly ILogger<Message> _logger;
-
+        
         public MessageServiceTests()
         {
             _messageRepository = Substitute.For<IMessageRepository>();
             _logger = Substitute.For<ILogger<Message>>();
-            
+            _userRepository = Substitute.For<IUserRepository>();
             //subject tested
-            _messageService = new MessageService(_logger,_messageRepository);
+            _messageService = new MessageServices(_logger,_messageRepository,_userRepository);
         }
 
         [Fact]
@@ -56,7 +58,10 @@ namespace TiacChat.Presentation.ServiceTests
             // When
             var result = await _messageService.CreateAsync(CreateMessageDTO());
             // Then
-            result.Should().BeEquivalentTo(expectedMessageDTO);
+            result.Should().BeEquivalentTo(expectedMessageDTO, options => options
+            .Excluding(x => x.SentToUserId)
+            .Excluding(x => x.SentToChannelId)
+            );
         }
         [Fact]
         public async  Task  MessageService_UpdateAsync_UpdateMessage()

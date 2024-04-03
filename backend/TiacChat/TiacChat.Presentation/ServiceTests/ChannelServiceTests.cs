@@ -15,12 +15,14 @@ namespace TiacChat.Presentation.ServiceTests
         private readonly IChannelRepository _channelRepository;
         private readonly IChannelService _channelService;
         private readonly ILogger<Channel> _logger;
-        
+        private readonly IUserChannelRepository _userChannelRepository;
         public ChannelServiceTests()
         {
           _channelRepository = Substitute.For<IChannelRepository>();
           _logger = Substitute.For<ILogger<Channel>>();
-          _channelService = new ChannelService(_logger,_channelRepository);   
+          _userChannelRepository = Substitute.For<IUserChannelRepository>();
+
+          _channelService = new ChannelServices(_logger,_channelRepository,_userChannelRepository);   
         }
 
         [Fact]

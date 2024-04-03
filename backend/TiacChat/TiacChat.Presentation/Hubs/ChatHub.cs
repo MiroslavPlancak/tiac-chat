@@ -23,7 +23,7 @@ namespace TiacChat.Presentation.Hubs
         {
             _messageServices = messageServices;
             _channelService = channelService;
-           _userService = userService;
+            _userService = userService;
         }
 
         public override async Task<Task> OnConnectedAsync()
@@ -44,11 +44,11 @@ namespace TiacChat.Presentation.Hubs
 
                 if (!string.IsNullOrEmpty(connectionId))
                 {
-  
+
                     var findUser = await _userService.GetByIdAsync(userId);
                     var fullUserName = findUser.FirstName + ' ' + findUser.LastName;
                     onlineUsers.Add(userId, connectionId);
-                    await Clients.All.SendAsync("YourConnectionId", onlineUsers, userId,fullUserName);
+                    await Clients.All.SendAsync("YourConnectionId", onlineUsers, userId, fullUserName);
 
 
                 }
@@ -74,21 +74,21 @@ namespace TiacChat.Presentation.Hubs
             if (int.TryParse(userId, out int useridInt))
             {
                 onlineUsers.Remove(useridInt);
-                         // sending updated map to all clients
-                var findUser =  await _userService.GetByIdAsync(useridInt);
+                // sending updated map to all clients
+                var findUser = await _userService.GetByIdAsync(useridInt);
                 var fullUserName = findUser.FirstName + ' ' + findUser.LastName;
 
                 await Clients.All.SendAsync("UserDisconnected", onlineUsers, useridInt, fullUserName);
             }
 
-   
+
 
             return base.OnDisconnectedAsync(exception);
         }
 
         public async Task LogoutUserAsync()
         {
-           await OnDisconnectedAsync(null);
+            await OnDisconnectedAsync(null);
         }
 
         public async Task GetOnlineUsers()
@@ -106,20 +106,20 @@ namespace TiacChat.Presentation.Hubs
             try
             {
                 string senderId = Context.User.FindFirstValue("userId");
-                var senderIdConverted = int.TryParse(senderId,out int sender);
+                var senderIdConverted = int.TryParse(senderId, out int sender);
 
                 var newPrivateMessageDTO = new MessageDTO
                 {
                     Body = message,
-                    SentFromUserId = sender ,
+                    SentFromUserId = sender,
                     SentToUserId = recipientUserId,
-                   // SentToChannelId = 7,
+                    // SentToChannelId = 7,
                     Time = DateTime.Now,
                     IsSeen = false
                 };
 
-                
-                    var savedMessage = await _messageServices.CreateAsync(newPrivateMessageDTO);
+
+                var savedMessage = await _messageServices.CreateAsync(newPrivateMessageDTO);
 
                 if (onlineUsers.TryGetValue(recipientUserId, out var recipientConnectionId))
                 {
@@ -136,11 +136,11 @@ namespace TiacChat.Presentation.Hubs
         public async Task NotifyReceiverOfPrivateMessage(MessageDTO privateMessage)
         {
             try
-            {   
-               //string senderId = Context.User.FindFirstValue("userId");
+            {
+                //string senderId = Context.User.FindFirstValue("userId");
                 string senderId = Context.User.FindFirstValue("userId");
-                var senderIdConverted = int.TryParse(senderId,out int sender);
-                if(privateMessage != null && privateMessage.IsSeen== false && privateMessage.SentToUserId == sender) 
+                var senderIdConverted = int.TryParse(senderId, out int sender);
+                if (privateMessage != null && privateMessage.IsSeen == false && privateMessage.SentToUserId == sender)
                 {
                     //message.IsSeen = true;
                     //await _messageServices.UpdateAsync(message);
@@ -154,7 +154,8 @@ namespace TiacChat.Presentation.Hubs
                         await Clients.Client(senderConnectionString).SendAsync("PrivateMessageReceived", findMessage);
                     }
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine("Error in NotifyReceiverOfPrivateMessage()", e.Message);
             }
@@ -174,7 +175,7 @@ namespace TiacChat.Presentation.Hubs
                 };
 
 
-                
+
 
                 var newMessageDTO = await _messageServices.CreateAsync(messageDTO);
 
@@ -197,14 +198,14 @@ namespace TiacChat.Presentation.Hubs
         {
             try
             {
-                if(onlineUsers.TryGetValue(userId, out var userConnectionId))
+                if (onlineUsers.TryGetValue(userId, out var userConnectionId))
                 {
                     await Clients.Client(userConnectionId).SendAsync("YouHaveBeenKicked", channelId, userId);
                 }
 
-              
+
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine($"Error {e.Message}");
             }
@@ -214,12 +215,13 @@ namespace TiacChat.Presentation.Hubs
         {
             try
             {
-                if(onlineUsers.TryGetValue(userId, out var userConnectionId))
+                if (onlineUsers.TryGetValue(userId, out var userConnectionId))
                 {
                     var entireChannel = await _channelService.GetByIdAsync(channelId);
-                    await Clients.Client(userConnectionId).SendAsync("YouHaveBeenAdded",channelId,userId,entireChannel);
+                    await Clients.Client(userConnectionId).SendAsync("YouHaveBeenAdded", channelId, userId, entireChannel);
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine($"Error {e.Message}");
             }
@@ -258,7 +260,7 @@ namespace TiacChat.Presentation.Hubs
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error in CreateNewChannel: {ex.Message}");
                 throw;
@@ -269,25 +271,25 @@ namespace TiacChat.Presentation.Hubs
         {
             try
             {
-                if(!typingUsers.ContainsKey(receiverId))
+                if (!typingUsers.ContainsKey(receiverId))
                 {
                     typingUsers[receiverId] = new List<int>();
                 }
-                
-                if(isTyping && !typingUsers[receiverId].Contains(senderId))
+
+                if (isTyping && !typingUsers[receiverId].Contains(senderId))
                 {
                     typingUsers[receiverId].Add(senderId);
                 }
-                else if(!isTyping)
+                else if (!isTyping)
                 {
                     typingUsers[receiverId].Remove(senderId);
                 }
 
                 if (onlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
                 {
-                    await Clients.Client(receiverConnectionId).SendAsync("ReceiveTypingStatus",isTyping, senderId, typingUsers[receiverId] );
+                    await Clients.Client(receiverConnectionId).SendAsync("ReceiveTypingStatus", isTyping, senderId, typingUsers[receiverId]);
                 }
-     
+
             }
             catch (Exception ex)
             {
@@ -300,23 +302,24 @@ namespace TiacChat.Presentation.Hubs
         {
             try
             {
-                if(senderId != 0 &&receiverId != 0){
-                    var latestNumberOfPrivateMessages = await _messageServices.GetLatestNumberOfPrivateMessagesByIdsAsync(senderId,receiverId);
+                if (senderId != 0 && receiverId != 0)
+                {
+                    var latestNumberOfPrivateMessages = await _messageServices.GetLatestNumberOfPrivateMessagesByIdsAsync(senderId, receiverId);
 
-                    if(onlineUsers.TryGetValue(senderId, out var senderConnectionId))
+                    if (onlineUsers.TryGetValue(senderId, out var senderConnectionId))
                     {
                         await Clients.Client(senderConnectionId).SendAsync("UpdatedPrivateMessagesNumber", latestNumberOfPrivateMessages);
                     }
 
-                    if(onlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
+                    if (onlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
                     {
                         await Clients.Client(receiverConnectionId).SendAsync("UpdatePrivateMessagesNumber", latestNumberOfPrivateMessages);
                     }
                 }
-               
+
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetLatestNumberOfPrivateMessages: {ex.Message}");
                 throw;
@@ -327,23 +330,23 @@ namespace TiacChat.Presentation.Hubs
         {
             try
             {
-                if(channelId != 0)
+                if (channelId != 0)
                 {
                     var numberOfPublicChannelMessages = await _messageServices
                     .GetLatestNumberOfPublicMessagesByChannelIdAsync(channelId);
 
-                    if(onlineUsers.TryGetValue(currentUserId, out var currentUserConnectionString))
+                    if (onlineUsers.TryGetValue(currentUserId, out var currentUserConnectionString))
                     {
                         await Clients.Client(currentUserConnectionString)
                         .SendAsync("UpdatePublicChannelMessagesNumber", numberOfPublicChannelMessages);
                     }
 
-                    
+
                 }
 
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetLatestNumberOfPublicChannelMessages: {ex.Message}");
                 throw;
