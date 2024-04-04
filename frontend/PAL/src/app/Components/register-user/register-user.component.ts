@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Inject, OnInit, Output } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CreateChannelComponent } from '../create-channel/create-channel.component';
-import { User, UserService } from '../../Services/user.service';
+import { UserService } from '../../Services/user.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../Services/auth.service';
-import { ChatService } from '../../Services/chat.service';
+import * as rxjs from 'rxjs';
 
 export interface UserRegister {
   id: number,
@@ -29,7 +29,7 @@ export class RegisterUserComponent implements OnInit {
   userForm!: FormGroup;
   passwordMismatch = false;
   newUserCreated = false;
-  errorHappened= false;
+  errorHappened = false;
   errorMessage = '';
 
   newUserFirstName!: string;
@@ -43,7 +43,6 @@ export class RegisterUserComponent implements OnInit {
 
     private dialogRef: MatDialogRef<CreateChannelComponent>,
     @Inject(MAT_DIALOG_DATA) public matData: any,
-    private chatService: ChatService,
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private userService: UserService
@@ -65,48 +64,47 @@ export class RegisterUserComponent implements OnInit {
     if (this.userForm.valid) {
 
       const user: UserRegister = {
-        id:0,
+        id: 0,
         firstName: this.userForm.value.firstName,
         lastName: this.userForm.value.lastName,
         email: this.userForm.value.email,
         password: this.userForm.value.password
       }
 
-      this.authService.createNewUser(user).subscribe(newUser => {
-        const registeredUserInfo = {
-          id: newUser.id,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-          email: newUser.email,
-          password: newUser.password
-        }
+      this.authService.createNewUser(user).pipe(
+        rxjs.switchMap(newUser => {
+          const registeredUserInfo = {
+            id: newUser.id,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            email: newUser.email,
+            password: newUser.password
+          }
+          this.newUserFirstName = newUser.firstName,
+            this.newUserLastName = newUser.lastName,
+            this.newUserEmail = newUser.email,
+            this.newUserPassword = newUser.password
 
-        this.newUserFirstName = newUser.firstName
-        this.newUserLastName = newUser.lastName
-        this.newUserEmail = newUser.email
-        this.newUserPassword = newUser.password
-
-        this.userService.getAllUsersBS$().subscribe();
-        this.userCreated.emit(registeredUserInfo)
-
-       
-      }, error => {
-        
-        if (error.status === 400) {
-          this.errorHappened = true;
-          this.newUserCreated = false;
-          console.log(`Back end error fired:`, error)
-        
-          this.errorMessage = error.error;
-        }
-      }
+          this.userCreated.emit(registeredUserInfo)
+          return rxjs.EMPTY;
+        }),
+        rxjs.tap((error: any) => {
+          if (error.status === 400) {
+            this.errorHappened = true;
+            this.newUserCreated = false;
+            console.log(`Back end error fired.`, error)
+            this.errorMessage = error.error;
+          }
+        }),
+        rxjs.switchMap(() => {
+          return this.userService.getAllUsersBS$()
+        })
+      ).subscribe(() =>
+        this.authService.accessTokenExpirationTimer.next(300)
       )
       this.newUserCreated = true;
       this.errorHappened = false;
 
-  
-      
-     // console.log(user);
     }
   }
 

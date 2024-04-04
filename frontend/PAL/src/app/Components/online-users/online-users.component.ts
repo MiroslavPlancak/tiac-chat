@@ -113,7 +113,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
             rxjs.first(),
             rxjs.map(allMessages => allMessages.filter((message: { isSeen: boolean; }) => !message.isSeen)),
             rxjs.tap(filteredUnSeenMessages => {
-              console.log(`privateconversationId$.value`, this.privateConversationId$.value)
+             
               filteredUnSeenMessages.forEach((unSeenMessage: any) => {
                 this.chatService.notifyReceiverOfPrivateMessage(unSeenMessage);
               });

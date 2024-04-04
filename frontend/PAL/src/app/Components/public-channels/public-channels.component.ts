@@ -25,8 +25,8 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   SelectedChannel$ = this.chanelService.SelectedChannel$
   isDirectMessageOffline = this.messageService.isDirectMessageOffline
 
-  loadedPublicChannels: any[] = [];
-  loadedPrivateChannelsByUserId: any[] = [];
+  // loadedPublicChannels: any[] = [];
+  // loadedPrivateChannelsByUserId: any[] = [];
   channelId = 0;
 
   constructor
