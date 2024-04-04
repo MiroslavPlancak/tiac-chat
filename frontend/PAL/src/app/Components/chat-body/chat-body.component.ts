@@ -45,13 +45,13 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
   ngOnInit(): void {
    //scroll after sending a private message
-   this.messageService.endScrollValue$.pipe(rxjs.delay(0)).subscribe(res => {
+   this.messageService.endScrollValue$.pipe(rxjs.delay(0), rxjs.take(1)).subscribe(res => {
     if(res !== 0)
     this.scrollToEndPrivate(res+1)
    })
 
     //scroll after sending a public message
-    this.messageService.endScrollValue$.pipe(rxjs.delay(0)).subscribe(res => {
+    this.messageService.endScrollValue$.pipe(rxjs.delay(0),rxjs.take(1) ).subscribe(res => {
       if (res !== 0)
         this.scrollToEndPublic(res + 1)
     })
@@ -60,7 +60,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
    //scroll after loading more public messages
    //enclosing if might create a problem, need to investigate it further.
     if (this.scrollIndexPublic$.value !== 3) {
-      this.scrollIndexPublic$.subscribe(res => {
+      this.scrollIndexPublic$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
 
         if (res !== undefined && res !== null && res !== 0) {
           console.log(res)
@@ -69,9 +69,9 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
       })
     }
 
-  //scroll after loading more private messages
+   //scroll after loading more private messages
     if (this.scrollIndexPrivate$.value !== 3) {
-      this.scrollIndexPrivate$.subscribe(res => {
+      this.scrollIndexPrivate$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
 
         if (res !== undefined && res !== null && res !== 0) {
           // console.log(res)
@@ -79,6 +79,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
         }
       })
     }
+
     //is typing logic
     this.chatService.receiveTypingStatus()
       .pipe(

@@ -1,11 +1,9 @@
-import { outputAst } from '@angular/compiler';
 import { Component, EventEmitter, Inject, OnInit, Output } from '@angular/core';
 import { User, UserService } from '../../Services/user.service';
-import { filter, map } from 'rxjs';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { map, switchMap, take } from 'rxjs';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ChannelService } from '../../Services/channel.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChatService } from '../../Services/chat.service';
 import { AuthService } from '../../Services/auth.service';
 
 @Component({
@@ -37,11 +35,10 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public matData: any,
     private dialogRef: MatDialogRef<AddUserToPrivateChannelComponent>,
     private channelService: ChannelService,
-    private chatService: ChatService,
     public authService: AuthService
 
   ) {
-    
+
     this.isOwnerOfPrivateChannel = this.matData.isOwner;
     this.selectedPrivateChannelId = this.matData.privateChannelId
 
@@ -49,13 +46,13 @@ export class AddUserToPrivateChannelComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    
     //extract channel name
-
-
     this.channelService.getListOfChannels()
       .pipe(
         map(channels => channels.filter((channelName: { id: any; }) => channelName.id === this.matData.privateChannelId)),
-        map(filteredChannels => filteredChannels.length > 0 ? filteredChannels[0].name : null)
+        map(filteredChannels => filteredChannels.length > 0 ? filteredChannels[0].name : null),
+        take(1)
       )
       .subscribe(channelName => {
         console.log('channelName: ', channelName);
@@ -64,50 +61,43 @@ export class AddUserToPrivateChannelComponent implements OnInit {
 
 
     //fill the list of added users
-    this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).subscribe(participantIds => {
-      console.log(`list of users in a private channel:`, participantIds)
+    this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).pipe(
+      switchMap(participantIds => {
+        //console.log(`list of users in a private channel:`, participantIds)
+        const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
 
-      const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
+        return this.userService.getAllUsers().pipe(
+          map(users => users.filter(user => userIds.includes(user.id)))
+        )
+      })
+    ).subscribe(filteredParticipants => {
+      //console.log(`transformed users`, filteredParticipants)
+      this.listOfAddedUsers.push(...filteredParticipants);
+    })
 
-      this.userService.getAllUsers().pipe(
-        map(users => users.filter(user => userIds.includes(user.id)))
-      )
-        .subscribe(filteredParticipants => {
-
-          console.log(`transformed users`, userIds)
-          this.listOfAddedUsers.push(...filteredParticipants);
-        })
-    }
-    )
 
     //create the list of users that remain  to be added
-    this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).subscribe(participantIds => {
-      console.log(`list of users in a private channel:`, participantIds)
+    this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).pipe(
+      switchMap(participantIds => {
+        console.log(`list of users in a private channel:`, participantIds)
 
-      const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
+        const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
 
-      this.userService.getAllUsers().pipe(
-        map(users => users.filter(user => !userIds.includes(user.id)))
-      )
-        .subscribe(filteredParticipants => {
-
-          console.log(`transformed users(new);`, filteredParticipants)
-          this.listOfUsers.push(...filteredParticipants);
-
-        })
-    }
-    )
-
-
-
+        return this.userService.getAllUsers().pipe(
+          map(users => users.filter(user => !userIds.includes(user.id)))
+        )
+      })
+    ).subscribe(filteredParticipants => {
+      console.log(`transformed users(new);`, filteredParticipants)
+      this.listOfUsers.push(...filteredParticipants);
+    })
 
   }
 
+  //add user to private channel
   addUserToPrivateChannel() {
 
-
     this.addedEntryToPrivateChannel = true;
-
 
     const selectedUser = this.selectedUserId;
     const privateChannelId = this.matData.privateChannelId;
@@ -122,10 +112,10 @@ export class AddUserToPrivateChannelComponent implements OnInit {
       isOwner: isOwner
     }
 
-    this.channelService.addUserToPrivateChannel(userChannel).subscribe(
-      (response: any) => {
+    this.channelService.addUserToPrivateChannel(userChannel).subscribe({
+      next: (response: any) => {
         console.log('Response from server:', response);
-        
+
         const addedUser = this.listOfUsers.find(u => u.id === response.user_Id)
 
         if (addedUser) {
@@ -134,7 +124,7 @@ export class AddUserToPrivateChannelComponent implements OnInit {
         }
         // Handle successful response if needed
       },
-      (error: any) => {
+      error: (error: any) => {
         console.error('Error adding user to private channel:', error);
         if (error instanceof HttpErrorResponse) {
           if (error.status === 500 && error.error) {
@@ -142,10 +132,11 @@ export class AddUserToPrivateChannelComponent implements OnInit {
             this.ErrorMessage = 'Selected user is already in this channel.'
           }
         }
-      })
+      }
+    })
 
     //get UserName
-    this.userService.getById(this.selectedUserId).subscribe(userName => {
+    this.userService.getById(this.selectedUserId).pipe(take(1)).subscribe(userName => {
       this.selectedUserIdName = {
         firstName: userName.firstName,
         lastName: userName.lastName
@@ -183,14 +174,10 @@ export class AddUserToPrivateChannelComponent implements OnInit {
       if (removedUser) {
         this.listOfUsers.push(removedUser);
       }
-
-
     })
-    console.log(`passing of the value:`, this.selectedPrivateChannelId)
 
-    //this bit needs changing into behavior subject
     this.userService.kickUser(userId, this.selectedPrivateChannelId)
- 
+
   }
 
 }

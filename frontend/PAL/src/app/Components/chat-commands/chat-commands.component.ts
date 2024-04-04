@@ -11,7 +11,7 @@ import { ChannelService } from '../../Services/channel.service';
   templateUrl: './chat-commands.component.html',
   styleUrl: './chat-commands.component.css'
 })
-export class ChatCommandsComponent implements OnInit,OnDestroy {
+export class ChatCommandsComponent implements OnInit, OnDestroy {
 
   private destroy$ = new rxjs.Subject<void>();
   privateConversationId$ = this.chatService.privateConversationId$
@@ -23,63 +23,73 @@ export class ChatCommandsComponent implements OnInit,OnDestroy {
   receivedPrivateMessages$ = this.messageService.receivedPrivateMessages$;
   receivedPublicMessages$ = this.messageService.receivedPublicMessages$
 
-  currentUserId$ = this.authService.userId$;   
+  currentUserId$ = this.authService.userId$;
 
   isUserTyping$ = this.chatService.isUserTyping$
   senderId$ = this.chatService.senderId$
 
-  SelectedChannel$ = this.channelService.SelectedChannel$ 
+  SelectedChannel$ = this.channelService.SelectedChannel$
 
   constructor(
-    public chatService:ChatService,
+    public chatService: ChatService,
     public messageService: MessageService,
     public userService: UserService,
     private authService: AuthService,
     private channelService: ChannelService
-    ) {}
+  ) { }
   ngOnInit(): void {
-    
+
   }
   ngOnDestroy(): void {
-    this.destroy$.next(); 
+    this.destroy$.next();
     this.destroy$.complete();
   }
 
-  public sendPrivateMessage(): void {
 
+  public sendPrivateMessage(): void {
 
     this.currentUserName$.pipe(
       rxjs.first(),
-    ).subscribe((currentUserName) => {
-      if (this.newPrivateMessage !== undefined && this.privateConversationId$.getValue() !== undefined) {
-        
-        this.messageService.sendPrivateMessage(this.privateConversationId$.getValue(), this.newPrivateMessage as string)
-        const privateMessage: PrivateMessage = {
-          senderId: currentUserName,
-          message: this.newPrivateMessage,
-          isSeen: false
+      rxjs.switchMap(currentUserName => {
+        if (this.newPrivateMessage !== undefined && this.privateConversationId$.getValue() !== undefined) {
+          // Send private message
+          return this.messageService.sendPrivateMessage(this.privateConversationId$.getValue(), this.newPrivateMessage as string).pipe(
+            rxjs.tap(() => {
+              // Create private message object
+              const privateMessage: PrivateMessage = {
+                senderId: currentUserName,
+                message: this.newPrivateMessage,
+                isSeen: false
+              };
+
+              // Shift oldest private message if needed
+              if (this.messageService.receivedPrivateMessages$.value.length >= this.messageService.initialPrivateMessageStartIndex$.value) {
+                this.messageService.receivedPrivateMessages$.value.shift();
+              }
+
+              // Update received private messages
+              this.messageService.receivedPrivateMessages$.next([...this.receivedPrivateMessages$.value, privateMessage]);
+
+              // Update the number of private messages
+              this.chatService.getLatestNumberOfPrivateMessages(
+                this.currentUserId$.getValue() as number,
+                this.privateConversationId$.getValue() as number
+              );
+
+              // Clear the new private message
+              this.newPrivateMessage = '';
+            })
+          );
+        } else {
+          return rxjs.EMPTY;
         }
-
-        if (this.messageService.receivedPrivateMessages$.value.length >= this.messageService.initialPrivateMessageStartIndex$.value) {
-          this.messageService.receivedPrivateMessages$.value.shift()
-        }
-        this.messageService.receivedPrivateMessages$.next([...this.receivedPrivateMessages$.value, privateMessage])
-
-
-        //update the number of private messages
-        this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.privateConversationId$.getValue() as number)
-
-        this.newPrivateMessage = '';
-        
-        //scroll logic
-        this.messageService.maxScrollValue$.pipe(rxjs.take(1)).subscribe(maxScrollValue => {
-          
-        //  this.messageService.scrollToEndPrivate(maxScrollValue)
-         this.messageService.endScrollValue$.next(maxScrollValue)
-         })
-      }
-    })
-
+      }),
+      rxjs.switchMap(() => this.messageService.maxScrollValue$),
+      rxjs.take(1)
+    ).subscribe(maxScrollValue => {
+      // Scroll logic
+      this.messageService.endScrollValue$.next(maxScrollValue);
+    });
   }
 
   sendMessage(): void {
@@ -98,7 +108,7 @@ export class ChatCommandsComponent implements OnInit,OnDestroy {
       const newPubMessage = this.newPublicMessage;
       this.messageService.extractUserName(this.currentUserId$.getValue()).subscribe(firstName => {
 
-//        console.log(firstName)
+        //        console.log(firstName)
         const publicMessage: any = {
           sentFromUserDTO: {
             firstName: firstName,

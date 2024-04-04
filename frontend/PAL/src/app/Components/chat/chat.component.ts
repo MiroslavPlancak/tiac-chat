@@ -3,7 +3,7 @@ import { ChatService, PrivateMessage } from '../../Services/chat.service';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { AuthService } from '../../Services/auth.service';
 import { User, UserService } from '../../Services/user.service';
-import { BehaviorSubject, Observable, Subject, Subscription, combineLatest, distinctUntilChanged, filter, first, forkJoin, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, combineLatest, distinctUntilChanged, filter, first, forkJoin, map, mergeMap, switchMap, withLatestFrom } from 'rxjs';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
 
@@ -15,29 +15,16 @@ import { ChannelService } from '../../Services/channel.service';
 })
 export class ChatComponent implements OnInit, OnDestroy {
 
-
-
-
-
   privateConversationId$ = new BehaviorSubject<number | undefined>(undefined)
   privateConversationUsers$!: Observable<User[]>;
   privateConversationMessages$!: Observable<PrivateMessage[]>
-  private subscriptions: Subscription[] = [];
+  
 
 
   currentUserId = -1;
 
-  currentUserName$ = this.authService.userId$.pipe(
-    filter(userId => userId != null),
-    distinctUntilChanged(),
-    switchMap(userid => {
-      return this.userService.getById(-1);
-    }),
-    map(user => user.firstName)
-  )
-
-  newPublicMessage: string = '';
-  newPrivateMessage: string = '';
+  
+ 
   receivedPublicMessages: any[] = [];
   receivedPrivateMessages: PrivateMessage[] = [];
   accessToken = this.getAccessToken();
@@ -146,8 +133,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.receivedPrivateMessages.push(...fullMessages)
     })
 
-    //clean up
-    this.subscriptions.push(combineLatestSubscription)
+
 
 
     //receive private messages
@@ -166,29 +152,13 @@ export class ChatComponent implements OnInit, OnDestroy {
         console.log(loadedPrivateMessages);
       })
 
-    //clean up
-    this.subscriptions.push(receivedPrivateMessagesSubscription);
+
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(subscription => {
-      subscription.unsubscribe();
-    });
+
   }
 
-
-  sendMessage(): void {
-    const selectedChannel = this.SelectedChannel$.getValue();
-    if (this.currentUserId && this.newPublicMessage && selectedChannel) {
-
-      this.messageService.sendMessage(this.currentUserId, this.newPublicMessage, selectedChannel);
-
-      console.log(selectedChannel)
-      //clear the input for the next message
-      this.newPublicMessage = '';
-
-    }
-  }
 
   //token logic
 
@@ -215,25 +185,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.tempMessage = $event.target.value
   }
 
-  public sendPrivateMessage(): void {
-    this.currentUserName$.pipe(
-      first()
-    ).subscribe((currentUserName) => {
-      if (this.tempMessage !== undefined && this.privateConversationId$.getValue() !== undefined) {
-        this.messageService.sendPrivateMessage(this.privateConversationId$.getValue(), this.tempMessage as string)
-        const privateMessage: PrivateMessage = {
-          isSeen: false,
-          senderId: currentUserName,
-          message: this.tempMessage
-        }
-        this.receivedPrivateMessages.push(privateMessage);
-
-        this.tempMessage = undefined
-
-      }
-    })
-
-  }
 
   public conversationIdSelectedClickHandler(conversationId: number): void {
 

@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../Services/auth.service';
-import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { RegisterUserComponent } from '../register-user/register-user.component';
-import { ChatService } from '../../Services/chat.service';
+
 
 @Component({
   selector: 'app-login',
@@ -22,7 +21,6 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router,
     private matDialog: MatDialog,
    // private chatService: ChatService
   ) {

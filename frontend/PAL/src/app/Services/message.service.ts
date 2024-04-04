@@ -157,8 +157,13 @@ export class MessageService implements OnInit, OnDestroy {
   public sendPrivateMessage = (
     recipientId: number | null | undefined,
     message: string) => {
-    this.connectionService.hubConnection?.invoke("SendPrivateMessage", recipientId, message)
-      .catch(err => console.log(err));
+   return rxjs.from( this.connectionService.hubConnection?.invoke("SendPrivateMessage", recipientId, message))
+   .pipe(
+    rxjs.catchError(err => {
+      console.log(err);
+      return (err);
+    })
+  );
   }
 
   /// recieve private message()

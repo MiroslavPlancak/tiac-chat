@@ -1,4 +1,4 @@
-<!-- chat.component.html -->
+chat.component.html
 <div class="private-conversation">
   <div class="online-users">
     <h2>online users</h2>
@@ -16,7 +16,7 @@
 <div>
     <div>Send message to: {{ privateConversationId$  | async}}</div>
     <input type="text" (change)="onPrivateMessageChangeHandler($event)"/>
-    <button [disabled]="!tempMessage" (click)="sendPrivateMessage()">Send Private Mesage</button>
+    <!-- <button [disabled]="!tempMessage" (click)="sendPrivateMessage()">Send Private Mesage</button> -->
 </div>
 
 <div style="border: 1px solid black;">
@@ -27,16 +27,16 @@
     </div>
   
     
-    <form (ngSubmit)="sendMessage()" #messageForm="ngForm">
+    <!-- <form (ngSubmit)="sendMessage()" #messageForm="ngForm"> -->
       
       <label for="user">You are logged in as:</label>
       
-      <p>{{ currentUserName$ | async |json }}</p>
+      <!-- <p>{{ currentUserName$ | async |json }}</p> -->
       <label for="message">Message:</label>
-      <input type="text" id="message" [(ngModel)]="newPublicMessage" name="message" required>
+      <!-- <input type="text" id="message" [(ngModel)]="newPublicMessage" name="message" required> -->
   
-      <button type="submit" [disabled]="messageForm.invalid">Send Message</button>
-    </form>
+      <!-- <button type="submit" [disabled]="messageForm.invalid">Send Message</button>
+    </form> -->
     <button  (click)="logout()">logout</button>
   </div>
   

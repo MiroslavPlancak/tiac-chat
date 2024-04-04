@@ -40,16 +40,16 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
       this.userService.offlineUsers$,
       this.offlineUserSearchTerm$
     ])
-    .pipe(
-      rxjs.map(([offlineUsers, term]) => {
-        if (term == undefined) {
-          return offlineUsers.filter(offlineUser => offlineUser.id !== this.currentUserId$.getValue());
-        } else {
-          return offlineUsers.filter(user => JSON.stringify([user.firstName, user.lastName]).toLowerCase().indexOf(term) > -1)
-        }
-      }),
-      rxjs.takeUntil(this.destroy$)
-    )
+      .pipe(
+        rxjs.map(([offlineUsers, term]) => {
+          if (term == undefined) {
+            return offlineUsers.filter(offlineUser => offlineUser.id !== this.currentUserId$.getValue());
+          } else {
+            return offlineUsers.filter(user => JSON.stringify([user.firstName, user.lastName]).toLowerCase().indexOf(term) > -1)
+          }
+        }),
+        rxjs.takeUntil(this.destroy$)
+      )
 
   }
 
