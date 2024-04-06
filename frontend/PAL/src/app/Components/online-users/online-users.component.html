@@ -12,6 +12,7 @@
                     <mat-icon  style="font-size: 24px; vertical-align: middle;">record_voice_over</mat-icon></span> {{ user.firstName }}
                 {{ user.lastName }} 
                 <mat-icon *ngIf="privateNotification[user.id]" style="font-size: 24px; vertical-align: middle;" color="primary">message</mat-icon>
+                <span *ngIf="(privateMessageMap$ | async)!.get(user.id) !== undefined">{{(privateMessageMap$ | async)!.get(user.id)}}</span>
             </div>
         </mat-list-item>
     </mat-list>

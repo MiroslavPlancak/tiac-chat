@@ -45,6 +45,12 @@ export class MessageService implements OnInit, OnDestroy {
   conversationId: number = 0
   selectedConversation = this.channelService.selectedConversation$
 
+   initialPrivateMessages: PrivateMessage[] = [];
+
+  privateMessageCounter$ = new rxjs.BehaviorSubject<PrivateMessage[]>(this.initialPrivateMessages);
+  privateMessageMap$ = new rxjs.BehaviorSubject<Map<number,number>>(new Map<number,number>)
+  privateMessageMap = new Map<number, number>()
+
   private apiUrl = "http://localhost:5008/api/messages/";
 
 
@@ -58,7 +64,7 @@ export class MessageService implements OnInit, OnDestroy {
     private connectionService: ConnectionService
   ) { }
   ngOnInit(): void {
-
+ 
   }
 
   ngOnDestroy(): void {
@@ -285,6 +291,13 @@ export class MessageService implements OnInit, OnDestroy {
   // select user for private messaging directly from public chat method()
   public conversationIdSelectedClickHandler(conversationId: number): void {
 
+    // reset the private message counter and clear the map
+    this.privateMessageCounter$.next([])
+    this.privateMessageMap$.getValue().forEach((value,key,map)=>{
+      map.delete(conversationId)
+    })
+
+    
     // these if statements ensure proper clean up of `is typing` if a different conversation is selected
     const currentlyTypingFilteredConvoId = this.chatService.currentlyTypingUsers$.value.filter(correctUser => correctUser !== conversationId)
 

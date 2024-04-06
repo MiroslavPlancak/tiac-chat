@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as rxjs from 'rxjs';
-import { ChatService } from '../../Services/chat.service';
+import { ChatService, PrivateMessage } from '../../Services/chat.service';
 import { User, UserService } from '../../Services/user.service';
 import { AuthService } from '../../Services/auth.service';
 import { MessageService } from '../../Services/message.service';
@@ -25,8 +25,11 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
   initialPublicMessageStartIndex$ = this.messageService.initialPublicMessageStartIndex$
   canLoadMorePrivateMessages$ = this.messageService.canLoadMorePrivateMessages$
 
+  privateMessagesCounter$ = this.messageService.privateMessageCounter$
+  privateMessagesCounter: PrivateMessage[] = []
 
-
+  privateMessageMap$ = this.messageService.privateMessageMap$
+  privateMessageMap = new Map<number, number>()
   constructor
     (
       private chatService: ChatService,
@@ -72,6 +75,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
         return this.messageService.receivedPrivateMessages$.pipe(
           rxjs.take(1),
           rxjs.tap(messages => {
+            console.log(messages)
             messages.forEach(message => message.isSeen = true);
           })
         );
@@ -113,7 +117,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
             rxjs.first(),
             rxjs.map(allMessages => allMessages.filter((message: { isSeen: boolean; }) => !message.isSeen)),
             rxjs.tap(filteredUnSeenMessages => {
-             
+
               filteredUnSeenMessages.forEach((unSeenMessage: any) => {
                 this.chatService.notifyReceiverOfPrivateMessage(unSeenMessage);
               });
@@ -125,14 +129,30 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
         }
       }),
       rxjs.tap(privateMessage => {
-        console.log(privateMessage)
+
         if (+privateMessage.senderId as number !== this.privateConversationId$.value) {
-          console.log(+privateMessage.senderId as number)
-          console.log(this.privateConversationId$.value)
           this.privateNotification[+privateMessage.senderId] = true;
         }
+      }),
+      rxjs.switchMap((privateMessage) => {
+        if (+privateMessage.senderId as number !== this.privateConversationId$.value) {
+          this.privateMessageCounter(privateMessage)
+          const privateMessage$ = rxjs.from(this.privateMessagesCounter$.getValue())
+
+          return privateMessage$.pipe(
+            rxjs.groupBy(message => message.senderId),
+            rxjs.mergeMap(group => group.pipe(rxjs.toArray()))
+          )
+        }
+        return rxjs.EMPTY;
       })
-    ).subscribe();
+    ).subscribe((splitArray) => {
+      splitArray.forEach(element => {
+        this.privateMessageMap.set(+element.senderId, splitArray.length)
+        this.privateMessageMap$.next(this.privateMessageMap)
+      })
+    })
+
   }
 
   ngOnDestroy(): void {
@@ -145,8 +165,12 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
     this.onlineUserSearchTerm$.next(value === '' ? undefined : value)
   }
 
-  
 
+  privateMessageCounter(newMessage: PrivateMessage) {
+    const currentMessages = this.privateMessagesCounter$.getValue();
+    const updatedMessages = [...currentMessages, newMessage];
+    this.privateMessagesCounter$.next(updatedMessages);
+  }
 
 
 }
