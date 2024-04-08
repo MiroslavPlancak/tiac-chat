@@ -186,7 +186,11 @@
      /* Set maximum width to prevent overflow */
     max-height: calc(100vh - 203px); /* Set maximum height */
     /* TODO: This is dangureso to do*/
-    padding: 10px;
+    /* padding: 10px; */
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right:10px;
+    padding-bottom: 0px;
     display: flex; /*<<<<<<<<<<<<<<<<<<<PROBLEM when this is changed to block*/
     flex-direction: column;
     align-items: flex-start;

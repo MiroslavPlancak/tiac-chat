@@ -96,6 +96,7 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
 
     //scroll logic
     this.messageService.maxScrollValue$.pipe(rxjs.take(1)).subscribe(maxScrollValue => {
+      //console.log(`maxScrollValue from sendMessage()`,maxScrollValue)
       this.messageService.endScrollValue$.next(maxScrollValue)
     })
 

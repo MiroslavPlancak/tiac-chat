@@ -187,7 +187,7 @@ export class MessageService implements OnInit, OnDestroy {
 
   // load more public messages method()
   loadMorePublicMessages() {
-    console.log(`loading more public messages...`)
+    //console.log(`loading more public messages...`)
 
     const selectedChannelId = this.SelectedChannel$.value
 
@@ -196,8 +196,8 @@ export class MessageService implements OnInit, OnDestroy {
       let startIndex = this.initialPublicMessageStartIndex$.value
       let endIndex = startIndex + 10
       this.initialPublicMessageStartIndex$.next(endIndex)
-      console.log(`startIndex from public`, startIndex)
-      console.log(`endIndex from public`, endIndex)
+      //console.log(`startIndex from public`, startIndex)
+      //console.log(`endIndex from public`, endIndex)
       this.loadPaginatedPublicMessagesById(+selectedChannelId as number, startIndex, endIndex)
         .pipe(
           rxjs.take(1),
@@ -436,7 +436,7 @@ export class MessageService implements OnInit, OnDestroy {
   }
 
   scrollToEndPrivate(index: number): void {
-    //console.log(`this runs`, index)
+    console.log(`this runs`, index)
    // console.log(`and virtual scroll is:`, this.getVirtualScrollViewport())
     this.getVirtualScrollViewport()?.scrollToIndex(index)
   }

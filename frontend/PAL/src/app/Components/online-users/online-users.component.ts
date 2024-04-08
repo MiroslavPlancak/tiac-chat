@@ -75,7 +75,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
         return this.messageService.receivedPrivateMessages$.pipe(
           rxjs.take(1),
           rxjs.tap(messages => {
-            console.log(messages)
+          //  console.log(messages)
             messages.forEach(message => message.isSeen = true);
           })
         );
@@ -136,7 +136,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
       }),
       rxjs.switchMap((privateMessage) => {
         if (+privateMessage.senderId as number !== this.privateConversationId$.value) {
-          this.privateMessageCounter(privateMessage)
+          this.countPrivateMessages(privateMessage)
           const privateMessage$ = rxjs.from(this.privateMessagesCounter$.getValue())
 
           return privateMessage$.pipe(
@@ -166,7 +166,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
   }
 
 
-  privateMessageCounter(newMessage: PrivateMessage) {
+  countPrivateMessages(newMessage: PrivateMessage) {
     const currentMessages = this.privateMessagesCounter$.getValue();
     const updatedMessages = [...currentMessages, newMessage];
     this.privateMessagesCounter$.next(updatedMessages);

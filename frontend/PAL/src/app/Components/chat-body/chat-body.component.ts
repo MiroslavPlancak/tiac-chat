@@ -44,16 +44,22 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
 
   ngOnInit(): void {
+    //testing 
+ 
    //scroll after sending a private message
-   this.messageService.endScrollValue$.pipe(rxjs.delay(0), rxjs.take(1)).subscribe(res => {
+   this.messageService.endScrollValue$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
     if(res !== 0)
     this.scrollToEndPrivate(res+1)
    })
 
     //scroll after sending a public message
-    this.messageService.endScrollValue$.pipe(rxjs.delay(0),rxjs.take(1) ).subscribe(res => {
+    this.messageService.endScrollValue$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
+     // console.log(`endScrollValue$ from chatbody onInit-`,res)
       if (res !== 0)
-        this.scrollToEndPublic(res + 1)
+        setTimeout(() => {
+          this.scrollToEndPublic(res)
+        }, 11);
+        
     })
 
 
@@ -63,7 +69,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
       this.scrollIndexPublic$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
 
         if (res !== undefined && res !== null && res !== 0) {
-          console.log(res)
+          //console.log(res)
           this.virtualScrollViewportPublic.scrollToIndex(res)
         }
       })
@@ -200,7 +206,9 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   }
 
   scrollToEndPublic(index: number): void {
-  
+    
     this.virtualScrollViewportPublic.scrollToIndex(index)
+    console.log('Scrolled to index:', index);
+
   }
 }
