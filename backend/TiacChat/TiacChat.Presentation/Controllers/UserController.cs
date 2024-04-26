@@ -57,7 +57,7 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Ok(user);
             }
-             return NotFound($"User with an ID of: {userId} was not found.");
+             return NotFound(new{message = $"User with an ID of: {userId} was not found."});
 
         }
 
@@ -117,7 +117,7 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Ok(userId);
             }
-            return NotFound($"User with the ID of {userId} was not found.");
+            return NotFound(new{message = $"User with the ID of {userId} was not found."});
         }
 
     }

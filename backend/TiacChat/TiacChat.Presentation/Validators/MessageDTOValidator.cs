@@ -8,7 +8,7 @@ namespace TiacChat.Presentation.Validators
       public MessageDTOValidator()
       {
         RuleFor(messageDTO => messageDTO.Body).MaximumLength(500);
-        RuleFor(messageDTO => messageDTO.SentFromUserId);
+        RuleFor(messageDTO => messageDTO.SentFromUserId).NotEmpty().NotNull();
         RuleFor(messageDTO => messageDTO.SentToUserId);
         RuleFor(messageDTO => messageDTO.SentToChannelId).NotEmpty().NotNull();
         RuleFor(messageDTO => messageDTO.Time).NotEmpty().NotNull();

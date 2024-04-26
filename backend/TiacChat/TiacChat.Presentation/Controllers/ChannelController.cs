@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using TiacChat.BAL.DTOs;
 using TiacChat.BAL.Services;
 using TiacChat.Presentation.Validators;
@@ -46,7 +47,7 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Ok(channelDTO);
             }
-            return NotFound($"Channel with an ID of {userId} was not found.");
+            return NotFound(new { message = $"Channel with an ID of {userId} was not found."});
         }
 
         [HttpPost("userChannel")]
@@ -73,7 +74,7 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Ok(userId);
             }
-            return NotFound($"Channel with the ID of {userId} was not found.");
+            return NotFound(new { message = $"Channel with the ID of {channelId} was not found." });
         }
 
         [HttpGet("participants")]
@@ -86,7 +87,7 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Ok(listOfParticipants);
             }
-            return NotFound();
+            return NotFound(new { message = $"Channel with the ID of {channelId} was not found." });
         }
 
         [HttpGet]
@@ -100,7 +101,7 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Ok(channelDTO);
             }
-            return NotFound($"Channel with an ID of {channelId} was not found.");
+            return NotFound(new { message = $"Channel with an ID of {channelId} was not found."});
         }
 
         [HttpPost]
@@ -141,7 +142,7 @@ namespace TiacChat.Presentation.Controllers
                 }
                 
             }   
-            return BadRequest(validationResult.Errors.Select(e =>e.ErrorMessage.ToString()));         
+            return BadRequest(new { message = validationResult.Errors.Select(e =>e.ErrorMessage.ToString())});         
         }
 
         [HttpDelete]
@@ -155,7 +156,7 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Ok(channelId);
             }
-            return NotFound($"Channel with the ID of {channelId} was not found.");
+            return NotFound(new { message = $"Channel with the ID of {channelId} was not found." });
         }
     }
 

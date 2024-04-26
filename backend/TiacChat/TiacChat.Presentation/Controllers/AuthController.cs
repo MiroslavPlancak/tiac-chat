@@ -50,7 +50,7 @@ namespace TiacChat.Presentation.Controllers
                 {
                     return Ok(newUser);
                 }
-                return BadRequest("User already exists");
+               return BadRequest(new { message = "User already exists." });
             }
             return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage.ToString()));
         }
@@ -98,7 +98,7 @@ namespace TiacChat.Presentation.Controllers
                     RefreshToken = token.RefreshToken,
                     UserId = user.Id,
                     //ExpirationDate = DateTime.Now.AddDays(7)
-                    ExpirationDate = DateTime.Now.AddMinutes(30)
+                    ExpirationDate = DateTime.Now.AddMinutes(303)
                 };
                 await _services.AddUserRefreshTokensAsync(newUserRefreshToken);
             }else if(checkIfRefreshTokenExists.RefreshToken != null){

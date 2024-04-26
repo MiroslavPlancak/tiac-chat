@@ -58,14 +58,13 @@ export class ChatService implements OnInit,OnDestroy {
   //send notification of received message
   public notifyReceiverOfPrivateMessage = (object:any) => {
     this.hubConnection?.invoke("NotifyReceiverOfPrivateMessage", object)
-    .catch(err => console.log(err))
+    .catch(err => console.log(err))  
   }
 
   //recieve confirmation that the private message has been seen
   public privateMessageReceived = (): rxjs.Observable<any> => {
     return new rxjs.Observable<any> (observer => {
       this.hubConnection?.on("PrivateMessageReceived", (privateMessage)=>{
-       //console.log('Private message received/chat.service.ts:', privateMessage);
         observer.next(privateMessage)
       })
     }).pipe(rxjs.takeUntil(this.destroy$))

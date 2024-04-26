@@ -33,7 +33,7 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Ok(messagesDTO);
             }
-            return NotFound("No messages found.");
+            return NotFound(new { message ="No messages found."});
            
         }
 
@@ -47,7 +47,7 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Ok(messageDTO);
             } 
-            return NotFound($"Message with an ID of: {messageId} was not found.");
+            return NotFound(new{message =$"Message with an ID of: {messageId} was not found."});
         }
 
         [HttpGet("getMessagesByChannelId")]
@@ -56,11 +56,11 @@ namespace TiacChat.Presentation.Controllers
         public async Task<IActionResult> GetMessagesByChannelId([FromQuery]int channelId)
         {
            var publicMessagesDTOByChannelId = await _services.GetPublicMessagesByChannelIdAsync(channelId);
-           if(publicMessagesDTOByChannelId != null)
+           if(publicMessagesDTOByChannelId.Count() != 0 )
            {
             return Ok(publicMessagesDTOByChannelId);
            }
-           return NotFound($"Messages for the selected channel {channelId} were not found.");
+           return NotFound(new { message = $"Messages for the selected channel {channelId} were not found."});
         }
 
         [HttpGet("getPaginatedPublicChannelMessages")]
@@ -152,7 +152,7 @@ namespace TiacChat.Presentation.Controllers
                 }
                 
             }
-            return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage.ToString()));
+            return BadRequest(new { message = validationResult.Errors.Select(e => e.ErrorMessage.ToString()) });
         }
 
         [HttpPut]
@@ -175,7 +175,7 @@ namespace TiacChat.Presentation.Controllers
                 return NotFound("Could not update the message.");
             }
 
-            return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage.ToString()));
+            return BadRequest(new { message = validationResult.Errors.Select(e => e.ErrorMessage.ToString()) });
         }
 
         [HttpDelete]
@@ -189,7 +189,7 @@ namespace TiacChat.Presentation.Controllers
             {
                 return Ok(messageId);
             }
-            return NotFound($"Message with an ID of {messageId} was not found.");
+            return NotFound(new { message = $"Message with an ID of {messageId} was not found." });
         }
     }
 

@@ -436,7 +436,7 @@ export class MessageService implements OnInit, OnDestroy {
   }
 
   scrollToEndPrivate(index: number): void {
-    console.log(`this runs`, index)
+    //console.log(`this runs`, index)
    // console.log(`and virtual scroll is:`, this.getVirtualScrollViewport())
     this.getVirtualScrollViewport()?.scrollToIndex(index)
   }

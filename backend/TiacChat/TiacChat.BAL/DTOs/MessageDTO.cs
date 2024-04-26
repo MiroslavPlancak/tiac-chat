@@ -9,8 +9,8 @@ namespace TiacChat.BAL.DTOs
         public int? SentToChannelId { get; set; }
         public bool IsSeen {get;set;}
         public DateTime Time { get; set; }
-        public UserDTO SentFromUserDTO { get; set; }
-        public UserDTO SentToUserDTO {get;set;}
+        public UserDTO? SentFromUserDTO { get; set; }
+        public UserDTO? SentToUserDTO {get;set;}
         public MessageDTO()
         {
             

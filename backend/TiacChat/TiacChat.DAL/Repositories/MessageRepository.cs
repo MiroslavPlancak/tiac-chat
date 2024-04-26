@@ -193,14 +193,17 @@ namespace TiacChat.DAL.Repositories
             {
                 var objectToUpdate = await GetByIdAsync(updatedObject.Id);
                 
-                if(objectToUpdate.SentToChannelId == 0)
+                if(objectToUpdate.SentToChannelId == 0 ) 
                 {
                     objectToUpdate.SentToChannelId = null;
                 }
-
+   
                 if(objectToUpdate != null)
                 {   
                     updatedObject.SentToChannelId = null;
+                    // this was changed
+                    updatedObject.SentToUserId = null;
+                    // this was changed
                     objectToUpdate = new Message(updatedObject);
                     
                     _dataContext.Messages.Update(updatedObject);
