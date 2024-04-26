@@ -48,6 +48,7 @@ import { PublicChannelsComponent } from './Components/public-channels/public-cha
 import { ChatHeaderComponent } from './Components/chat-header/chat-header.component';
 import { ChatBodyComponent } from './Components/chat-body/chat-body.component';
 import { ChatCommandsComponent } from './Components/chat-commands/chat-commands.component';
+import { StoreModule } from '@ngrx/store';
 
 @NgModule({
   declarations: [
@@ -96,7 +97,8 @@ import { ChatCommandsComponent } from './Components/chat-commands/chat-commands.
     MatIconModule,
     MatError,
     MatTooltipModule,
-    MatSelectModule  
+    MatSelectModule,
+    StoreModule.forRoot({}, {})  
     
 
   ],
