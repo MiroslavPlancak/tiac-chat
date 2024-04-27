@@ -1,20 +1,15 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
 import { AuthService } from './auth.service';
-import { BehaviorSubject, Observable, Subject, tap } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, tap, throwError } from 'rxjs';
 import * as rxjs from 'rxjs';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ChannelService } from './channel.service';
 import { AddUserToPrivateChannelComponent } from '../Components/add-user-to-private-channel/add-user-to-private-channel.component';
 import { ConnectionService } from './connection.service';
 import { NotificationDialogService } from './notification-dialog.service';
+import { User } from '../Models/user.model';
 
-export interface User {
-  id: number,
-  firstName: string,
-  lastName: string,
-  email: string
-}
 
 @Injectable({
   providedIn: 'root'
@@ -107,11 +102,15 @@ export class UserService implements OnDestroy {
   }
 
   /////HTTP endpoint methods/////
-
+  //0
   getById(userId: number): Observable<User> {
     if (!userId) { throw new Error() }
     const url = `${this.apiUrl}${userId}`;
-    return this.http.get<any>(url);
+    return this.http.get<any>(url).pipe(
+      rxjs.catchError((error:HttpErrorResponse) =>{
+        return rxjs.throwError(()=> new Error(error.message))
+      })
+    )
   }
 
   getAllUsers(): Observable<User[]> {
@@ -240,3 +239,5 @@ export class UserService implements OnDestroy {
   }
   /////Invoke hub methods/////
 }
+export { User };
+

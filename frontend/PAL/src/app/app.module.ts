@@ -48,7 +48,12 @@ import { PublicChannelsComponent } from './Components/public-channels/public-cha
 import { ChatHeaderComponent } from './Components/chat-header/chat-header.component';
 import { ChatBodyComponent } from './Components/chat-body/chat-body.component';
 import { ChatCommandsComponent } from './Components/chat-commands/chat-commands.component';
+
+//state
 import { StoreModule } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
+import { UserEffect } from './state/user/user.effect';
+import { userReducer } from './state/user/user.reducer';
 
 @NgModule({
   declarations: [
@@ -98,7 +103,8 @@ import { StoreModule } from '@ngrx/store';
     MatError,
     MatTooltipModule,
     MatSelectModule,
-    StoreModule.forRoot({}, {})  
+    StoreModule.forRoot({userReducer}, {}),
+    EffectsModule.forRoot([UserEffect])
     
 
   ],
