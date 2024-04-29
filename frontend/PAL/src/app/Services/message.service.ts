@@ -423,17 +423,9 @@ export class MessageService implements OnInit, OnDestroy {
 
 
   extractUserName(sentFromUserId: any): rxjs.Observable<string> {
-    console.log(sentFromUserId)
+    
     this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId:sentFromUserId}))
-    // this.store.select(selectUserById).subscribe((users) => {
-    //   const firstName = users.map(user => user.firstName)
-    //   console.log(firstName)
-    // }) 
-    // return this.userService.getById(sentFromUserId).pipe(
-    // //  rxjs.tap(res => console.log(`tap runs`, res)),
-    //   rxjs.take(1),
-    //   rxjs.map(res => res.firstName)
-    // );
+
     return this.store.select(selectUserById).pipe(
       //this basically waits for the users to be loaded into the reducer state before proceeding down the pipe
       //without it we get 'loading': message

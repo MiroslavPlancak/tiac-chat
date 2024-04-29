@@ -17,6 +17,10 @@ export namespace Users{
                     LoadUserByIdSucceeded: props<{ user: User }>(),
                     LoadUserByIdFailed: props<{ error: any }>(),
                     
+                    //load all users
+                    LoadAllUsersStarted: emptyProps(),
+                    LoadAllUsersSucceeded: props<{ users: User[] }>(),
+                    LoadAllUsersFailed: props<{ error: any }>(),
                 },
                 source:SOURCE
             })

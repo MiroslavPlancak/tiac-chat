@@ -10,9 +10,16 @@ export const selectUserError = createSelector(
         state.error
 )
 
+/////// API calls /////////
 //select user by ID
 export const selectUserById = createSelector(
     selectedUserState,
     (state:UserState) =>
         state.userById
+)
+//select all users
+export const selectAllUsers = createSelector(
+    selectedUserState,
+    (state:UserState) =>
+        state.users
 )

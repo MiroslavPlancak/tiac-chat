@@ -17,11 +17,9 @@ export const initialState:UserState ={
 export const userReducer = createReducer(
     initialState,
     
-    //get user by ID
+    //load user by ID
     on(Users.Api.Actions.loadUserByIdSucceeded, (state,{user})=>{
 
-        console.log(`reducer output:`, state.userById);
-    
         const isUserInState = state.userById.some(u => u.id === user.id);
 
         if (!isUserInState) {
@@ -35,13 +33,30 @@ export const userReducer = createReducer(
             return state;
         }
     }),
-     //get user by ID ERROR
+     //load user by ID ERROR
      on(Users.Api.Actions.loadUserByIdFailed, (state,{error})=>{
         return {
             ...state,
             error:error,
             userById:[]
         }
+    }),
+
+    //load all users
+    on(Users.Api.Actions.loadAllUsersSucceeded, (state,{users})=>{
+        const loadAllUsersDeepCopy = users.map(user => ({...user}))
+        return {
+            ...state,
+            users:loadAllUsersDeepCopy
+        }
+    }),
+    //load all users ERROR
+    on(Users.Api.Actions.loadAllUsersFailed, (state,{error})=>{
+        return {
+            ...state,
+            error: error
+        }
     })
+
 
 )

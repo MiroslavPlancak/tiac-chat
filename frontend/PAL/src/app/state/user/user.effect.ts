@@ -11,18 +11,29 @@ export class UserEffect{
     private userService = inject(UserService)
     private actions$ = inject(Actions)
 
-        loadUserById$ = createEffect(()=>
-            this.actions$.pipe(
-                ofType(Users.Api.Actions.loadUserByIdStarted),
-                rxjs.mergeMap((action)=>
-                    this.userService.getById(action.userId).pipe(
-                        rxjs.tap((res)=> console.log(`effects output:`,res)),
-                        rxjs.map((response) => Users.Api.Actions.loadUserByIdSucceeded({ user: response})),
-                        rxjs.catchError((error) => rxjs.of(Users.Api.Actions.loadUserByIdFailed({ error: error})))
-                    )
+    loadUserById$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(Users.Api.Actions.loadUserByIdStarted),
+            rxjs.mergeMap((action) =>
+                this.userService.getById(action.userId).pipe(
+                    rxjs.map((response) => Users.Api.Actions.loadUserByIdSucceeded({ user: response })),
+                    rxjs.catchError((error) => rxjs.of(Users.Api.Actions.loadUserByIdFailed({ error: error })))
                 )
             )
         )
+    )
+
+    loadAllUsers$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(Users.Api.Actions.loadAllUsersStarted),
+            rxjs.switchMap(() =>
+                this.userService.getAllUsers().pipe(
+                    rxjs.map((response) => Users.Api.Actions.loadAllUsersSucceeded({ users: response })),
+                    rxjs.catchError((error) => rxjs.of(Users.Api.Actions.loadAllUsersFailed({ error: error })))
+                )
+            )
+        )
+    )
 
         //onChannelLoadSucceeded$ = createEffect(() => this.actions$.pipe(
             // When channel data is loaded..., reqeust users for that channel.
