@@ -8,6 +8,9 @@ import { UserService } from './user.service';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { AuthService } from './auth.service';
 import { ConnectionService } from './connection.service';
+import { Store } from '@ngrx/store';
+import { Users } from '../state/user/user.action'
+import { selectUserById } from '../state/user/user.selector';
 
 @Injectable({
   providedIn: 'root'
@@ -61,8 +64,9 @@ export class MessageService implements OnInit, OnDestroy {
     private userService: UserService,
     private authService: AuthService,
     private chatService: ChatService,
-    private connectionService: ConnectionService
-  ) { }
+    private connectionService: ConnectionService,
+    private store: Store
+  ) {    }
   ngOnInit(): void {
  
   }
@@ -419,9 +423,26 @@ export class MessageService implements OnInit, OnDestroy {
 
 
   extractUserName(sentFromUserId: any): rxjs.Observable<string> {
-    return this.userService.getById(sentFromUserId).pipe(
-      rxjs.take(1),
-      rxjs.map(res => res.firstName)
+    console.log(sentFromUserId)
+    this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId:sentFromUserId}))
+    // this.store.select(selectUserById).subscribe((users) => {
+    //   const firstName = users.map(user => user.firstName)
+    //   console.log(firstName)
+    // }) 
+    // return this.userService.getById(sentFromUserId).pipe(
+    // //  rxjs.tap(res => console.log(`tap runs`, res)),
+    //   rxjs.take(1),
+    //   rxjs.map(res => res.firstName)
+    // );
+    return this.store.select(selectUserById).pipe(
+      //this basically waits for the users to be loaded into the reducer state before proceeding down the pipe
+      //without it we get 'loading': message
+      rxjs.filter(users => users.some(user => user.id === sentFromUserId)), 
+      rxjs.take(1),                            
+      map(users => {
+        const currentUser = users.find(user => user.id === sentFromUserId);
+        return currentUser ? currentUser.firstName : 'loading'; 
+      })
     );
 
   }

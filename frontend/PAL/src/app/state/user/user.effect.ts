@@ -14,12 +14,28 @@ export class UserEffect{
         loadUserById$ = createEffect(()=>
             this.actions$.pipe(
                 ofType(Users.Api.Actions.loadUserByIdStarted),
-                rxjs.switchMap((action)=>
+                rxjs.mergeMap((action)=>
                     this.userService.getById(action.userId).pipe(
+                        rxjs.tap((res)=> console.log(`effects output:`,res)),
                         rxjs.map((response) => Users.Api.Actions.loadUserByIdSucceeded({ user: response})),
                         rxjs.catchError((error) => rxjs.of(Users.Api.Actions.loadUserByIdFailed({ error: error})))
                     )
                 )
             )
         )
+
+        //onChannelLoadSucceeded$ = createEffect(() => this.actions$.pipe(
+            // When channel data is loaded..., reqeust users for that channel.
+            //ofType(Channel.Api.Actions.loadChannelById)
+            // rxjs.mergeMap(channelData => {
+            //    const distinctSetOfUserIds = new Set<stirng>()
+            //    channelData.messages.forEach(message => {
+            //      distinctSet.add(message.sentFrom)
+            //      distinctSet.add(message.sentToUser)
+            //    })
+            //    return rxjs.from(dinstintSetofUserIds).pipe(
+            //      rxjs.switchMap(userId => this.userService.getById(userId))                
+            //    )
+            //})
+        //))
 }

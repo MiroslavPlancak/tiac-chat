@@ -5,13 +5,13 @@ import { User } from "../../Models/user.model";
 export interface UserState{
     users: User[],
     error?: string,
-    userById:User | undefined
+    userById:User[]
 }
 
 export const initialState:UserState ={
     users: [],
     error: '',
-    userById: undefined
+    userById:[],
 }
 
 export const userReducer = createReducer(
@@ -19,17 +19,28 @@ export const userReducer = createReducer(
     
     //get user by ID
     on(Users.Api.Actions.loadUserByIdSucceeded, (state,{user})=>{
-        return {
-            ...state,
-            userById:user
+
+        console.log(`reducer output:`, state.userById);
+    
+        const isUserInState = state.userById.some(u => u.id === user.id);
+
+        if (!isUserInState) {
+            console.log(`return reducer output:`, [...state.userById, user]);
+            return {
+                ...state,
+                userById: [...state.userById, user]
+            };
+        } else {
+            
+            return state;
         }
     }),
-    //get user by ID ERROR
-    on(Users.Api.Actions.loadUserByIdFailed, (state,{error})=>{
+     //get user by ID ERROR
+     on(Users.Api.Actions.loadUserByIdFailed, (state,{error})=>{
         return {
             ...state,
             error:error,
-            userById:undefined
+            userById:[]
         }
     })
 

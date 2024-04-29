@@ -23,8 +23,8 @@ constructor
   private notificationDialog: NotificationDialogService,
   private store: Store
   ) {
-    this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId:141}))
-     this.store.select(selectUserById).subscribe((res) => console.log(res))
+    // this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId:141}))
+    //  this.store.select(selectUserById).subscribe((res) => console.log(res))
   }
 
   ngOnDestroy(): void {
