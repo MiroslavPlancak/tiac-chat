@@ -11,7 +11,8 @@ import { NotificationDialogService } from './notification-dialog.service';
 import { User } from '../Models/user.model';
 import { Store } from '@ngrx/store';
 import { Users } from '../state/user/user.action'
-import { selectUserById } from '../state/user/user.selector';
+import { selectAllUsers, selectUserById } from '../state/user/user.selector';
+
 
 @Injectable({
   providedIn: 'root'
@@ -31,7 +32,8 @@ export class UserService implements OnDestroy {
   currentUserId$ = this.authService.userId$;
 
   private apiUrl = "http://localhost:5008/api/users/";
-
+  //ngRx props
+  allUsersNG$!: rxjs.Observable<User[] | undefined>
   constructor(
     private authService: AuthService,
     private http: HttpClient,
@@ -41,6 +43,9 @@ export class UserService implements OnDestroy {
     private dialogService: NotificationDialogService,
     private store: Store
   ) {
+
+    //ngRx load all users
+    this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
 
 
     this.authService.loggedOut$.subscribe((isLoggedOut) => {
@@ -105,7 +110,7 @@ export class UserService implements OnDestroy {
   }
 
   /////HTTP endpoint methods/////
-  //0
+  //1
   getById(userId: number): Observable<User> {
     if (!userId) { throw new Error() }
     const url = `${this.apiUrl}${userId}`;
@@ -115,12 +120,12 @@ export class UserService implements OnDestroy {
       })
     )
   }
-
+  //1
   getAllUsers(): Observable<User[]> {
     const url = `${this.apiUrl}getAll`
     return this.http.get<User[]>(url);
   }
-
+  //0
   getAllUsersBS$(): Observable<User[]> {
     const url = `${this.apiUrl}getAll`;
     return this.http.get<User[]>(url).pipe(
@@ -132,8 +137,10 @@ export class UserService implements OnDestroy {
 
   /////Service methods/////
 
-  // get all users obs$
-  public allUsers$ = this.getAllUsers().pipe(
+  //ngRx implementation 
+  
+  // get all users obs$ (old implementation)
+  public allUsers$ = this.store.select(selectAllUsers).pipe(
     rxjs.takeUntil(this.destroy$)
   );
 

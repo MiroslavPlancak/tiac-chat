@@ -7,8 +7,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../Services/auth.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
-import { selectUserById } from '../../state/user/user.selector';
+import { selectAllUsers, selectUserById } from '../../state/user/user.selector';
 import * as rxjs from 'rxjs';
+
 
 @Component({
   selector: 'app-add-user-to-private-channel',
@@ -51,7 +52,9 @@ export class AddUserToPrivateChannelComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    
+
+    //load all users from state
+    this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
     //extract channel name
     this.channelService.getListOfChannels()
       .pipe(
@@ -68,12 +71,16 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     //fill the list of added users
     this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).pipe(
       switchMap(participantIds => {
-        //console.log(`list of users in a private channel:`, participantIds)
-        const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
 
-        return this.userService.getAllUsers().pipe(
-          map(users => users.filter(user => userIds.includes(user.id)))
+        const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
+        //ngRx implementation
+        return this.store.select(selectAllUsers).pipe(
+          rxjs.map(users => users.filter(user => userIds.includes(user.id)))
         )
+        //old implementation
+        // return this.userService.getAllUsers().pipe(
+        //   map(users => users.filter(user => userIds.includes(user.id)))
+        // )
       })
     ).subscribe(filteredParticipants => {
       //console.log(`transformed users`, filteredParticipants)
@@ -87,10 +94,14 @@ export class AddUserToPrivateChannelComponent implements OnInit {
         console.log(`list of users in a private channel:`, participantIds)
 
         const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
-
-        return this.userService.getAllUsers().pipe(
-          map(users => users.filter(user => !userIds.includes(user.id)))
+        //ngRx implementation
+        return this.store.select(selectAllUsers).pipe(
+          rxjs.map(users => users.filter(user => !userIds.includes(user.id)))
         )
+        //old implementation
+        // return this.userService.getAllUsers().pipe(
+        //   map(users => users.filter(user => !userIds.includes(user.id)))
+        // )
       })
     ).subscribe(filteredParticipants => {
       console.log(`transformed users(new);`, filteredParticipants)
@@ -151,12 +162,12 @@ export class AddUserToPrivateChannelComponent implements OnInit {
       }),
       take(1)
     )
-    .subscribe(userName => {
-      this.selectedUserIdName = {
-        firstName: userName?.firstName,
-        lastName: userName?.lastName
-      }
-    })
+      .subscribe(userName => {
+        this.selectedUserIdName = {
+          firstName: userName?.firstName,
+          lastName: userName?.lastName
+        }
+      })
     //old implementation
     // this.userService.getById(this.selectedUserId).pipe(take(1)).subscribe(userName => {
     //   this.selectedUserIdName = {

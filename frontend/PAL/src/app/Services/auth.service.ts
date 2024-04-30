@@ -158,6 +158,7 @@ export class AuthService {
   //check if the user is logged in for the purpose of authGuard
   isLoggedIn():boolean{
     const accessToken = this.getAccessToken();
+    console.log(`isLoggedIn() activated, access token log:`,accessToken)
     return !!accessToken && !this.jwtHelper.isTokenExpired(accessToken);
   }
 
