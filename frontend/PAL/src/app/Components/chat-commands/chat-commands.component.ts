@@ -50,6 +50,7 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
 
     this.currentUserName$.pipe(
       rxjs.first(),
+     
       rxjs.switchMap(currentUserName => {
         if (this.newPrivateMessage !== undefined && this.privateConversationId$.getValue() !== undefined) {
           // Send private message

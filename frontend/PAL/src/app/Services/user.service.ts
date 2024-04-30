@@ -9,7 +9,9 @@ import { AddUserToPrivateChannelComponent } from '../Components/add-user-to-priv
 import { ConnectionService } from './connection.service';
 import { NotificationDialogService } from './notification-dialog.service';
 import { User } from '../Models/user.model';
-
+import { Store } from '@ngrx/store';
+import { Users } from '../state/user/user.action'
+import { selectUserById } from '../state/user/user.selector';
 
 @Injectable({
   providedIn: 'root'
@@ -37,6 +39,7 @@ export class UserService implements OnDestroy {
     private matDialog: MatDialog,
     private connectionService: ConnectionService,
     private dialogService: NotificationDialogService,
+    private store: Store
   ) {
 
 
@@ -107,8 +110,8 @@ export class UserService implements OnDestroy {
     if (!userId) { throw new Error() }
     const url = `${this.apiUrl}${userId}`;
     return this.http.get<any>(url).pipe(
-      rxjs.catchError((error:HttpErrorResponse) =>{
-        return rxjs.throwError(()=> new Error(error.message))
+      rxjs.catchError((error: HttpErrorResponse) => {
+        return rxjs.throwError(() => new Error(error.message))
       })
     )
   }
@@ -173,13 +176,23 @@ export class UserService implements OnDestroy {
     rxjs.filter(userId => userId != null),
     rxjs.distinctUntilChanged(),
     rxjs.switchMap(userid => {
-      return this.getById(userid as number);
+      const userID = userid as number
+      this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: userID }))
+      return this.store.select(selectUserById).pipe(
+        rxjs.filter(users => users.some(user => user.id === userID)),
+        rxjs.map(users => {
+          let currentUser = users.find(user => user.id === userID)
+          return currentUser
+        })
+      )
+      //old implementation
+      //return this.getById(userid as number);
     }),
     rxjs.map(user => {
       return {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        email: user?.email
       }
     }),
     rxjs.takeUntil(this.destroy$)
@@ -189,9 +202,23 @@ export class UserService implements OnDestroy {
     rxjs.filter((userId: any) => userId != null),
     rxjs.distinctUntilChanged(),
     rxjs.switchMap((userid: number) => {
-      return this.getById(userid as number);
+      this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: userid }))
+      return this.store.select(selectUserById).pipe(
+        rxjs.filter(users => users.some(user => user.id == userid)),
+        rxjs.map(users => {
+          let currentUser = users.find(user => user.id == userid)
+          return currentUser
+        })
+      )
+      //return this.getById(userid as number);
     }),
-    rxjs.map(user => user.firstName),
+    rxjs.map(user => {
+      if (user) {
+        return user.firstName
+      } else {
+        return '';
+      }
+    }),
     rxjs.takeUntil(this.destroy$)
   )
 

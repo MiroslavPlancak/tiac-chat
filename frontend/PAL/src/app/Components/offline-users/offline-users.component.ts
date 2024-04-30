@@ -5,6 +5,9 @@ import { ChatService } from '../../Services/chat.service';
 import { AuthService } from '../../Services/auth.service';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
+import { Store } from '@ngrx/store';
+import { Users } from '../../state/user/user.action'
+import { selectUserById } from '../../state/user/user.selector';
 
 @Component({
   selector: 'app-offline-users',
@@ -30,7 +33,8 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
       private userService: UserService,
       private authService: AuthService,
       private messageService: MessageService,
-      private channelService: ChannelService
+      private channelService: ChannelService,
+      private store: Store
     ) { }
 
 
@@ -86,10 +90,22 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
   }
 
   extractUserName(sentFromUserId: any): rxjs.Observable<string> {
-    return this.userService.getById(sentFromUserId).pipe(
+    console.log(sentFromUserId)
+    //ngRx implementation
+    this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: sentFromUserId}))
+    return this.store.select(selectUserById).pipe(
+      rxjs.filter(users => users.some(user => user.id == sentFromUserId)),
       rxjs.take(1),
-      rxjs.map(res => res.firstName)
-    );
+      rxjs.map(users =>{
+        let currentUser = users.find(user => user.id == sentFromUserId)
+        return currentUser?.firstName || 'loading'
+      })
+    )
+    //old implementation
+    // return this.userService.getById(sentFromUserId).pipe(
+    //   rxjs.take(1),
+    //   rxjs.map(res => res.firstName)
+    // );
   }
 
   getConcurrentNumberOfMessages(): void {

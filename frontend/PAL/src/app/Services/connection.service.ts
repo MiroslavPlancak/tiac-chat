@@ -102,6 +102,7 @@ export class ConnectionService implements OnInit, OnDestroy{
 
     this.authService.tokenRefreshTimer$.next(setInterval(() => {
         console.log('Token refresh timer triggered');
+        //todo: edge case - this is 0 when the token expires first time naturally and causes infinite refreshes when logged in afterwards
         console.log(this.authService.accessTokenExpirationTimer.value);
         const accessToken = this.authService.getAccessToken();
         const refreshToken = this.authService.getRefreshToken();

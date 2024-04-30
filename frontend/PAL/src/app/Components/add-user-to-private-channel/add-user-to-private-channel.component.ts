@@ -5,6 +5,10 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ChannelService } from '../../Services/channel.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../Services/auth.service';
+import { Store } from '@ngrx/store';
+import { Users } from '../../state/user/user.action'
+import { selectUserById } from '../../state/user/user.selector';
+import * as rxjs from 'rxjs';
 
 @Component({
   selector: 'app-add-user-to-private-channel',
@@ -35,7 +39,8 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public matData: any,
     private dialogRef: MatDialogRef<AddUserToPrivateChannelComponent>,
     private channelService: ChannelService,
-    public authService: AuthService
+    public authService: AuthService,
+    private store: Store
 
   ) {
 
@@ -136,12 +141,29 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     })
 
     //get UserName
-    this.userService.getById(this.selectedUserId).pipe(take(1)).subscribe(userName => {
+    //ngRx implementation
+    this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: this.selectedUserId }))
+    this.store.select(selectUserById).pipe(
+      rxjs.filter(users => users.some(user => user.id == this.selectedUserId)),
+      rxjs.map(users => {
+        const user = users.find(user => user.id == this.selectedUserId)
+        return user
+      }),
+      take(1)
+    )
+    .subscribe(userName => {
       this.selectedUserIdName = {
-        firstName: userName.firstName,
-        lastName: userName.lastName
+        firstName: userName?.firstName,
+        lastName: userName?.lastName
       }
     })
+    //old implementation
+    // this.userService.getById(this.selectedUserId).pipe(take(1)).subscribe(userName => {
+    //   this.selectedUserIdName = {
+    //     firstName: userName.firstName,
+    //     lastName: userName.lastName
+    //   }
+    // })
 
     //get ChannelName
     this.channelService.getListOfChannels()

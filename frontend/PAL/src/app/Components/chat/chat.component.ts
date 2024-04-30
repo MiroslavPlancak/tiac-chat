@@ -3,10 +3,13 @@ import { ChatService, PrivateMessage } from '../../Services/chat.service';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { AuthService } from '../../Services/auth.service';
 import { User, UserService } from '../../Services/user.service';
-import { BehaviorSubject, Observable, Subscription, combineLatest, distinctUntilChanged, filter, first, forkJoin, map, mergeMap, switchMap, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, Observable,combineLatest,  filter, forkJoin, map, mergeMap, switchMap, withLatestFrom } from 'rxjs';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
-
+import { Store } from '@ngrx/store';
+import { Users } from '../../state/user/user.action'
+import { selectUserById } from '../../state/user/user.selector';
+import * as rxjs from 'rxjs';
 
 @Component({
   selector: 'app-chat',
@@ -49,7 +52,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     public userService: UserService,
     private messageService: MessageService,
-    private channelService: ChannelService
+    private channelService: ChannelService,
+    private store: Store
   ) {
     this.channelType = this.channelTypes['public'];
   }
@@ -103,12 +107,26 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.privateConversationUsers$ = this.privateConversationId$.pipe(
       filter(conversationId => conversationId !== undefined),
       mergeMap(conversationId => {
+        //ngRx implementation
+        this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: conversationId as number }))
+        const targetedConversationUser$ = this.store.select(selectUserById).pipe(
+          rxjs.map(users =>  users.find(user => user.id == conversationId) )
+        )
 
-        const targetedConversationUser$ = this.userService.getById(conversationId as number)
-        const currentUser$ = this.userService.getById(this.authService.extractUserId()as number)
-        return forkJoin([targetedConversationUser$, currentUser$])
+        this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: this.authService.extractUserId() as number }))
+        const currentUser$ = this.store.select(selectUserById).pipe(
+          rxjs.map(users =>  users.find(user => user.id == this.authService.extractUserId() as number))
+        )
+      //old implementation
+      //const targetedConversationUser$ = this.userService.getById(conversationId as number)
+      //const currentUser$ = this.userService.getById(this.authService.extractUserId() as number)
+        return forkJoin([targetedConversationUser$, currentUser$]).pipe(
+          map(([targetedUser, currentUser]) => [targetedUser, currentUser])
+        );
       }),
-
+      map(([targetedUser, currentUser]) => {
+        return targetedUser ? [targetedUser] : [];
+      })
     )
 
 

@@ -98,7 +98,7 @@ namespace TiacChat.Presentation.Controllers
                     RefreshToken = token.RefreshToken,
                     UserId = user.Id,
                     //ExpirationDate = DateTime.Now.AddDays(7)
-                    ExpirationDate = DateTime.Now.AddMinutes(50)
+                    ExpirationDate = DateTime.Now.AddMinutes(60)
                 };
                 await _services.AddUserRefreshTokensAsync(newUserRefreshToken);
             }else if(checkIfRefreshTokenExists.RefreshToken != null){

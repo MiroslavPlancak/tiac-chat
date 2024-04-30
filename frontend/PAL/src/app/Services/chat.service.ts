@@ -3,7 +3,9 @@ import * as rxjs from 'rxjs';
 import { AuthService } from './auth.service';
 import { User, UserService } from './user.service';
 import { ConnectionService } from './connection.service';
-
+import { Store } from '@ngrx/store';
+import { Users } from '../state/user/user.action'
+import { selectUserById } from '../state/user/user.selector';
 
 export interface PrivateMessage {
   isSeen: boolean
@@ -38,7 +40,8 @@ export class ChatService implements OnInit,OnDestroy {
   constructor(
     private authService: AuthService,
     private userService: UserService,
-    private connectionService:ConnectionService
+    private connectionService:ConnectionService,
+    private store: Store
 
 
   ) { }
@@ -141,13 +144,24 @@ export class ChatService implements OnInit,OnDestroy {
       if (this.typingTimeout) {
         clearTimeout(this.typingTimeout);
       }
-
-      this.userService.getById(this.senderId$.getValue() as number).pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
-        this.userNameTyping$.next(res.firstName) 
-      })
+      //new ngRX implementation
+      this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: this.senderId$.getValue() as number}))
+      this.store.select(selectUserById).pipe(
+        rxjs.filter( users => users.some(user => user.id == this.senderId$.getValue() as number)),
+        rxjs.map(users =>{
+          let currentUser = users.find(user => user.id == this.senderId$.getValue() as number)
+          if(currentUser)
+          this.userNameTyping$.next(currentUser.firstName)
+        }),
+        rxjs.takeUntil(this.destroy$)
+      ).subscribe()
+      //old implementation 
+      // this.userService.getById(this.senderId$.getValue() as number).pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
+      //   this.userNameTyping$.next(res.firstName) 
+      // })
      
       this.typingStatusMap.set(this.senderId$.getValue() as number, this.userNameTyping$.getValue());
-   
+      console.log(this.typingStatusMap)
       // Send typing status to the server
       this.sendTypingStatus(this.isUserTyping$.getValue(), this.senderId$.getValue() as number, receiverId);
 

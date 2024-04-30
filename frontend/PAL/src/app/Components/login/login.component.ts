@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../Services/auth.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { RegisterUserComponent } from '../register-user/register-user.component';
+import { ConnectionService } from '../../Services/connection.service';
 
 
 @Component({
@@ -22,12 +23,15 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private matDialog: MatDialog,
+    private connectionService: ConnectionService
    // private chatService: ChatService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     })
+
+    console.log(`connection state:`,this.connectionService.hubConnection.state)
   }
 
   onSubmit() {

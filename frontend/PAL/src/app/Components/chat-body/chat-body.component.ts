@@ -5,7 +5,9 @@ import { User, UserService } from '../../Services/user.service';
 import * as rxjs from 'rxjs';
 import { AuthService } from '../../Services/auth.service';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
-
+import { Store } from '@ngrx/store';
+import { Users } from '../../state/user/user.action'
+import { selectUserById } from '../../state/user/user.selector';
 
 @Component({
   selector: 'app-chat-body',
@@ -36,7 +38,8 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
     public chatService: ChatService,
     public messageService: MessageService,
     public userService: UserService,
-    private authService:AuthService
+    private authService:AuthService,
+    private store: Store
   ) {
 
 
@@ -106,7 +109,15 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
         //investigate what happens with senderId through the flow
         res.currentlyTypingList.forEach((senderId: number) => {
-          this.userService.getById(senderId).pipe(
+        //ngRX implementation
+          this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: senderId}))
+         // this.store.select(selectUserById)  
+          this.store.select(selectUserById).pipe(
+            rxjs.filter(users => users.some(user => user.id == senderId)),
+            rxjs.map(users => {
+              const user = users.find(user => user.id == senderId)
+              return user
+            }),
             rxjs.switchMap((user) => {
               if (user) {
                 const firstName = user.firstName;

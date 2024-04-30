@@ -5,7 +5,10 @@ import { AuthService } from '../../Services/auth.service';
 import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators';
 import { UserService } from '../../Services/user.service';
 import { of } from 'rxjs';
-
+import { Store } from '@ngrx/store';
+import { Users } from '../../state/user/user.action'
+import { selectUserById } from '../../state/user/user.selector';
+import * as rxjs from 'rxjs';
 
 @Component({
   selector: 'app-create-channel',
@@ -36,11 +39,21 @@ export class CreateChannelComponent implements OnDestroy {
     filter(userId => userId != null),
     distinctUntilChanged(),
     switchMap(userid => {
-      return this.userService.getById(userid as number);
+      //ngRx implementation
+      this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: userid as number }))
+      return this.store.select(selectUserById).pipe(
+        rxjs.filter(users => users.some(user => user.id == userid)),
+        rxjs.map(users => {
+          const user = users.find(users => users.id == userid)
+          return user
+        })
+      )
+      //old implementation
+      //  return this.userService.getById(userid as number);
     }),
     map(user => {
       return {
-        firstName: user.firstName
+        firstName: user?.firstName || 'loading'
       }
     })
   )
@@ -51,7 +64,8 @@ export class CreateChannelComponent implements OnDestroy {
     private dialogRef: MatDialogRef<CreateChannelComponent>,
     @Inject(MAT_DIALOG_DATA) public matData: any,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private store: Store
   ) { }
   ngOnDestroy(): void {
 

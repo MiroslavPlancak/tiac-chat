@@ -43,7 +43,7 @@ export class ChatMatComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
 
     this.maxScrollValue$.subscribe(res => { console.log(`x`, res) })
-
+    console.log(`connection state`,this.connectionService.hubConnection.state)
     if (this.chatService.hubConnection.state === HubConnectionState.Disconnected) {
       this.connectionService.setupTokenRefreshTimer()
       console.log(`this block runs`)
