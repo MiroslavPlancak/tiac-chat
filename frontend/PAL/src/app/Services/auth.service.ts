@@ -159,6 +159,7 @@ export class AuthService {
   isLoggedIn():boolean{
     const accessToken = this.getAccessToken();
     console.log(`isLoggedIn() activated, access token log:`,accessToken)
+    console.log(`is token expired`, this.jwtHelper.isTokenExpired(accessToken))
     return !!accessToken && !this.jwtHelper.isTokenExpired(accessToken);
   }
 

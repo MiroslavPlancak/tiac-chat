@@ -21,7 +21,7 @@ export class UserService implements OnDestroy {
 
 
   private destroy$ = new rxjs.Subject<void>();
-  public allUsersSubject$ = new BehaviorSubject<User[]>([])
+  public allUsersNgRx$ = new Observable<User[]>
   isOnline: boolean = false
 
   writingTo = new BehaviorSubject<string>("@public_root")
@@ -44,8 +44,6 @@ export class UserService implements OnDestroy {
     private store: Store
   ) {
 
-    //ngRx load all users
-    this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
 
 
     this.authService.loggedOut$.subscribe((isLoggedOut) => {
@@ -62,9 +60,10 @@ export class UserService implements OnDestroy {
 
       console.log(`new connection established:${JSON.stringify(connection)}`);
 
-      this.getAllUsersBS$()
-        .pipe(rxjs.takeUntil(this.destroy$))
-        .subscribe(res => console.log( /*`getAllUsersBS$: chat.service.ts constructor`,res*/));
+      //ngRx load all users after the connection has been established
+      this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
+      this.allUsersNgRx$ = this.store.select(selectAllUsers).pipe(rxjs.take(1))
+     
 
       const userIds = Object.keys(connection).map(strUserId => +strUserId);
       this.onlineUserIds$.next(userIds);
@@ -125,13 +124,6 @@ export class UserService implements OnDestroy {
     const url = `${this.apiUrl}getAll`
     return this.http.get<User[]>(url);
   }
-  //0
-  getAllUsersBS$(): Observable<User[]> {
-    const url = `${this.apiUrl}getAll`;
-    return this.http.get<User[]>(url).pipe(
-      tap(users => this.allUsersSubject$.next(users))
-    );
-  }
 
   /////HTTP endpoint methods/////
 
@@ -141,6 +133,7 @@ export class UserService implements OnDestroy {
   
   // get all users obs$ (old implementation)
   public allUsers$ = this.store.select(selectAllUsers).pipe(
+    
     rxjs.takeUntil(this.destroy$)
   );
 
@@ -157,7 +150,7 @@ export class UserService implements OnDestroy {
   // online users obs$
   public onlineUsers$ = rxjs.combineLatest([
     this.onlineUserIdsWithoutSelf$,
-    this.allUsersSubject$,
+    this.store.select(selectAllUsers),
   ]).pipe(
     rxjs.map(([onlineUserIds, allUsers]) => {
       return allUsers.filter(user => onlineUserIds.includes(user.id))
@@ -170,7 +163,7 @@ export class UserService implements OnDestroy {
   public offlineUsers$ = rxjs.combineLatest([
     //if offline list is not filtering correctly its is due to this change, return -onlineUserIdsWithoutSelf$
     this.onlineUserIds$,
-    this.allUsersSubject$,
+    this.store.select(selectAllUsers),
   ]).pipe(
     rxjs.map(([onlineUserIds, allUsers]) => {
       return allUsers.filter(user => !onlineUserIds.includes(user.id))

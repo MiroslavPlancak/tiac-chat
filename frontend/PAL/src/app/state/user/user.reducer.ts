@@ -44,6 +44,7 @@ export const userReducer = createReducer(
 
     //load all users
     on(Users.Api.Actions.loadAllUsersSucceeded, (state,{users})=>{
+        console.log(`reducer of select all users  procs`)
         const loadAllUsersDeepCopy = users.map(user => ({...user}))
         return {
             ...state,

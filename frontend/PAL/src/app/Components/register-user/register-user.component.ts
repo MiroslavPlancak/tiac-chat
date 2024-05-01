@@ -96,9 +96,12 @@ export class RegisterUserComponent implements OnInit {
             this.errorMessage = error.error;
           }
         }),
-        rxjs.switchMap(() => {
-          return this.userService.getAllUsersBS$()
-        })
+        // rxjs.switchMap(() => {
+        //   //need to place ngrx load all logic
+        //  // return this.userService.getAllUsersBS$()
+        //  return rxjs.EMPTY;
+        // })
+        
       ).subscribe(() =>
         this.authService.accessTokenExpirationTimer.next(300)
       )
