@@ -11,7 +11,8 @@ export namespace Users{
 
             export const Actions = createActionGroup({
                 events:{
-                    
+                    LoadUserByIdIfNeeded: props<{ userId: number }>(),
+
                     //load user by ID
                     LoadUserByIdStarted: props<{ userId: number }>(),
                     LoadUserByIdSucceeded: props<{ user: User }>(),
@@ -22,6 +23,27 @@ export namespace Users{
                     LoadAllUsersSucceeded: props<{ users: User[] }>(),
                     LoadAllUsersFailed: props<{ error: any }>(),
                 },
+                source:SOURCE
+            })
+    }
+
+    export namespace Hub{
+
+        export const SOURCE = SafeType.Source.from(USER_SOURCE, 'Hub')
+
+            export const Actions = createActionGroup({
+                events:{    
+
+                    //load connected user
+                    LoadConnectedUserStarted: props<{ connectedUserId: number }>(),
+                    LoadConnectedUserSucceeded: props<{ connectedUserId: number }>(),
+                    LoadConnectedUserFailed: props<{ error: any }>(),
+
+                    //load connected users 
+                    LoadConnectedUsersStarted: props<{ connectedUserIds: number[] }>(),
+                    LoadConnectedUsersSucceeded: props<{ connectedUserIds: number[] }>(),
+                    LoadConnectedUsersFailed: props<{ error: any }>(),
+                },  
                 source:SOURCE
             })
     }

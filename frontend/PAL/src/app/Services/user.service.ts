@@ -22,6 +22,7 @@ export class UserService implements OnDestroy {
 
   private destroy$ = new rxjs.Subject<void>();
   public allUsersNgRx$ = new Observable<User[]>
+  public onlineUserIdsNgRx$ = new Observable<number[]>
   isOnline: boolean = false
 
   writingTo = new BehaviorSubject<string>("@public_root")
@@ -29,11 +30,12 @@ export class UserService implements OnDestroy {
   writeToChannelName = new BehaviorSubject<string>("")
 
   public onlineUserIds$ = new rxjs.BehaviorSubject<number[]>([]);
+
+
   currentUserId$ = this.authService.userId$;
 
   private apiUrl = "http://localhost:5008/api/users/";
-  //ngRx props
-  allUsersNG$!: rxjs.Observable<User[] | undefined>
+
   constructor(
     private authService: AuthService,
     private http: HttpClient,
@@ -43,7 +45,6 @@ export class UserService implements OnDestroy {
     private dialogService: NotificationDialogService,
     private store: Store
   ) {
-
 
 
     this.authService.loggedOut$.subscribe((isLoggedOut) => {
@@ -60,13 +61,37 @@ export class UserService implements OnDestroy {
 
       console.log(`new connection established:${JSON.stringify(connection)}`);
 
+      const userIds = Object.keys(connection).map(strUserId => +strUserId);
+
+      this.onlineUserIds$.next(userIds);
+
       //ngRx load all users after the connection has been established
       this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
-      this.allUsersNgRx$ = this.store.select(selectAllUsers).pipe(rxjs.take(1))
-     
+      this.allUsersNgRx$ = this.store.select(selectAllUsers)
 
-      const userIds = Object.keys(connection).map(strUserId => +strUserId);
-      this.onlineUserIds$.next(userIds);
+      this.allUsersNgRx$.pipe(rxjs.skip(1), rxjs.take(1)).subscribe()
+      //ng Rx load connected user
+      this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserId: userId }))
+
+
+      rxjs.combineLatest([this.allUsersNgRx$, this.onlineUserIds$]).pipe(
+        rxjs.filter(([users, ids]) => users.length > 0 && ids.length > 0),
+        rxjs.tap(([users, ids]) => this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: ids }))),
+        rxjs.take(1)
+      ).subscribe(([users, ids]) => {})
+
+
+      //ngRx load connected users 
+      //  setTimeout(() => {
+      //   this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserIds: userIds }))
+
+      //  }, 10);
+
+      // this.onlineUserIds$.subscribe((onlineUserIds) => {
+      //   console.log(`Behavior Subject<number[]> emits:`, onlineUserIds)
+      //   //this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: onlineUserIds }))
+      // })
+
 
       if (this.currentUserId$.getValue() !== userId) {
 
@@ -86,6 +111,17 @@ export class UserService implements OnDestroy {
       const userIds = Object.keys(connections).map(userId => +userId)
       this.onlineUserIds$.next(userIds);
 
+      //ngRx load connected users 
+      //  setTimeout(() => {
+      //   this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserIds: userIds }))
+
+      //  }, 10);
+      this.onlineUserIds$.subscribe((onlineUserIds) => {
+        console.log(`disconnected user fired`, onlineUserIds)
+        this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: onlineUserIds }))
+      })
+
+      //console.log(`onlineUserIds$ value disconnected:`, this.onlineUserIds$.value)
       if (this.currentUserId$.getValue() !== userId) {
 
         this.dialogService.openOnlineNotification(
@@ -130,10 +166,10 @@ export class UserService implements OnDestroy {
   /////Service methods/////
 
   //ngRx implementation 
-  
+
   // get all users obs$ (old implementation)
   public allUsers$ = this.store.select(selectAllUsers).pipe(
-    
+
     rxjs.takeUntil(this.destroy$)
   );
 

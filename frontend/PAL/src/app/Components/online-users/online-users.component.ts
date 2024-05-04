@@ -5,6 +5,8 @@ import { User, UserService } from '../../Services/user.service';
 import { AuthService } from '../../Services/auth.service';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
+import { Store } from '@ngrx/store';
+import { selectConnectedUsers } from '../../state/user/user.selector';
 
 @Component({
   selector: 'app-online-users',
@@ -14,9 +16,10 @@ import { ChannelService } from '../../Services/channel.service';
 export class OnlineUsersComponent implements OnInit, OnDestroy {
 
   private destroy$ = new rxjs.Subject<void>();
-  onlineUserSearchTerm$ = new rxjs.BehaviorSubject<string | undefined>(undefined);
-  onlineFilteredUsers$!: rxjs.Observable<User[]>;
   currentUserId$ = this.authService.userId$;
+  onlineUserSearchTerm$ = new rxjs.BehaviorSubject<string | undefined>(undefined);
+  
+  onlineFilteredUsers$ = new rxjs.Observable<User[] | undefined>
   selectedConversation = this.channelService.selectedConversation$
   isDirectMessage = this.messageService.isDirectMessage
   privateConversationId$ = this.chatService.privateConversationId$;
@@ -36,7 +39,8 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
       private authService: AuthService,
       public messageService: MessageService,
       private userService: UserService,
-      private channelService: ChannelService
+      private channelService: ChannelService,
+      private store: Store
     ) { }
 
 
@@ -44,14 +48,16 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
 
     //filtering logic for online users
     this.onlineFilteredUsers$ = rxjs.combineLatest([
-      this.userService.onlineUsers$,
+      this.store.select(selectConnectedUsers).pipe(
+        rxjs.map(users => users?.filter(user => user.id !== this.currentUserId$.getValue() ))
+      ),
       this.onlineUserSearchTerm$
     ]).pipe(
       rxjs.map(([onlineUsers, term]) => {
         if (term == undefined) {
           return onlineUsers;
         } else {
-          return onlineUsers.filter(user => JSON.stringify([user.firstName, user.lastName]).toLowerCase().indexOf(term) > -1)
+          return onlineUsers?.filter(user => JSON.stringify([user.firstName, user.lastName]).toLowerCase().indexOf(term) > -1)
         }
       }),
       rxjs.takeUntil(this.destroy$)

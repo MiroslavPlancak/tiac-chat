@@ -3,27 +3,32 @@ import { Users } from "./user.action"
 import { User } from "../../Models/user.model";
 
 export interface UserState{
-    users: User[],
+    //need to have only allUsers here, User object should have a new property isOnline:true/false, which we then change.
+    allUsers: User[],
     error?: string,
-    userById:User[]
+    userById:User[],
+    onlineUser?:User,//onlineUserId: number, is what we return from the back end and then use it to filter from allUsers
+    onlineUsers?:User[]
 }
 
 export const initialState:UserState ={
-    users: [],
+    allUsers: [],
     error: '',
     userById:[],
+    onlineUsers:[]
 }
 
 export const userReducer = createReducer(
     initialState,
     
+    /// API calls /// 
     //load user by ID
     on(Users.Api.Actions.loadUserByIdSucceeded, (state,{user})=>{
 
         const isUserInState = state.userById.some(u => u.id === user.id);
 
         if (!isUserInState) {
-            console.log(`return reducer output:`, [...state.userById, user]);
+           
             return {
                 ...state,
                 userById: [...state.userById, user]
@@ -44,11 +49,12 @@ export const userReducer = createReducer(
 
     //load all users
     on(Users.Api.Actions.loadAllUsersSucceeded, (state,{users})=>{
-        console.log(`reducer of select all users  procs`)
+      
         const loadAllUsersDeepCopy = users.map(user => ({...user}))
+       
         return {
             ...state,
-            users:loadAllUsersDeepCopy
+            allUsers:loadAllUsersDeepCopy
         }
     }),
     //load all users ERROR
@@ -57,7 +63,38 @@ export const userReducer = createReducer(
             ...state,
             error: error
         }
+    }),
+
+    /// HUB calls ///
+    //load connected user
+    on(Users.Hub.Actions.loadConnectedUserSucceeded, (state,{connectedUserId})=>{
+        
+        const currentUser = state.allUsers.filter(user => user.id == connectedUserId)
+        const currentUserObj = currentUser[0]
+      
+        return {
+            ...state,
+            onlineUser: currentUserObj
+        }
+    }),
+
+    //load connected users
+    on(Users.Hub.Actions.loadConnectedUsersSucceeded, (state,{connectedUserIds})=>{
+        
+        const onlineUsers = state.allUsers
+        .filter(user => connectedUserIds.includes(user.id))
+
+        // for(const user of state.allUsers) {
+        //     user.isOnlline = connectedUserIds.includes(user.id)
+        // }
+        
+        console.log(`[4]online users reducer:`, onlineUsers)
+        return {
+            ...state,
+            onlineUsers: onlineUsers
+        }
     })
+    //load connected user ERROR
 
 
 )

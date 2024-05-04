@@ -18,7 +18,8 @@ export class AuthService {
 
   
   public userId$ = new BehaviorSubject<number | null>(null);
-  public accessTokenExpirationTimer = new BehaviorSubject<number>(0);
+  //this needs to be updated properly, there is an edge case where this is not nexted properly and then its 0 causing it to malfunction
+  public accessTokenExpirationTimer = new BehaviorSubject<number>(10);
   public refreshTokenStatus = new BehaviorSubject<boolean>(true)
   public loggedOut$ = new Subject<boolean>();
   // private logoutSubject$ = new Subject<void>();
@@ -30,7 +31,7 @@ export class AuthService {
     private http: HttpClient,
     private router: Router,
     private jwtHelper: JwtHelperService,
-   
+    
 
   ) {
     
@@ -38,7 +39,7 @@ export class AuthService {
 
     //instantiate tokenRefreshTimer bs
     this.tokenRefreshTimer$ = new BehaviorSubject<any>(null);
-    console.log(`BS exp time:`, this.accessTokenExpirationTimer.value)
+    //console.log(`BS exp time:`, this.accessTokenExpirationTimer.value)
 
     // setTimeout(() => {
     //   this.refreshTokens(this.getAccessToken() as string, this.getRefreshToken() as string)
@@ -89,6 +90,7 @@ export class AuthService {
     localStorage.removeItem('refresh_token');
     this.router.navigate(['/login']);
     this.loggedOut$.next(true);   
+    
    // window.location.reload();
   }
 
@@ -141,9 +143,9 @@ export class AuthService {
     if(accessToken){
       const decodedToken = this.jwtHelper.decodeToken(accessToken);
 
-      console.log(`created time:`, decodedToken.nbf)
-      console.log(`expiration time:`, decodedToken.exp)
-      console.log(`token duration calc:`, decodedToken.exp - decodedToken.nbf)
+//      console.log(`created time:`, decodedToken.nbf)
+//      console.log(`expiration time:`, decodedToken.exp)
+//      console.log(`token duration calc:`, decodedToken.exp - decodedToken.nbf)
 
         const expirationTime = decodedToken.exp - decodedToken.nbf;
 

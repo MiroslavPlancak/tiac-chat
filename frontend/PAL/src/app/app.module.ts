@@ -55,6 +55,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { UserEffect } from './state/user/user.effect';
 import { userReducer } from './state/user/user.reducer';
 
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -104,8 +105,8 @@ import { userReducer } from './state/user/user.reducer';
     MatTooltipModule,
     MatSelectModule,
     StoreModule.forRoot({userReducer}, {}),
-    EffectsModule.forRoot([UserEffect])
-    
+    EffectsModule.forRoot([UserEffect]),
+  
 
   ],
   providers: [

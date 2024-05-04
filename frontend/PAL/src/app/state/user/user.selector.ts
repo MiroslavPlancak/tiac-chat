@@ -17,9 +17,32 @@ export const selectUserById = createSelector(
     (state:UserState) =>
         state.userById
 )
+
+export const selectUserByIdNew = (userId: number) => createSelector(
+    selectedUserState,
+    (state:UserState) =>{
+        state.allUsers.find(user => user.id === userId)
+    }
+)
 //select all users
 export const selectAllUsers = createSelector(
     selectedUserState,
     (state:UserState) =>
-        state.users
+        state.allUsers
 )
+
+/////// HUB calls /////////
+//select connected users
+export const selectConnectedUser = createSelector(
+    selectedUserState,
+    (state:UserState) =>
+        state.onlineUser
+)
+
+//select connected users
+export const selectConnectedUsers = createSelector(
+    selectedUserState,
+    (state:UserState) =>
+        state.onlineUsers
+)
+

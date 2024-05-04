@@ -27,6 +27,7 @@
     "@microsoft/signalr": "^8.0.0",
     "@ngrx/effects": "^17.2.0",
     "@ngrx/store": "^17.2.0",
+    "@ngrx/store-devtools": "^17.2.0",
     "angular-jwt": "^0.1.11",
     "jest-editor-support": "*",
     "run-script-os": "*",

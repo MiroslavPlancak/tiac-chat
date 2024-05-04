@@ -36,21 +36,21 @@ export class ChatMatComponent implements OnInit, OnDestroy {
     public authService: AuthService
   ) {
     this.channelType = this.channelTypes['public'];
-    console.log(this.chatService.hubConnection.state)
+//    console.log(this.chatService.hubConnection.state)
   }
 
 
   ngOnInit(): void {
 
-    this.maxScrollValue$.subscribe(res => { console.log(`x`, res) })
-    console.log(`connection state`,this.connectionService.hubConnection.state)
+    this.maxScrollValue$.subscribe(res => { /*console.log(`x`, res)*/ })
+    //console.log(`connection state`,this.connectionService.hubConnection.state)
     if (this.chatService.hubConnection.state === HubConnectionState.Disconnected) {
       this.connectionService.setupTokenRefreshTimer()
       console.log(`this block runs`)
       this.chatService.hubConnection.start();
     }
 
-    console.log(this.chatService.hubConnection.state)
+   // console.log(this.chatService.hubConnection.state)
 
   }
 

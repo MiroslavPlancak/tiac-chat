@@ -26,7 +26,7 @@ export class ConnectionService implements OnInit, OnDestroy{
     // set the status of the RefreshToken by subscription to refreshTokenStatus bs
     this.authService.refreshTokenStatus
     .subscribe(res => {
-      console.log(`refreshTokenStatus from connection:`, res)
+     // console.log(`refreshTokenStatus from connection:`, res)
       if(res == null){
         this.authService.logout()
         this.dialogService.openNotificationDialog(
@@ -58,12 +58,13 @@ export class ConnectionService implements OnInit, OnDestroy{
     .start()
     .then(() => {
       if (this.hubConnection.connectionId != undefined) {
-        console.log("connection started with connectionId:", this.hubConnection.connectionId);
+        
+       // console.log("connection started with connectionId:", this.hubConnection.connectionId);
        // console.log(`expiration time of access token`, this.authService.accessTokenExpirationTime.subscribe(res => console.log(res)))
        this.setupTokenRefreshTimer()
         this.authService.tokenRefreshTimer$.subscribe(timer => {
           if (timer) {
-            console.log('Token refresh timer:', timer);
+           // console.log('Token refresh timer:', timer);
             // Put any logic that depends on the timer here
           }
         });
@@ -71,7 +72,7 @@ export class ConnectionService implements OnInit, OnDestroy{
       
     })
     .catch(err => {
-      console.log('Error while starting connection:' + err)
+     // console.log('Error while starting connection:' + err)
     })
 
     this.hubConnection.onclose((error) => {
