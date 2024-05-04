@@ -6,7 +6,7 @@ import { AuthService } from '../../Services/auth.service';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
 import { Store } from '@ngrx/store';
-import { selectConnectedUsers } from '../../state/user/user.selector';
+import { selectAllUsers, selectConnectedUsers } from '../../state/user/user.selector';
 
 @Component({
   selector: 'app-online-users',
@@ -49,7 +49,11 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
     //filtering logic for online users
     this.onlineFilteredUsers$ = rxjs.combineLatest([
       this.store.select(selectConnectedUsers).pipe(
-        rxjs.map(users => users?.filter(user => user.id !== this.currentUserId$.getValue() ))
+        
+        rxjs.tap((res)=> console.log(`componenet output before:`,res)),
+        rxjs.map(users => users?.filter(user => user.id !== this.currentUserId$.getValue())),
+        rxjs.tap((res)=> console.log(`componenet output after:`,res)),
+      
       ),
       this.onlineUserSearchTerm$
     ]).pipe(

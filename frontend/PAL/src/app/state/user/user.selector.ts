@@ -42,7 +42,9 @@ export const selectConnectedUser = createSelector(
 //select connected users
 export const selectConnectedUsers = createSelector(
     selectedUserState,
-    (state:UserState) =>
-        state.onlineUsers
+    (state:UserState) =>{
+        
+       return state.allUsers.filter(user => user.isOnline)
+    }
 )
 

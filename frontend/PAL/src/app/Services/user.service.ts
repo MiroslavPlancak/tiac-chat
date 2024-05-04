@@ -69,29 +69,11 @@ export class UserService implements OnDestroy {
       this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
       this.allUsersNgRx$ = this.store.select(selectAllUsers)
 
-      this.allUsersNgRx$.pipe(rxjs.skip(1), rxjs.take(1)).subscribe()
+      this.allUsersNgRx$.pipe(rxjs.skip(1), rxjs.take(1)).subscribe(()=> 
+        this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: userIds }))
+      )
       //ng Rx load connected user
       this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserId: userId }))
-
-
-      rxjs.combineLatest([this.allUsersNgRx$, this.onlineUserIds$]).pipe(
-        rxjs.filter(([users, ids]) => users.length > 0 && ids.length > 0),
-        rxjs.tap(([users, ids]) => this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: ids }))),
-        rxjs.take(1)
-      ).subscribe(([users, ids]) => {})
-
-
-      //ngRx load connected users 
-      //  setTimeout(() => {
-      //   this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserIds: userIds }))
-
-      //  }, 10);
-
-      // this.onlineUserIds$.subscribe((onlineUserIds) => {
-      //   console.log(`Behavior Subject<number[]> emits:`, onlineUserIds)
-      //   //this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: onlineUserIds }))
-      // })
-
 
       if (this.currentUserId$.getValue() !== userId) {
 

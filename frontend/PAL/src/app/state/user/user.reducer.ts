@@ -8,14 +8,14 @@ export interface UserState{
     error?: string,
     userById:User[],
     onlineUser?:User,//onlineUserId: number, is what we return from the back end and then use it to filter from allUsers
-    onlineUsers?:User[]
+    appliedFilter?: string
 }
 
 export const initialState:UserState ={
     allUsers: [],
     error: '',
     userById:[],
-    onlineUsers:[]
+   
 }
 
 export const userReducer = createReducer(
@@ -50,7 +50,7 @@ export const userReducer = createReducer(
     //load all users
     on(Users.Api.Actions.loadAllUsersSucceeded, (state,{users})=>{
       
-        const loadAllUsersDeepCopy = users.map(user => ({...user}))
+        const loadAllUsersDeepCopy = users.map(user => ({...user, isOnline:false}))
        
         return {
             ...state,
@@ -80,18 +80,16 @@ export const userReducer = createReducer(
 
     //load connected users
     on(Users.Hub.Actions.loadConnectedUsersSucceeded, (state,{connectedUserIds})=>{
-        
-        const onlineUsers = state.allUsers
-        .filter(user => connectedUserIds.includes(user.id))
+    
 
-        // for(const user of state.allUsers) {
-        //     user.isOnlline = connectedUserIds.includes(user.id)
-        // }
+        const updatedOnlineUsers = state.allUsers.map(user => ({
+            ...user,
+            isOnline: connectedUserIds.includes(user.id)
+        }))
         
-        console.log(`[4]online users reducer:`, onlineUsers)
         return {
             ...state,
-            onlineUsers: onlineUsers
+            allUsers: updatedOnlineUsers
         }
     })
     //load connected user ERROR

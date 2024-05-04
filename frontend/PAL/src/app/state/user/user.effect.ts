@@ -59,9 +59,9 @@ export class UserEffect {
     loadConnectedUsers$ = createEffect(() =>
         this.actions$.pipe(
             ofType(Users.Hub.Actions.loadConnectedUsersStarted),
-            rxjs.tap(res => console.log(`[2]effect fires`, res.connectedUserIds)),
+           
             rxjs.switchMap((action) => {
-                console.log(`[3]effect fires further`, action.connectedUserIds);
+               
                 return rxjs.of(Users.Hub.Actions.loadConnectedUsersSucceeded({ connectedUserIds: action.connectedUserIds }))
             }
             ),
@@ -89,16 +89,16 @@ export class UserEffect {
         this.connectionService.hubConnection.on('connectedUsers', (userIds: number[]) => this.connectedUserIds$.next(userIds))
     }
     
-    getUserByIdIfNeeded$ = createEffect(() => this.actions$.pipe(
-        ofType(Users.Api.Actions.loadUserByIdIfNeeded),
-        rxjs.withLatestFrom(this.store.select(selectAllUsers)),
-        rxjs.filter(([action, users]) => users.map(user=> user.id).includes(action.userId)),
-        rxjs.map(([action]) => Users.Api.Actions.loadUserByIdStarted({userId: action.userId})
-    )))
+    // getUserByIdIfNeeded$ = createEffect(() => this.actions$.pipe(
+    //     ofType(Users.Api.Actions.loadUserByIdIfNeeded),
+    //     rxjs.withLatestFrom(this.store.select(selectAllUsers)),
+    //     rxjs.filter(([action, users]) => users.map(user=> user.id).includes(action.userId)),
+    //     rxjs.map(([action]) => Users.Api.Actions.loadUserByIdStarted({userId: action.userId})
+    // )))
 
 
-    onConnectedUserIds = createEffect(() => this.connectedUserIds$.pipe(
-        rxjs.map(users => Users.Hub.Actions.loadConnectedUsersSucceeded({ connectedUserIds: users}))
-    ))
+    // onConnectedUserIds = createEffect(() => this.connectedUserIds$.pipe(
+    //     rxjs.map(users => Users.Hub.Actions.loadConnectedUsersSucceeded({ connectedUserIds: users}))
+    // ))
     
 }
