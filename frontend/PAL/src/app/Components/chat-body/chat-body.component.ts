@@ -7,7 +7,7 @@ import { AuthService } from '../../Services/auth.service';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
-import { selectUserById } from '../../state/user/user.selector';
+import { selectUserById,selectCurrentUser } from '../../state/user/user.selector';
 
 @Component({
   selector: 'app-chat-body',
@@ -33,6 +33,8 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   //scroll properties
   scrollIndexPublic$ = this.messageService.virtualScrollViewportPublic$
   scrollIndexPrivate$ = this.messageService.virtualScrollViewportPrivate$
+  //ng RX props
+  currentUserLogged$ = this.store.select(selectCurrentUser)
 
   constructor(
     public chatService: ChatService,

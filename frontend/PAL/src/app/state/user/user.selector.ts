@@ -33,10 +33,15 @@ export const selectAllUsers = createSelector(
 
 /////// HUB calls /////////
 //select connected users
-export const selectConnectedUser = createSelector(
+export const selectCurrentUser = createSelector(
     selectedUserState,
-    (state:UserState) =>
-        state.onlineUser
+    (state:UserState) =>{
+            //console.log(`selector output(allusers):`, state.allUsers)
+           
+           const selectUser = state.allUsers.filter(user => user.id === state.currentUserId)
+           console.log(`selector output:`, selectUser)
+           return selectUser[0]
+        }
 )
 
 //select connected users

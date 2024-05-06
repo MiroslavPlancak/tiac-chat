@@ -49,12 +49,8 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
     //filtering logic for online users
     this.onlineFilteredUsers$ = rxjs.combineLatest([
       this.store.select(selectConnectedUsers).pipe(
-        
-        rxjs.tap((res)=> console.log(`componenet output before:`,res)),
         rxjs.map(users => users?.filter(user => user.id !== this.currentUserId$.getValue())),
-        rxjs.tap((res)=> console.log(`componenet output after:`,res)),
-      
-      ),
+       ),
       this.onlineUserSearchTerm$
     ]).pipe(
       rxjs.map(([onlineUsers, term]) => {

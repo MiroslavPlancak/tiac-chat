@@ -7,7 +7,7 @@ export interface UserState{
     allUsers: User[],
     error?: string,
     userById:User[],
-    onlineUser?:User,//onlineUserId: number, is what we return from the back end and then use it to filter from allUsers
+    currentUserId?:number,//onlineUserId: number, is what we return from the back end and then use it to filter from allUsers
     appliedFilter?: string
 }
 
@@ -69,12 +69,11 @@ export const userReducer = createReducer(
     //load connected user
     on(Users.Hub.Actions.loadConnectedUserSucceeded, (state,{connectedUserId})=>{
         
-        const currentUser = state.allUsers.filter(user => user.id == connectedUserId)
-        const currentUserObj = currentUser[0]
+        console.log(`reducer output:`, connectedUserId)
       
         return {
             ...state,
-            onlineUser: currentUserObj
+           currentUserId:connectedUserId
         }
     }),
 

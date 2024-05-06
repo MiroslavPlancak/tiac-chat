@@ -46,6 +46,8 @@ export class UserService implements OnDestroy {
     private store: Store
   ) {
 
+    
+
 
     this.authService.loggedOut$.subscribe((isLoggedOut) => {
       if (isLoggedOut) {
@@ -72,8 +74,7 @@ export class UserService implements OnDestroy {
       this.allUsersNgRx$.pipe(rxjs.skip(1), rxjs.take(1)).subscribe(()=> 
         this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: userIds }))
       )
-      //ng Rx load connected user
-      this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserId: userId }))
+      
 
       if (this.currentUserId$.getValue() !== userId) {
 
@@ -99,7 +100,6 @@ export class UserService implements OnDestroy {
 
       //  }, 10);
       this.onlineUserIds$.subscribe((onlineUserIds) => {
-        console.log(`disconnected user fired`, onlineUserIds)
         this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: onlineUserIds }))
       })
 
@@ -190,55 +190,55 @@ export class UserService implements OnDestroy {
   )
 
   // current user logged details obs$
-  currentUserLogged$ = this.authService.userId$.pipe(
-    rxjs.filter(userId => userId != null),
-    rxjs.distinctUntilChanged(),
-    rxjs.switchMap(userid => {
-      const userID = userid as number
-      this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: userID }))
-      return this.store.select(selectUserById).pipe(
-        rxjs.filter(users => users.some(user => user.id === userID)),
-        rxjs.map(users => {
-          let currentUser = users.find(user => user.id === userID)
-          return currentUser
-        })
-      )
-      //old implementation
-      //return this.getById(userid as number);
-    }),
-    rxjs.map(user => {
-      return {
-        firstName: user?.firstName,
-        lastName: user?.lastName,
-        email: user?.email
-      }
-    }),
-    rxjs.takeUntil(this.destroy$)
-  )
+  // currentUserLogged$ = this.authService.userId$.pipe(
+  //   rxjs.filter(userId => userId != null),
+  //   rxjs.distinctUntilChanged(),
+  //   rxjs.switchMap(userid => {
+  //     const userID = userid as number
+  //     this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: userID }))
+  //     return this.store.select(selectUserById).pipe(
+  //       rxjs.filter(users => users.some(user => user.id === userID)),
+  //       rxjs.map(users => {
+  //         let currentUser = users.find(user => user.id === userID)
+  //         return currentUser
+  //       })
+  //     )
+  //     //old implementation
+  //     //return this.getById(userid as number);
+  //   }),
+  //   rxjs.map(user => {
+  //     return {
+  //       firstName: user?.firstName,
+  //       lastName: user?.lastName,
+  //       email: user?.email
+  //     }
+  //   }),
+  //   rxjs.takeUntil(this.destroy$)
+  // )
   // current user name obs$
-  currentUserName$ = this.authService.userId$.pipe(
-    rxjs.filter((userId: any) => userId != null),
-    rxjs.distinctUntilChanged(),
-    rxjs.switchMap((userid: number) => {
-      this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: userid }))
-      return this.store.select(selectUserById).pipe(
-        rxjs.filter(users => users.some(user => user.id == userid)),
-        rxjs.map(users => {
-          let currentUser = users.find(user => user.id == userid)
-          return currentUser
-        })
-      )
-      //return this.getById(userid as number);
-    }),
-    rxjs.map(user => {
-      if (user) {
-        return user.firstName
-      } else {
-        return '';
-      }
-    }),
-    rxjs.takeUntil(this.destroy$)
-  )
+  // currentUserName$ = this.authService.userId$.pipe(
+  //   rxjs.filter((userId: any) => userId != null),
+  //   rxjs.distinctUntilChanged(),
+  //   rxjs.switchMap((userid: number) => {
+  //     this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: userid }))
+  //     return this.store.select(selectUserById).pipe(
+  //       rxjs.filter(users => users.some(user => user.id == userid)),
+  //       rxjs.map(users => {
+  //         let currentUser = users.find(user => user.id == userid)
+  //         return currentUser
+  //       })
+  //     )
+  //     //return this.getById(userid as number);
+  //   }),
+  //   rxjs.map(user => {
+  //     if (user) {
+  //       return user.firstName
+  //     } else {
+  //       return '';
+  //     }
+  //   }),
+  //   rxjs.takeUntil(this.destroy$)
+  // )
 
   // add user to private channel helper method()
   addUserToPrivateChannel(channelId: number) {

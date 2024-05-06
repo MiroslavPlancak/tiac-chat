@@ -152,7 +152,11 @@ export class AuthService {
         this.accessTokenExpirationTimer.next(expirationTime)
         
         this.updateTokenRefreshTimer$.next(expirationTime)
+
+        //important change !!!!!!!!!!!!
+        return expirationTime
     }
+    
   }
 
 

@@ -3,6 +3,9 @@ import * as rxjs from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { AuthService } from './auth.service';
 import { NotificationDialogService } from './notification-dialog.service';
+import { Store } from '@ngrx/store';
+import { Users } from '../state/user/user.action'
+import { selectAllUsers, selectCurrentUser, selectUserById } from '../state/user/user.selector';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +20,8 @@ export class ConnectionService implements OnInit, OnDestroy{
 
   constructor(
     private authService: AuthService,
-    private dialogService:NotificationDialogService
+    private dialogService:NotificationDialogService,
+    private store: Store
     ) {
 
     //extract the expiration time of access token and set the BS of it to that value
@@ -40,7 +44,8 @@ export class ConnectionService implements OnInit, OnDestroy{
     })
 
     console.log(`currentUserId$`, this.currentUserId$.getValue())
-   
+
+
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl('http://localhost:5008/Chathub', {
         accessTokenFactory: () => {
@@ -58,7 +63,10 @@ export class ConnectionService implements OnInit, OnDestroy{
     .start()
     .then(() => {
       if (this.hubConnection.connectionId != undefined) {
-        
+
+        //ng Rx here we load the currently connected user into the state
+        this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserId: this.currentUserId$.getValue() as number }))
+    
        // console.log("connection started with connectionId:", this.hubConnection.connectionId);
        // console.log(`expiration time of access token`, this.authService.accessTokenExpirationTime.subscribe(res => console.log(res)))
        this.setupTokenRefreshTimer()

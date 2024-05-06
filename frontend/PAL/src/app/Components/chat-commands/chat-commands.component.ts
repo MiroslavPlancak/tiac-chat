@@ -5,6 +5,9 @@ import { UserService } from '../../Services/user.service';
 import * as rxjs from 'rxjs';
 import { AuthService } from '../../Services/auth.service';
 import { ChannelService } from '../../Services/channel.service';
+import { Store } from '@ngrx/store';
+import { Users } from '../../state/user/user.action'
+import { selectCurrentUser } from '../../state/user/user.selector';
 
 @Component({
   selector: 'app-chat-commands',
@@ -15,8 +18,9 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
 
   private destroy$ = new rxjs.Subject<void>();
   privateConversationId$ = this.chatService.privateConversationId$
-  currentUserName$ = this.userService.currentUserName$
-
+  //ng rx
+  currentUserName$ = this.store.select(selectCurrentUser)
+  
   newPublicMessage: string = '';
   newPrivateMessage: string = '';
 
@@ -35,7 +39,8 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
     public messageService: MessageService,
     public userService: UserService,
     private authService: AuthService,
-    private channelService: ChannelService
+    private channelService: ChannelService,
+    private store: Store
   ) { }
   ngOnInit(): void {
 
@@ -58,7 +63,7 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
             rxjs.tap(() => {
               // Create private message object
               const privateMessage: PrivateMessage = {
-                senderId: currentUserName,
+                senderId: currentUserName.firstName,
                 message: this.newPrivateMessage,
                 isSeen: false
               };
