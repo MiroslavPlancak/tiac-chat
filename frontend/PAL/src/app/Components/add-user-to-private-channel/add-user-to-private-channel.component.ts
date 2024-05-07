@@ -120,7 +120,7 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     const isOwner = false;
 
     //this bit needs changing into behavior subject
-    this.userService.inviteUser(selectedUser, privateChannelId)
+    this.channelService.inviteUser(selectedUser, privateChannelId)
 
     const userChannel = {
       user_id: +selectedUser,
@@ -209,7 +209,7 @@ export class AddUserToPrivateChannelComponent implements OnInit {
       }
     })
 
-    this.userService.kickUser(userId, this.selectedPrivateChannelId)
+    this.channelService.kickUser(userId, this.selectedPrivateChannelId)
 
   }
 

@@ -7,7 +7,7 @@ import { AuthService } from '../../Services/auth.service';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
-import { selectUserById,selectCurrentUser } from '../../state/user/user.selector';
+import { selectUserById,selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 
 @Component({
   selector: 'app-chat-body',
@@ -143,7 +143,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
       })
 
-      this.privateConversationUsers$ = rxjs.combineLatest([this.chatService.privateConversationId$, this.authService.userId$, this.userService.allUsers$]).pipe(
+      this.privateConversationUsers$ = rxjs.combineLatest([this.chatService.privateConversationId$, this.authService.userId$, this.store.select(selectAllUsers)]).pipe(
         rxjs.filter(([privateConversationId, userId]) => {
           return privateConversationId != undefined && userId != undefined
         }),

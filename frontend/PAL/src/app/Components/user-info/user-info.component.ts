@@ -6,6 +6,7 @@ import { NotificationDialogService } from '../../Services/notification-dialog.se
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { selectCurrentUser, selectUserById } from '../../state/user/user.selector';
+import { ConnectionService } from '../../Services/connection.service';
 
 @Component({
   selector: 'app-user-info',
@@ -24,6 +25,7 @@ constructor
   private authService: AuthService,
   private userService: UserService,
   private notificationDialog: NotificationDialogService,
+  private connectionService: ConnectionService,
   private store: Store
   ) {
     // this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId:141}))
@@ -41,7 +43,7 @@ constructor
   //methods
   logout() {
     this.notificationDialog.closeAllDialogs()
-    this.userService.LogoutUser();
+    //this.connectionService.LogoutUser();
     this.authService.logout();
 }
 }

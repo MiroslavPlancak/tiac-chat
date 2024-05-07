@@ -36,7 +36,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   (
     private authService: AuthService,
     public userService:UserService,
-    private chanelService:ChannelService,
+    public chanelService:ChannelService,
     private chatService:ChatService,
     private messageService:MessageService,
     private matDialog: MatDialog,
@@ -60,12 +60,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
           this.channelIdSelectedClickHandler(8)
         }
         
-      });
-     
-      
-  
-      
-      
+      });   
     })
 
     //redirect user to public_root after he has been kicked from a private channel

@@ -68,7 +68,7 @@ namespace TiacChat.Presentation.Hubs
         {
             string connectionId = Context.ConnectionId;
             string userId = Context.User.FindFirstValue("userId");
-            Console.WriteLine("User disconnected:", userId);
+            Console.WriteLine("User disconnected:"+ userId);
 
             // removing user that is no longer being connected from the client
 

@@ -33,7 +33,7 @@
                         <mat-icon style="font-size: 24px; vertical-align: middle;">label_important</mat-icon></span>
                     {{ loadedPrivateChannel.name }}
                     <span *ngIf="loadedPrivateChannel.isOwner"
-                        (click)="this.userService.addUserToPrivateChannel(loadedPrivateChannel.id)"> <button
+                        (click)="this.chanelService.inviteUserToPrivateChannel(loadedPrivateChannel.id)"> <button
                             mat-icon-button matTooltip="user list">
                             <mat-icon color="primary"
                                 style="font-size: 24px; vertical-align: middle;">grade</mat-icon></button></span>

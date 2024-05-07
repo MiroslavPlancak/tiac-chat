@@ -38,9 +38,7 @@ export class UserService implements OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private http: HttpClient,
-    private chanelService: ChannelService,
-    private matDialog: MatDialog,
+    private http: HttpClient, 
     private connectionService: ConnectionService,
     private dialogService: NotificationDialogService,
     private store: Store
@@ -142,59 +140,10 @@ export class UserService implements OnDestroy {
 
   /////HTTP endpoint methods/////
 
-  /////Service methods/////
-
-  //ngRx implementation 
-
-  // get all users obs$ (old implementation)
-  public allUsers$ = this.store.select(selectAllUsers).pipe(
-
-    rxjs.takeUntil(this.destroy$)
-  );
-
-
-  // add user to private channel helper method()
-  addUserToPrivateChannel(channelId: number) {
-
-    const dialogConfig = new MatDialogConfig()
-    dialogConfig.disableClose = false
-    dialogConfig.autoFocus = true
-
-    console.log(`this.chanelService.isCurrentUserOwner$.value`, this.chanelService.isCurrentUserOwner$.value)
-    console.log(`privateChannelId`, this.chanelService.SelectedChannel$.value)
-    const dialogData = {
-      privateChannelId: this.chanelService.SelectedChannel$.value,
-      isOwner: this.chanelService.isCurrentUserOwner$.value
-    }
-
-    dialogConfig.data = dialogData;
-    const dialogRef = this.matDialog.open(AddUserToPrivateChannelComponent, dialogConfig);
-
-
-  }
-
-  /////Service methods/////
-
   /////Invoke hub methods/////
 
-  //kick user from private conversation 
-  public kickUser = (userId: number, channelId: number) => {
-    this.connectionService.hubConnection?.invoke("RemoveUserFromPrivateConversation", userId, channelId)
-      .catch(err => console.log(err))
-    console.log('kicked user info:')
-  }
-
-  //invite user to private conversation
-  public inviteUser = (userId: number, channelId: number) => {
-    this.connectionService.hubConnection?.invoke("AddUserToPrivateConversation", userId, channelId)
-      .catch(err => console.log(err))
-    console.log('added user info:')
-  }
-
   //logout user
-  public LogoutUser = () => {
-    this.connectionService.hubConnection?.invoke("LogoutUserAsync").catch(err => console.log(err));
-  }
+
   /////Invoke hub methods/////
 }
 export { User };

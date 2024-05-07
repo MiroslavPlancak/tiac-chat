@@ -5,6 +5,8 @@ import { Observable } from 'rxjs';
 import * as rxjs from 'rxjs';
 import { ConnectionService } from './connection.service';
 import { NotificationDialogService } from './notification-dialog.service';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { AddUserToPrivateChannelComponent } from '../Components/add-user-to-private-channel/add-user-to-private-channel.component';
 
 @Injectable({
   providedIn: 'root'
@@ -34,6 +36,7 @@ export class ChannelService implements OnDestroy {
     private authService: AuthService,
     private connectionService: ConnectionService,
     private dialogService: NotificationDialogService,
+    private matDialog: MatDialog,
   ) {
 
     this.getAllPrivateChannelsByUserId$
@@ -150,6 +153,22 @@ export class ChannelService implements OnDestroy {
 
 /////service methods/////
 
+  // add user to private channel helper method()
+  inviteUserToPrivateChannel(channelId: number) {
+
+    const dialogConfig = new MatDialogConfig()
+    dialogConfig.disableClose = false
+    dialogConfig.autoFocus = true
+
+    const dialogData = {
+      privateChannelId: this.SelectedChannel$.value,
+      isOwner: this.isCurrentUserOwner$.value
+    }
+
+    dialogConfig.data = dialogData;
+    this.matDialog.open(AddUserToPrivateChannelComponent, dialogConfig);
+  }
+
   //private channels obs$
   public getAllPrivateChannelsByUserId$ = this.currentUserId$.pipe(
     rxjs.filter(currentUserId => currentUserId != undefined),
@@ -227,6 +246,22 @@ export class ChannelService implements OnDestroy {
       })
     }).pipe(rxjs.takeUntil(this.destroy$))
   }
+
+  
+  //kick user from private conversation 
+  public kickUser = (userId: number, channelId: number) => {
+    this.connectionService.hubConnection?.invoke("RemoveUserFromPrivateConversation", userId, channelId)
+      .catch(err => console.log(err))
+    console.log('kicked user info:',userId, channelId)
+  }
+
+  //invite user to private conversation
+  public inviteUser = (userId: number, channelId: number) => {
+    this.connectionService.hubConnection?.invoke("AddUserToPrivateConversation", userId, channelId)
+      .catch(err => console.log(err))
+    console.log('added user info:',userId, channelId)
+  }
+
   
   /////Hub methods/////
 }

@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { NotificationDialogService } from './notification-dialog.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../state/user/user.action'
-import { selectAllUsers, selectCurrentUser, selectUserById } from '../state/user/user.selector';
+
 
 @Injectable({
   providedIn: 'root'
@@ -82,8 +82,9 @@ export class ConnectionService implements OnInit, OnDestroy{
     .catch(err => {
      // console.log('Error while starting connection:' + err)
     })
-
+    
     this.hubConnection.onclose((error) => {
+
       console.log('Connection closed.');
       console.log(error);
      // clearInterval(this.tokenRefreshTimer); 
