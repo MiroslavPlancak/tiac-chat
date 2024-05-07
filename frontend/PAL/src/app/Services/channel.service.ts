@@ -7,6 +7,10 @@ import { ConnectionService } from './connection.service';
 import { NotificationDialogService } from './notification-dialog.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { AddUserToPrivateChannelComponent } from '../Components/add-user-to-private-channel/add-user-to-private-channel.component';
+import { Channel } from '../Models/channel.model';
+import { Store } from '@ngrx/store';
+import { Channels } from '../state/channel/channel.action'
+import { selectAllChannels } from '../state/channel/channel.selector';
 
 @Injectable({
   providedIn: 'root'
@@ -37,7 +41,10 @@ export class ChannelService implements OnDestroy {
     private connectionService: ConnectionService,
     private dialogService: NotificationDialogService,
     private matDialog: MatDialog,
+    private store: Store
   ) {
+
+    this.store.select(selectAllChannels).pipe(rxjs.tap((res) => console.log(`channelService output:`, res))).subscribe()
 
     this.getAllPrivateChannelsByUserId$
       .pipe(rxjs.takeUntil(this.destroy$))
@@ -107,23 +114,10 @@ export class ChannelService implements OnDestroy {
 
  /////HTTP endpoint methods/////
 
-  getListOfChannels(): Observable<any> {
+  getListOfChannels(): Observable<Channel[]> {
     const url = `${this.apiUrl}/getAll`
-    return this.http.get(url);
+    return this.http.get<Channel[]>(url);
   }
-
-  createNewChannel(name: string, visibility: number, createdBy: number): Observable<any> {
-    const url = `${this.apiUrl}`
-    const channel: any =
-    {
-      name: name,
-      visibility: visibility,
-      createdBy: createdBy
-    }
-    //console.log("channel service side:",channel)
-    return this.http.post(url, channel);
-  }
-
 
   getListOfPrivateChannelsByUserId(loggedUserId: number): Observable<any> {
     const url = `${this.apiUrl}/privateChannels?userId=${loggedUserId}`
@@ -133,11 +127,6 @@ export class ChannelService implements OnDestroy {
   addUserToPrivateChannel(userChannel: any): Observable<any> {
     const url = `${this.apiUrl}/userChannel`;
     return this.http.post(url, userChannel);
-  }
-
-  getListOfPrivateChannelsUserhasAccessTo(userId: number): Observable<any> {
-    const url = `${this.apiUrl}/privateChannels?userId=${userId}`
-    return this.http.get(url);
   }
 
   getParticipantsOfPrivateChannel(channelId: number): Observable<any> {
@@ -205,7 +194,7 @@ export class ChannelService implements OnDestroy {
 
 
   //public channels obs$
-  public allPublicChannels$ = this.getListOfChannels().pipe(
+  public allPublicChannels$ = this.store.select(selectAllChannels).pipe(
     rxjs.map(publicChannels => publicChannels.filter((channel: { visibility: number; }) => channel.visibility !== 0)),
     rxjs.takeUntil(this.destroy$)
   )

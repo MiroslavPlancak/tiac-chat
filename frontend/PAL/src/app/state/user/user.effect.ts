@@ -49,7 +49,6 @@ export class UserEffect {
            // rxjs.withLatestFrom(this.loadAllUsers$.pipe(rxjs.tap((res)=>console.log(`xxx`,res)))),
             rxjs.switchMap((action) =>
                 rxjs.of(action.connectedUserId).pipe(
-                    rxjs.tap(() =>console.log(`tap happens`)),
                     rxjs.map((userId) => Users.Hub.Actions.loadConnectedUserSucceeded({ connectedUserId: userId })),
                     rxjs.catchError((error) => rxjs.of(Users.Hub.Actions.loadConnectedUserFailed({ error: error })))
                 )

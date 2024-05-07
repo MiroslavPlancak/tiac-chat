@@ -43,7 +43,7 @@ export class UserService implements OnDestroy {
   ) {
 
 
-    console.log(`currentUserIdNgRx$`, this.currentUserIdNgRx$.subscribe())
+    
 
     this.authService.loggedOut$.subscribe((isLoggedOut) => {
       if (isLoggedOut) {

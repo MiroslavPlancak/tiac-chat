@@ -10,6 +10,9 @@ import { CreateChannelComponent } from '../create-channel/create-channel.compone
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import {  selectCurrentUser } from '../../state/user/user.selector';
+import { Channels } from '../../state/channel/channel.action'
+import { selectAllChannels } from '../../state/channel/channel.selector';
+
 
 @Component({
   selector: 'app-public-channels',
@@ -181,7 +184,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
 
   extractClickedChanelInformation():void{
 
-    this.chanelService.getListOfChannels().pipe(
+    this.store.select(selectAllChannels).pipe(
 
       rxjs.first(),
       rxjs.map(clickedChannel => clickedChannel.find((channel: { id: number; }) => channel.id === this.channelId)),

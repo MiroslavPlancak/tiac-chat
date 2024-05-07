@@ -97,10 +97,10 @@ export class ChatComponent implements OnInit, OnDestroy {
 
 
     //load public channels
-    this.channelService.getListOfChannels().subscribe(loadAllChannels => {
-      this.loadedPublicChannels.push(...loadAllChannels)
-      console.log(loadAllChannels);
-    })
+    // this.channelService.getListOfChannels().subscribe(loadAllChannels => {
+    //   this.loadedPublicChannels.push(...loadAllChannels)
+    //   console.log(loadAllChannels);
+    // })
 
 
 
@@ -226,10 +226,10 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   createChannel() {
     if (this.channelName !== undefined && this.channelType !== null && this.currentUserId !== null) {
-      this.channelService.createNewChannel(this.channelName, this.channelType, this.currentUserId).subscribe(newChannel => {
+      // this.channelService.createNewChannel(this.channelName, this.channelType, this.currentUserId).subscribe(newChannel => {
 
         
-      })
+      // })
       console.log("channel name:", this.channelName)
       console.log("channel type", this.channelType)
       console.log("currentUserId:", this.currentUserId)

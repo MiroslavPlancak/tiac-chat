@@ -14,20 +14,20 @@ export const selectUserError = createSelector(
 //select user by ID
 export const selectUserById = createSelector(
     selectedUserState,
-    (state:UserState) =>
+    (state: UserState) =>
         state.userById
 )
 
 export const selectUserByIdNew = (userId: number) => createSelector(
     selectedUserState,
-    (state:UserState) =>{
+    (state: UserState) => {
         state.allUsers.find(user => user.id === userId)
     }
 )
 //select all users
 export const selectAllUsers = createSelector(
     selectedUserState,
-    (state:UserState) =>
+    (state: UserState) =>
         state.allUsers
 )
 
@@ -35,28 +35,26 @@ export const selectAllUsers = createSelector(
 //select connected users
 export const selectCurrentUser = createSelector(
     selectedUserState,
-    (state:UserState) =>{
-            //console.log(`selector output(allusers):`, state.allUsers)
-           
-           const selectUser = state.allUsers.filter(user => user.id === state.currentUserId)
-           console.log(`selector output:`, selectUser)
-           return selectUser[0]
-        }
+    (state: UserState) => {
+
+        const selectUser = state.allUsers.filter(user => user.id === state.currentUserId)
+        return selectUser[0]
+    }
 )
 
 //select connected users
 export const selectConnectedUsers = createSelector(
     selectedUserState,
-    (state:UserState) =>{
-        
-       return state.allUsers.filter(user => user.isOnline)
+    (state: UserState) => {
+
+        return state.allUsers.filter(user => user.isOnline)
     }
 )
 
 //select offline users
 export const selectOfflineUsers = createSelector(
     selectedUserState,
-    (state:UserState) => {
+    (state: UserState) => {
         return state.allUsers.filter(user => !user.isOnline)
     }
 )

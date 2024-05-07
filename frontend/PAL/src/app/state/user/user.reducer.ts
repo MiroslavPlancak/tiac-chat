@@ -68,9 +68,7 @@ export const userReducer = createReducer(
     /// HUB calls ///
     //load connected user
     on(Users.Hub.Actions.loadConnectedUserSucceeded, (state,{connectedUserId})=>{
-        
-        console.log(`reducer output:`, connectedUserId)
-      
+       
         return {
             ...state,
            currentUserId:connectedUserId

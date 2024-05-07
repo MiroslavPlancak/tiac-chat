@@ -10,7 +10,8 @@ import { Users } from '../../state/user/user.action'
 import { selectAllUsers, selectUserById } from '../../state/user/user.selector';
 import * as rxjs from 'rxjs';
 import { User } from '../../Models/user.model';
-
+import { Channels } from '../../state/channel/channel.action'
+import { selectAllChannels } from '../../state/channel/channel.selector';
 
 @Component({
   selector: 'app-add-user-to-private-channel',
@@ -30,7 +31,7 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     firstName: '',
     lastName: ''
   };
-  selectedChannelIdName: string = '';
+  selectedChannelIdName: string | null = '';
   listOfAddedUsers: User[] = [];   ///////////////
   isOwnerOfPrivateChannel: boolean = false;
   selectedPrivateChannelId: any;
@@ -57,7 +58,7 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     //load all users from state
     this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
     //extract channel name
-    this.channelService.getListOfChannels()
+    this.store.select(selectAllChannels)
       .pipe(
         map(channels => channels.filter((channelName: { id: any; }) => channelName.id === this.matData.privateChannelId)),
         map(filteredChannels => filteredChannels.length > 0 ? filteredChannels[0].name : null),
@@ -178,7 +179,7 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     // })
 
     //get ChannelName
-    this.channelService.getListOfChannels()
+    this.store.select(selectAllChannels)
       .pipe(
         map(channels => channels.filter((channelName: { id: any; }) => channelName.id === this.matData.privateChannelId)),
         map(filteredChannels => filteredChannels.length > 0 ? filteredChannels[0].name : null)

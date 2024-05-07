@@ -54,6 +54,8 @@ import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { UserEffect } from './state/user/user.effect';
 import { userReducer } from './state/user/user.reducer';
+import { channelReducer } from './state/channel/channel.reducer';
+import { ChannelEffect } from './state/channel/channel.effect';
 
 
 @NgModule({
@@ -104,8 +106,8 @@ import { userReducer } from './state/user/user.reducer';
     MatError,
     MatTooltipModule,
     MatSelectModule,
-    StoreModule.forRoot({userReducer}, {}),
-    EffectsModule.forRoot([UserEffect]),
+    StoreModule.forRoot({userReducer,channelReducer}, {}),
+    EffectsModule.forRoot([UserEffect, ChannelEffect]),
   
 
   ],
