@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as rxjs from 'rxjs';
-import { User, UserService } from '../../Services/user.service';
+import { UserService } from '../../Services/user.service';
 import { ChatService } from '../../Services/chat.service';
 import { AuthService } from '../../Services/auth.service';
 import { MessageService } from '../../Services/message.service';
@@ -8,6 +8,7 @@ import { ChannelService } from '../../Services/channel.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { selectUserById,selectOfflineUsers } from '../../state/user/user.selector';
+import { User } from '../../Models/user.model';
 
 @Component({
   selector: 'app-offline-users',

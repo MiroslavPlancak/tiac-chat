@@ -1,13 +1,14 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ChatService, PrivateMessage } from '../../Services/chat.service';
 import { MessageService } from '../../Services/message.service';
-import { User, UserService } from '../../Services/user.service';
+import { UserService } from '../../Services/user.service';
 import * as rxjs from 'rxjs';
 import { AuthService } from '../../Services/auth.service';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { selectUserById,selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
+import { User } from '../../Models/user.model';
 
 @Component({
   selector: 'app-chat-body',

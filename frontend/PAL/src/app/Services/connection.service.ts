@@ -24,6 +24,15 @@ export class ConnectionService implements OnInit, OnDestroy{
     private store: Store
     ) {
 
+      //this essentially stops the connection as a reaction to user clicking logout button.
+      this.authService.loggedOut$.subscribe((isLoggedOut) => {
+        if (isLoggedOut) {
+          this.hubConnection.stop()
+          this.destroy$.next()
+          this.destroy$.complete()
+        }
+      })
+
     //extract the expiration time of access token and set the BS of it to that value
     this.authService.getAccessTokenExpTime()
 

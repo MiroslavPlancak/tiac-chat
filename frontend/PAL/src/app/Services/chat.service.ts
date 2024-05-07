@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy, OnInit } from '@angular/core';
 import * as rxjs from 'rxjs';
 import { AuthService } from './auth.service';
-import { User, UserService } from './user.service';
+import { UserService } from './user.service';
 import { ConnectionService } from './connection.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../state/user/user.action'

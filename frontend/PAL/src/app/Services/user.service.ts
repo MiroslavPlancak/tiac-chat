@@ -1,17 +1,14 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
 import { AuthService } from './auth.service';
-import { BehaviorSubject, Observable, Subject, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import * as rxjs from 'rxjs';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { ChannelService } from './channel.service';
-import { AddUserToPrivateChannelComponent } from '../Components/add-user-to-private-channel/add-user-to-private-channel.component';
 import { ConnectionService } from './connection.service';
 import { NotificationDialogService } from './notification-dialog.service';
 import { User } from '../Models/user.model';
 import { Store } from '@ngrx/store';
 import { Users } from '../state/user/user.action'
-import { selectAllUsers, selectUserById } from '../state/user/user.selector';
+import { selectAllUsers, selectCurrentUser } from '../state/user/user.selector';
 
 
 @Injectable({
@@ -31,21 +28,22 @@ export class UserService implements OnDestroy {
 
   public onlineUserIds$ = new rxjs.BehaviorSubject<number[]>([]);
 
+  currentUserIdNgRx$ = this.store.select(selectCurrentUser)
 
-  currentUserId$ = this.authService.userId$;
+  
 
   private apiUrl = "http://localhost:5008/api/users/";
 
   constructor(
     private authService: AuthService,
-    private http: HttpClient, 
+    private http: HttpClient,
     private connectionService: ConnectionService,
     private dialogService: NotificationDialogService,
     private store: Store
   ) {
 
-    
 
+    console.log(`currentUserIdNgRx$`, this.currentUserIdNgRx$.subscribe())
 
     this.authService.loggedOut$.subscribe((isLoggedOut) => {
       if (isLoggedOut) {
@@ -69,21 +67,28 @@ export class UserService implements OnDestroy {
       this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
       this.allUsersNgRx$ = this.store.select(selectAllUsers)
 
-      this.allUsersNgRx$.pipe(rxjs.skip(1), rxjs.take(1)).subscribe(()=> 
+      this.allUsersNgRx$.pipe(rxjs.skip(1), rxjs.take(1)).subscribe(() =>
         this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: userIds }))
       )
-      
 
-      if (this.currentUserId$.getValue() !== userId) {
 
-        this.dialogService.openOnlineNotification(
-          `${fullName} just came online.`,
-          ``,
-          ``,
-          { top: `0%`, left: `80%` },
-          3000
-        )
-      }
+      this.currentUserIdNgRx$.pipe(
+        rxjs.take(1),
+        rxjs.filter(user => !!user),
+        rxjs.map(user => user.id),
+      ).subscribe(currentUserId => {
+
+          if (currentUserId !== userId) {
+            this.dialogService.openOnlineNotification(
+              `${fullName} just came online.`,
+              ``,
+              ``,
+              { top: `0%`, left: `80%` },
+              3000
+            )
+          }
+        })
+
 
     })
 
@@ -93,23 +98,28 @@ export class UserService implements OnDestroy {
       this.onlineUserIds$.next(userIds);
 
       //ngRx load connected users 
-  
+
       this.onlineUserIds$.subscribe((onlineUserIds) => {
         this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: onlineUserIds }))
       })
 
-      //console.log(`onlineUserIds$ value disconnected:`, this.onlineUserIds$.value)
-      if (this.currentUserId$.getValue() !== userId) {
-
-        this.dialogService.openOnlineNotification(
-          `${fullName} just went offline.`,
-          ``,
-          ``,
-          { top: `0%`, left: `80%` },
-          3000
-        )
-      }
-
+ 
+      this.currentUserIdNgRx$.pipe(
+        rxjs.take(1),
+        rxjs.filter(user => !!user),
+        rxjs.map(user => user.id)
+      ).subscribe(currentUserId =>{
+        if (currentUserId !== userId) {
+          this.dialogService.openOnlineNotification(
+            `${fullName} just went offline.`,
+            ``,
+            ``,
+            { top: `0%`, left: `80%` },
+            3000
+          )
+        }
+      })
+    
     })
 
     /////On hub methods/////
@@ -140,11 +150,6 @@ export class UserService implements OnDestroy {
 
   /////HTTP endpoint methods/////
 
-  /////Invoke hub methods/////
-
-  //logout user
-
-  /////Invoke hub methods/////
 }
-export { User };
+
 

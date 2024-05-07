@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChatService, PrivateMessage } from '../../Services/chat.service';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { AuthService } from '../../Services/auth.service';
-import { User, UserService } from '../../Services/user.service';
+import { UserService } from '../../Services/user.service';
 import { BehaviorSubject, Observable,combineLatest,  filter, forkJoin, map, mergeMap, switchMap, withLatestFrom } from 'rxjs';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
@@ -10,6 +10,7 @@ import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { selectUserById, selectConnectedUsers } from '../../state/user/user.selector';
 import * as rxjs from 'rxjs';
+import { User } from '../../Models/user.model';
 
 @Component({
   selector: 'app-chat',

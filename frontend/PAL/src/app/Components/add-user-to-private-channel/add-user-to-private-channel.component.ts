@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Inject, OnInit, Output } from '@angular/core';
-import { User, UserService } from '../../Services/user.service';
+import { UserService } from '../../Services/user.service';
 import { map, switchMap, take } from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ChannelService } from '../../Services/channel.service';
@@ -9,6 +9,7 @@ import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { selectAllUsers, selectUserById } from '../../state/user/user.selector';
 import * as rxjs from 'rxjs';
+import { User } from '../../Models/user.model';
 
 
 @Component({

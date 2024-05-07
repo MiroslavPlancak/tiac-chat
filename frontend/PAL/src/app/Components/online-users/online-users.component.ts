@@ -1,12 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as rxjs from 'rxjs';
 import { ChatService, PrivateMessage } from '../../Services/chat.service';
-import { User, UserService } from '../../Services/user.service';
+import { UserService } from '../../Services/user.service';
 import { AuthService } from '../../Services/auth.service';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
 import { Store } from '@ngrx/store';
 import { selectAllUsers, selectConnectedUsers } from '../../state/user/user.selector';
+import { User } from '../../Models/user.model';
 
 @Component({
   selector: 'app-online-users',
