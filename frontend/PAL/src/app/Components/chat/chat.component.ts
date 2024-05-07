@@ -8,7 +8,7 @@ import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
-import { selectUserById } from '../../state/user/user.selector';
+import { selectUserById, selectConnectedUsers } from '../../state/user/user.selector';
 import * as rxjs from 'rxjs';
 
 @Component({
@@ -44,7 +44,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   channelName!: string;
   channelType!: number;
 
-
+  onlineUsers$ = this.store.select(selectConnectedUsers)
 
   constructor(
     public chatService: ChatService,

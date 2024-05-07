@@ -53,3 +53,11 @@ export const selectConnectedUsers = createSelector(
     }
 )
 
+//select offline users
+export const selectOfflineUsers = createSelector(
+    selectedUserState,
+    (state:UserState) => {
+        return state.allUsers.filter(user => !user.isOnline)
+    }
+)
+

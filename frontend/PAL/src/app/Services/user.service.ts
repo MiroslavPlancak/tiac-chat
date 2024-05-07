@@ -95,10 +95,7 @@ export class UserService implements OnDestroy {
       this.onlineUserIds$.next(userIds);
 
       //ngRx load connected users 
-      //  setTimeout(() => {
-      //   this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserIds: userIds }))
-
-      //  }, 10);
+  
       this.onlineUserIds$.subscribe((onlineUserIds) => {
         this.store.dispatch(Users.Hub.Actions.loadConnectedUsersStarted({ connectedUserIds: onlineUserIds }))
       })
@@ -155,90 +152,6 @@ export class UserService implements OnDestroy {
     rxjs.takeUntil(this.destroy$)
   );
 
-  // filter self out of all users obs$
-  public onlineUserIdsWithoutSelf$ = rxjs.combineLatest([
-    this.onlineUserIds$.pipe(rxjs.takeUntil(this.destroy$)),
-    this.authService.userId$.pipe(rxjs.takeUntil(this.destroy$))
-  ])
-    .pipe(
-      rxjs.map(([onlineUserIds, currentUserId]) => onlineUserIds.filter(onlineUserId => onlineUserId !== currentUserId)),
-      rxjs.takeUntil(this.destroy$)
-    )
-
-  // online users obs$
-  public onlineUsers$ = rxjs.combineLatest([
-    this.onlineUserIdsWithoutSelf$,
-    this.store.select(selectAllUsers),
-  ]).pipe(
-    rxjs.map(([onlineUserIds, allUsers]) => {
-      return allUsers.filter(user => onlineUserIds.includes(user.id))
-    }),
-    //   rxjs.tap(res => console.log(`onlineUsers$/chat.service.ts:`,res)),
-    rxjs.takeUntil(this.destroy$)
-  )
-
-  // offline users obs$
-  public offlineUsers$ = rxjs.combineLatest([
-    //if offline list is not filtering correctly its is due to this change, return -onlineUserIdsWithoutSelf$
-    this.onlineUserIds$,
-    this.store.select(selectAllUsers),
-  ]).pipe(
-    rxjs.map(([onlineUserIds, allUsers]) => {
-      return allUsers.filter(user => !onlineUserIds.includes(user.id))
-    }),
-    rxjs.takeUntil(this.destroy$)
-  )
-
-  // current user logged details obs$
-  // currentUserLogged$ = this.authService.userId$.pipe(
-  //   rxjs.filter(userId => userId != null),
-  //   rxjs.distinctUntilChanged(),
-  //   rxjs.switchMap(userid => {
-  //     const userID = userid as number
-  //     this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: userID }))
-  //     return this.store.select(selectUserById).pipe(
-  //       rxjs.filter(users => users.some(user => user.id === userID)),
-  //       rxjs.map(users => {
-  //         let currentUser = users.find(user => user.id === userID)
-  //         return currentUser
-  //       })
-  //     )
-  //     //old implementation
-  //     //return this.getById(userid as number);
-  //   }),
-  //   rxjs.map(user => {
-  //     return {
-  //       firstName: user?.firstName,
-  //       lastName: user?.lastName,
-  //       email: user?.email
-  //     }
-  //   }),
-  //   rxjs.takeUntil(this.destroy$)
-  // )
-  // current user name obs$
-  // currentUserName$ = this.authService.userId$.pipe(
-  //   rxjs.filter((userId: any) => userId != null),
-  //   rxjs.distinctUntilChanged(),
-  //   rxjs.switchMap((userid: number) => {
-  //     this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: userid }))
-  //     return this.store.select(selectUserById).pipe(
-  //       rxjs.filter(users => users.some(user => user.id == userid)),
-  //       rxjs.map(users => {
-  //         let currentUser = users.find(user => user.id == userid)
-  //         return currentUser
-  //       })
-  //     )
-  //     //return this.getById(userid as number);
-  //   }),
-  //   rxjs.map(user => {
-  //     if (user) {
-  //       return user.firstName
-  //     } else {
-  //       return '';
-  //     }
-  //   }),
-  //   rxjs.takeUntil(this.destroy$)
-  // )
 
   // add user to private channel helper method()
   addUserToPrivateChannel(channelId: number) {

@@ -2,7 +2,7 @@ chat.component.html
 <div class="private-conversation">
   <div class="online-users">
     <h2>online users</h2>
-    <div class="user" *ngFor="let entry of (userService.onlineUsers$ | async)" (click)="conversationIdSelectedClickHandler(+entry.id)">
+    <div class="user" *ngFor="let entry of (onlineUsers$ | async)" (click)="conversationIdSelectedClickHandler(+entry.id)">
       <span *ngIf="(privateConversationId$ |async) === +entry.id">x&nbsp;</span>{{entry.firstName}}
     </div>
   </div>

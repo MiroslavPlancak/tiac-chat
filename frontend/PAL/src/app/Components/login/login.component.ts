@@ -4,7 +4,9 @@ import { AuthService } from '../../Services/auth.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { RegisterUserComponent } from '../register-user/register-user.component';
 import { ConnectionService } from '../../Services/connection.service';
-
+import { Store } from '@ngrx/store';
+import { Users } from '../../state/user/user.action'
+import { selectAllUsers, selectCurrentUser, selectUserById } from '../../state/user/user.selector';
 
 @Component({
   selector: 'app-login',
@@ -23,8 +25,9 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private matDialog: MatDialog,
-    private connectionService: ConnectionService
-   // private chatService: ChatService
+    private connectionService: ConnectionService,
+    private store: Store
+    
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -48,7 +51,9 @@ export class LoginComponent {
         next: response => {
         
           console.log("AuthenticateAsync responds with:", response);
-          
+          //this essentially fixes an edge case where the user would not turn off the browser tab, thus not logging out completely and then logging another account
+          // where he would have the previous account details in the state until the first refresh of the page.
+          this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserId: Number(this.authService.userId$.getValue()) }))
           //this.authService.setLoggedInUser(response); 
          // this.router.navigate(['/chatMat']);
           

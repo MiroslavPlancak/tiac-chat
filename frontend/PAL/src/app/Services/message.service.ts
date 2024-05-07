@@ -10,7 +10,7 @@ import { AuthService } from './auth.service';
 import { ConnectionService } from './connection.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../state/user/user.action'
-import { selectUserById } from '../state/user/user.selector';
+import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
 
 @Injectable({
   providedIn: 'root'
@@ -407,8 +407,8 @@ export class MessageService implements OnInit, OnDestroy {
 
 
   displayUserNameToWriteTo(): void {
-
-    this.userService.onlineUsers$.pipe(
+   
+    this.store.select(selectConnectedUsers).pipe(
       rxjs.first(),
       rxjs.map(users => users.find(user => user.id === this.conversationId)),
       rxjs.takeUntil(this.destroy$)

@@ -7,7 +7,7 @@ import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
-import { selectUserById } from '../../state/user/user.selector';
+import { selectUserById,selectOfflineUsers } from '../../state/user/user.selector';
 
 @Component({
   selector: 'app-offline-users',
@@ -41,7 +41,7 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
 
     this.offlineFilteredUsers$ = rxjs.combineLatest([
-      this.userService.offlineUsers$,
+      this.store.select(selectOfflineUsers),
       this.offlineUserSearchTerm$
     ])
       .pipe(
@@ -150,14 +150,14 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
   }
 
   displayOfflineUserNameToWriteTo(): void {
-    this.userService.offlineUsers$.pipe(
+    this.store.select(selectOfflineUsers).pipe(
       rxjs.first()
     ).subscribe(offlineUsers => {
       const offlineUser = offlineUsers.find(user => user.id === this.conversationId);
       if (offlineUser) {
         this.selectedConversation.next(offlineUser.id);
         this.userService.writingTo.next(`${offlineUser.firstName} ${offlineUser.lastName}`)
-        this.userService.fullName = `write to ${offlineUser.firstName}`;
+        this.userService.fullName = `write to ${offlineUser.firstName}:`;
       } else {
         console.error('error occured selecting offline user.');
       }

@@ -7,6 +7,9 @@ import { AuthService } from '../../Services/auth.service';
 import * as rxjs from 'rxjs';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { CreateChannelComponent } from '../create-channel/create-channel.component';
+import { Store } from '@ngrx/store';
+import { Users } from '../../state/user/user.action'
+import {  selectCurrentUser } from '../../state/user/user.selector';
 
 @Component({
   selector: 'app-public-channels',
@@ -37,6 +40,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     private chatService:ChatService,
     private messageService:MessageService,
     private matDialog: MatDialog,
+    private store: Store
     
   ) {
 
@@ -45,8 +49,22 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   ngOnInit(): void {
 
     //load the public_root channel contents when this component is initialized
-    this.chatService.hubConnection?.on(`YourConnectionId`,()=>{
-      this.channelIdSelectedClickHandler(8)
+    this.chatService.hubConnection?.on(`YourConnectionId`, (connection: Record<string, string>, connectedUser: number, fullName: string)=>{
+     
+      this.store.select(selectCurrentUser).pipe(
+        rxjs.filter(user=> !!user),
+        rxjs.map(user => user.id),
+        rxjs.take(1)
+      ).subscribe(userId => {
+        if(connectedUser === userId){
+          this.channelIdSelectedClickHandler(8)
+        }
+        
+      });
+     
+      
+  
+      
       
     })
 
