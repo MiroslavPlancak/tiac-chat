@@ -159,19 +159,19 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   loadPrivateChannels():void{
 //changed this
     this.chanelService.getAllPrivateChannelsByUserId$
-    .pipe(rxjs.takeUntil(this.destroy$))
+    .pipe(rxjs.takeUntil(this.destroy$), rxjs.tap((res)=> console.log(`component outpout:`, res)))
     .subscribe(loadedPrivateChannels => {
-      const ownedChannels = loadedPrivateChannels.filter((channel: { isOwner: any; }) => channel.isOwner);
-      const isOwner = ownedChannels.some((channel: { id: number; }) => channel.id == this.channelId);
+     // const ownedChannels = loadedPrivateChannels.filter((channel: { isOwner: any; }) => channel.isOwner);
+     // const isOwner = ownedChannels.some((channel: { id: number; }) => channel.id == this.channelId);
 
       
-      this.chanelService.isCurrentUserOwner$.next(isOwner)
+      // this.chanelService.isCurrentUserOwner$.next(isOwner)
 
-      if (isOwner) {
-        this.chanelService.isOwnerOfPrivateChannel$.next(true)
-      } else {
-        this.chanelService.isOwnerOfPrivateChannel$.next(false)
-      }
+      // if (isOwner) {
+      //   this.chanelService.isOwnerOfPrivateChannel$.next(true)
+      // } else {
+      //   this.chanelService.isOwnerOfPrivateChannel$.next(false)
+      // }
 
       const checkChannelType = loadedPrivateChannels.some((channel: { id: number; }) => channel.id == this.channelId);
       if (checkChannelType) {

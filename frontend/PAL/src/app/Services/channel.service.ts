@@ -10,7 +10,7 @@ import { AddUserToPrivateChannelComponent } from '../Components/add-user-to-priv
 import { Channel } from '../Models/channel.model';
 import { Store } from '@ngrx/store';
 import { Channels } from '../state/channel/channel.action'
-import { selectAllChannels } from '../state/channel/channel.selector';
+import { selectAllChannels, selectPrivateChannels } from '../state/channel/channel.selector';
 
 @Injectable({
   providedIn: 'root'
@@ -45,6 +45,7 @@ export class ChannelService implements OnDestroy {
   ) {
 
     this.store.select(selectAllChannels).pipe(rxjs.tap((res) => console.log(`channelService output:`, res))).subscribe()
+    this.store.select(selectPrivateChannels).pipe(rxjs.tap((res) => console.log(`channelService output:`, res))).subscribe()
 
     this.getAllPrivateChannelsByUserId$
       .pipe(rxjs.takeUntil(this.destroy$))
@@ -163,7 +164,7 @@ export class ChannelService implements OnDestroy {
     rxjs.filter(currentUserId => currentUserId != undefined),
     rxjs.switchMap(currentUserId => {
       return this.getListOfPrivateChannelsByUserId(currentUserId as number).pipe(
-
+        rxjs.tap((res)=> console.log(`investigation:`, res)),
         rxjs.map(privatelyOwnedChannels => {
 
           return privatelyOwnedChannels.map((channel: { createdBy: number; }) =>

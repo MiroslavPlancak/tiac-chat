@@ -78,6 +78,8 @@ export class ConnectionService implements OnInit, OnDestroy{
         this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserId: this.currentUserId$.getValue() as number }))
         //ngRx load all channels
         this.store.dispatch(Channels.Api.Actions.loadAllChannelsStarted())
+        //ngRx load private channels
+        this.store.dispatch(Channels.Api.Actions.loadPrivateChannelsByUserIdStarted({ userId: Number(this.currentUserId$.getValue())}))
        // console.log("connection started with connectionId:", this.hubConnection.connectionId);
        // console.log(`expiration time of access token`, this.authService.accessTokenExpirationTime.subscribe(res => console.log(res)))
        this.setupTokenRefreshTimer()

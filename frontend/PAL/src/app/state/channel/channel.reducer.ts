@@ -18,12 +18,20 @@ export const channelReducer  = createReducer(
 
     //load all channels
     on(Channels.Api.Actions.loadAllChannelsSucceeded, (state,{channels})=>{
-        console.log(`channel reducer:`, channels)
+       // console.log(`channel reducer:`, channels)
         const loadAllChannelsDeepCopy = channels.map( channel => ({...channel}))
 
         return{
             ...state,
             allChannels:loadAllChannelsDeepCopy
         }
-    })
+    }),
+
+    // //load private channels by user ID
+    // on(Channels.Api.Actions.loadPrivateChannelsByUserIdSucceeded, (state, { privateChannels }) => {
+
+    //     return {
+    //         ...state
+    //     }
+    // })
 )

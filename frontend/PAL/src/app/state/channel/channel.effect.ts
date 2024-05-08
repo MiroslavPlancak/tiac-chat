@@ -15,14 +15,27 @@ export class ChannelEffect{
     private action$ = inject(Actions)
     private store = inject(Store)
 
+    /// API calls ///
     loadAllChannels$ = createEffect(()=>
         this.action$.pipe(
             ofType(Channels.Api.Actions.loadAllChannelsStarted),
             rxjs.switchMap(()=>
                 this.channelService.getListOfChannels().pipe(
-                    rxjs.tap((res) => console.log(`effect output:`,res)),
+                   // rxjs.tap((res) => console.log(`effect output:`,res)),
                     rxjs.map((result) => Channels.Api.Actions.loadAllChannelsSucceeded({ channels: result})),
                     rxjs.catchError((error) => rxjs.of(Channels.Api.Actions.loadAllChannelsFailed({ error: error })))
+                )
+            )
+        )
+    )
+
+    loadPrivateChannelsByUserId$ = createEffect(()=>
+        this.action$.pipe(
+            ofType(Channels.Api.Actions.loadPrivateChannelsByUserIdStarted),
+            rxjs.switchMap((action)=>
+                this.channelService.getListOfPrivateChannelsByUserId(action.userId).pipe(
+                    rxjs.map((response) => Channels.Api.Actions.loadPrivateChannelsByUserIdSucceeded({ privateChannels: response})),
+                    rxjs.catchError((error) => rxjs.of(Channels.Api.Actions.loadPrivateChannelsByUserIdFailed({ error: error })))
                 )
             )
         )
