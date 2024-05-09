@@ -6,5 +6,6 @@ namespace TiacChat.DAL.Contracts
     {
            public  Task<int?> DeleteUserChannelByIdsAsync(int userId,int channelId);
            public Task<UserChannel> GetUserChannelByIdAsync(int userId, int channelId);
+           public Task<IEnumerable<UserChannel>> GetAllUserChannelsByUserIdAsync(int userId);
     }
 }

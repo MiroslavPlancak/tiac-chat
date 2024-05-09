@@ -10,5 +10,6 @@ namespace TiacChat.DAL.Contracts
          Task<int> GetLatestNumberOfPrivateMessagesByIdsAsync(int senderId, int receiverId);
          Task<IEnumerable<Message>> GetPaginatedPublicChannelMessagesByIdAsync(int channelId,int startIndex, int endIndex);
          Task<int> GetLatestNumberOfPublicMessagesByChannelIdAsync(int channelId);
+         
     }
 }

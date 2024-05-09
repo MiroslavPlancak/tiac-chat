@@ -50,6 +50,19 @@ namespace TiacChat.Presentation.Controllers
             return NotFound(new { message = $"Channel with an ID of {userId} was not found."});
         }
 
+        [HttpGet("allPrivateChannels")]
+        [ProducesResponseType(typeof(IEnumerable<UserChannelDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAllUserChannelByUserId(int userId)
+        {
+            var userChannelDTO = await _services.GetAllUserChannelsByUserIdAsync(userId);
+            if(userChannelDTO != null)
+            {
+                return Ok(userChannelDTO);
+            }
+            return NotFound(new {message = $"No userChannels were found for the user {userId}." });
+        }
+        
         [HttpPost("userChannel")]
         [ProducesResponseType(typeof(UserChannelDTO),StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

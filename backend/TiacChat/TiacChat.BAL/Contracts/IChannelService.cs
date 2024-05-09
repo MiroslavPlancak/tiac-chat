@@ -11,5 +11,6 @@ namespace TiacChat.BAL.Services
         public  Task<IEnumerable<UserChannelDTO>> GetParticipantsOfPrivateChannelAsync(int channelId);
         public  Task<int?> DeleteUserChannelByIdsAsync(int userId, int channelId);
         public  Task<UserChannel> GetUserChannelByIdAsync(int userId, int channelId);
+        public  Task<IEnumerable<UserChannelDTO>> GetAllUserChannelsByUserIdAsync(int userId);
     }
 }

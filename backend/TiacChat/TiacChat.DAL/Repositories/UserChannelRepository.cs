@@ -52,6 +52,23 @@ namespace TiacChat.DAL.Repositories
                 throw;
             }
         }
+
+        //select all userChannel objects by userId
+
+        public async Task<IEnumerable<UserChannel>> GetAllUserChannelsByUserIdAsync(int userId)
+        {
+            try
+            {
+                var selectUserChannelsByUserId = await _dataContext.UserChannels
+                .Where(c => c.User_Id == userId).ToListAsync();
+                return selectUserChannelsByUserId;
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e.ToString());
+                throw;
+            }
+        }
  
 
         public async Task<int?> DeleteUserChannelByIdsAsync(int userId, int channelId)

@@ -73,7 +73,7 @@ export class ChannelService implements OnDestroy {
 
     //add user to private conversation
     this.connectionService.hubConnection.on('YouHaveBeenAdded', (channelId, userId, entireChannel) => {
-      console.log(`You have been added to private channel ${channelId} by ${userId}`)
+      //console.log(`You have been added to private channel ${channelId} by ${userId}`)
       this.newlyCreatedPrivateChannel$.next([...this.newlyCreatedPrivateChannel$.value, entireChannel])
 
       this.dialogService.openNotificationDialog(
@@ -88,7 +88,7 @@ export class ChannelService implements OnDestroy {
     //kick user from private conversation    
     this.connectionService.hubConnection.on('YouHaveBeenKicked', (channelId, userId) => {
 
-      console.log(`You have been kicked from private channel: ${channelId}/${userId}`);
+     // console.log(`You have been kicked from private channel: ${channelId}/${userId}`);
       const updateChannelList = this.newlyCreatedPrivateChannel$.value.filter(
         (channel: { id: number | null }) =>
           channel.id !== channelId
@@ -125,14 +125,14 @@ export class ChannelService implements OnDestroy {
     return this.http.get(url)
   }
 
-  addUserToPrivateChannel(userChannel: any): Observable<any> {
-    const url = `${this.apiUrl}/userChannel`;
-    return this.http.post(url, userChannel);
-  }
-
   getParticipantsOfPrivateChannel(channelId: number): Observable<any> {
     const url = `${this.apiUrl}/participants?channelId=${channelId}`
     return this.http.get(url);
+  }
+  
+  addUserToPrivateChannel(userChannel: any): Observable<any> {
+    const url = `${this.apiUrl}/userChannel`;
+    return this.http.post(url, userChannel);
   }
 
   removeUserFromPrivateConversation(userId: number, channelId: number): Observable<any> {
@@ -165,9 +165,8 @@ export class ChannelService implements OnDestroy {
   public latestPrivateChannels$ = rxjs.combineLatest([
     this.store.select(selectPrivateChannels),
     this.newlyCreatedPrivateChannel$,
-    this.removeChannelId$
   ]).pipe(
-    rxjs.map(([getAllPrivateChannelsByUserId, newlyCreatedPrivateChannel, removeChannelId]) => {
+    rxjs.map(([getAllPrivateChannelsByUserId, newlyCreatedPrivateChannel]) => {
 
       return [
         ...getAllPrivateChannelsByUserId,

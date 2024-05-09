@@ -50,11 +50,12 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     private store: Store
     
   ) {
-
+    
     
   }
   ngOnInit(): void {
-
+    //test
+    this.latestPrivateChannels$.subscribe((res)=> console.log(`test`,res))
     //load the public_root channel contents when this component is initialized
     this.chatService.hubConnection?.on(`YourConnectionId`, (connection: Record<string, string>, connectedUser: number, fullName: string)=>{
      
@@ -73,7 +74,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     //redirect user to public_root after he has been kicked from a private channel
     this.chatService.hubConnection?.on(`YouHaveBeenKicked`, (channelId) => {
       this.channelIdSelectedClickHandler(8)
-      console.log(`kicked from component's constructor`, channelId)
+//      console.log(`kicked from component's constructor`, channelId)
     })
 
     this.messageService.receiveMessage().pipe(

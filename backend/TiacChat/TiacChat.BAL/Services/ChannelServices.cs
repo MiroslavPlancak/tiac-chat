@@ -82,6 +82,20 @@ namespace TiacChat.BAL.Services
             
         }
 
+        public async Task<IEnumerable<UserChannelDTO>> GetAllUserChannelsByUserIdAsync(int userId)
+        {
+            try
+            {
+                var userChannels = await _userChannelRepository.GetAllUserChannelsByUserIdAsync(userId);
+                return userChannels.ToDtos();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                throw;
+            }
+        }
+
         public async Task<UserChannelDTO> AddUserToPrivateConversation(UserChannelDTO addUserChannel)
         {
             try
