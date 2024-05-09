@@ -6,12 +6,14 @@ export interface ChannelState {
     allChannels: Channel[],
     error?:string,
     clickedPrivateChannelID?:number,
+    privateChannelIds?:number[]
 }
 
 export const initialState: ChannelState = {
     allChannels: [],
-    error:'',
+    error: '',
     clickedPrivateChannelID: 0,
+    privateChannelIds: []
 }
 
 export const channelReducer  = createReducer(
@@ -37,5 +39,16 @@ export const channelReducer  = createReducer(
         ...state,
         clickedPrivateChannelID: channelId
     }
+ }),
+
+ //load userChannel objects by userID
+ on(Channels.Api.Actions.loadUserChannelByUserIdSucceeded, (state, { userChannels}) =>{
+        console.log(`reducer output:`, userChannels)
+        const extractedPrivateChannelIds = userChannels.map(userChannel => userChannel.channel_Id)
+        console.log(`reducer output #2:`, extractedPrivateChannelIds)
+        return {
+            ...state,
+            privateChannelIds: extractedPrivateChannelIds
+        }
  })
 )

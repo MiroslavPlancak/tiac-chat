@@ -49,4 +49,16 @@ export class ChannelEffect {
             })
         )
     )
+
+    loadUserChannelsByUserId$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Channels.Api.Actions.loadUserChannelByUserIdStarted),
+            rxjs.switchMap((action) =>
+                this.channelService.getAllUserChannelsByUserId(action.userId).pipe(
+                    rxjs.map((response) => Channels.Api.Actions.loadUserChannelByUserIdSucceeded({ userChannels: response })),
+                    rxjs.catchError((error) => rxjs.of(Channels.Api.Actions.loadUserChannelByUserIdFailed({ error: error })))
+                )
+            )
+        )
+    )
 }

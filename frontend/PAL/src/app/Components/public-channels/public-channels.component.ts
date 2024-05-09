@@ -11,7 +11,7 @@ import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import {  selectCurrentUser } from '../../state/user/user.selector';
 import { Channels } from '../../state/channel/channel.action'
-import { selectAllChannels, selectPrivateChannels } from '../../state/channel/channel.selector';
+import { selectAllChannels, selectAllPrivateChannels, selectPrivateChannels } from '../../state/channel/channel.selector';
 
 
 @Component({
@@ -23,7 +23,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
 
   private destroy$ = new rxjs.Subject<void>();
   latestPublicChannels$ = this.chanelService.latestPublicChannels$
-  latestPrivateChannels$ = this.chanelService.latestPrivateChannels$
+  latestPrivateChannels$ = this.store.select(selectAllPrivateChannels)
   currentUserId$ = this.authService.userId$
   currentUserIdNgRx$ = this.store.select(selectCurrentUser).pipe(
     rxjs.filter(user => !!user),
@@ -55,7 +55,10 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   }
   ngOnInit(): void {
     //test
-    this.latestPrivateChannels$.subscribe((res)=> console.log(`test`,res))
+      //load all private channels by user ID
+     this.store.dispatch(Channels.Api.Actions.loadUserChannelByUserIdStarted({ userId: Number(this.authService.userId$.getValue())}))
+     
+    //this.latestPrivateChannels$.subscribe((res)=> console.log(`test`,res))
     //load the public_root channel contents when this component is initialized
     this.chatService.hubConnection?.on(`YourConnectionId`, (connection: Record<string, string>, connectedUser: number, fullName: string)=>{
      

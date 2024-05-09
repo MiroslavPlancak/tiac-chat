@@ -54,3 +54,13 @@ export const selectPrivateChannelById = createSelector(
         return clickedPrivateChannel
     }
 )
+
+//select all private channels that the current user participates in (both where he is the owner and where he is a participant)
+export const selectAllPrivateChannels = createSelector(
+    selectedChannelState,
+    (channelState:ChannelState) =>{
+        const allPrivateChannels = channelState.allChannels.filter(channel => channelState.privateChannelIds?.includes(channel.id))
+        //console.log(`selector:`, allPrivateChannels)
+        return allPrivateChannels
+    }
+)

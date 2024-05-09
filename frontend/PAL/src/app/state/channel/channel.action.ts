@@ -1,6 +1,7 @@
 import { createActionGroup, emptyProps, props } from "@ngrx/store";
 import { Channel } from '../../Models/channel.model'
 import { SafeType } from '../../Utilities/safeType.action'
+import { UserChannel } from "../../Models/userChannel.model";
 
 export const CHANNEL_SOURCE = 'Channels'
 
@@ -27,6 +28,11 @@ export namespace Channels {
                 LoadPrivateChannelByIdStarted: props<{ channelId: number }>(),
                 LoadPrivateChannelByIdSucceeded: props<{ channelId: number }>(),
                 LoadPrivateChannelByIdFailed: props<{ error: any}>(),
+
+                //load userChannel objects by currently logged userId
+                LoadUserChannelByUserIdStarted: props<{ userId: number }>(),
+                LoadUserChannelByUserIdSucceeded:props<{ userChannels: UserChannel[] }>(),
+                LoadUserChannelByUserIdFailed:props<{ error: any }>(),
 
             },
             source: SOURCE

@@ -57,6 +57,8 @@ export class LoginComponent {
           this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserId: Number(this.authService.userId$.getValue()) }))
           //load all channels (public and private)
           this.store.dispatch(Channels.Api.Actions.loadAllChannelsStarted())
+          //load all private channels by user ID
+          this.store.dispatch(Channels.Api.Actions.loadUserChannelByUserIdStarted({ userId: Number(this.authService.userId$.getValue())}))
           //this.authService.setLoggedInUser(response); 
          // this.router.navigate(['/chatMat']);
           

@@ -10,7 +10,8 @@ import { AddUserToPrivateChannelComponent } from '../Components/add-user-to-priv
 import { Channel } from '../Models/channel.model';
 import { Store } from '@ngrx/store';
 import { Channels } from '../state/channel/channel.action'
-import { selectAllChannels, selectPrivateChannels } from '../state/channel/channel.selector';
+import { selectAllChannels, selectAllPrivateChannels, selectPrivateChannels } from '../state/channel/channel.selector';
+import { UserChannel } from '../Models/userChannel.model';
 
 @Injectable({
   providedIn: 'root'
@@ -46,6 +47,7 @@ export class ChannelService implements OnDestroy {
 
     this.store.select(selectAllChannels).pipe(rxjs.tap()).subscribe()
     this.store.select(selectPrivateChannels).subscribe()
+    
     //#1
     // this.getAllPrivateChannelsByUserId$
     //   .pipe(rxjs.takeUntil(this.destroy$))
@@ -125,6 +127,16 @@ export class ChannelService implements OnDestroy {
     return this.http.get(url)
   }
 
+  getAllUserChannelsByUserId(userId: number): Observable<UserChannel[]>{
+    const url = `${this.apiUrl}/allPrivateChannels?userId=${userId}`
+    return this.http.get<UserChannel[]>(url).pipe(
+      rxjs.tap((res)=> console.log(`service:`, res)),
+      rxjs.catchError((error) =>{
+        return rxjs.throwError(error.error.message)
+      })
+    )
+  }
+
   getParticipantsOfPrivateChannel(channelId: number): Observable<any> {
     const url = `${this.apiUrl}/participants?channelId=${channelId}`
     return this.http.get(url);
@@ -162,21 +174,21 @@ export class ChannelService implements OnDestroy {
 
   //todo: refactor
   //add the newest created private channel to the list dynamicaly obs$ 
-  public latestPrivateChannels$ = rxjs.combineLatest([
-    this.store.select(selectPrivateChannels),
-    this.newlyCreatedPrivateChannel$,
-  ]).pipe(
-    rxjs.map(([getAllPrivateChannelsByUserId, newlyCreatedPrivateChannel]) => {
+  // public latestPrivateChannels$ = rxjs.combineLatest([
+  //   this.store.select(selectPrivateChannels),
+  //   this.newlyCreatedPrivateChannel$,
+  // ]).pipe(
+  //   rxjs.map(([getAllPrivateChannelsByUserId, newlyCreatedPrivateChannel]) => {
 
-      return [
-        ...getAllPrivateChannelsByUserId,
-        ...newlyCreatedPrivateChannel
-      ];
-    }),
-    rxjs.takeUntil(this.destroy$),
-    rxjs.tap(res => console.log(/*`87.latestPrivateChannels$:`, res*/)),
+  //     return [
+  //       ...getAllPrivateChannelsByUserId,
+  //       ...newlyCreatedPrivateChannel
+  //     ];
+  //   }),
+  //   rxjs.takeUntil(this.destroy$),
+  //   rxjs.tap(res => console.log(/*`87.latestPrivateChannels$:`, res*/)),
 
-  );
+  // );
 
 
   //public channels obs$
