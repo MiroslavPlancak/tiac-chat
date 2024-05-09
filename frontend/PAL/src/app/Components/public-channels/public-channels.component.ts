@@ -11,7 +11,7 @@ import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import {  selectCurrentUser } from '../../state/user/user.selector';
 import { Channels } from '../../state/channel/channel.action'
-import { selectAllChannels } from '../../state/channel/channel.selector';
+import { selectAllChannels, selectPrivateChannels } from '../../state/channel/channel.selector';
 
 
 @Component({
@@ -25,6 +25,10 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   latestPublicChannels$ = this.chanelService.latestPublicChannels$
   latestPrivateChannels$ = this.chanelService.latestPrivateChannels$
   currentUserId$ = this.authService.userId$
+  currentUserIdNgRx$ = this.store.select(selectCurrentUser).pipe(
+    rxjs.filter(user => !!user),
+    rxjs.map(user => user.id)
+  )
   curentlyClickedPrivateChannel = this.chanelService.curentlyClickedPrivateChannel$
   selectedConversation = this.chanelService.selectedConversation$
   isDirectMessage = this.messageService.isDirectMessage
@@ -158,9 +162,10 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
 
   loadPrivateChannels():void{
 //changed this
-    this.chanelService.getAllPrivateChannelsByUserId$
-    .pipe(rxjs.takeUntil(this.destroy$), rxjs.tap((res)=> console.log(`component outpout:`, res)))
+    this.store.select(selectPrivateChannels)
+    .pipe(rxjs.take(1), /*rxjs.tap((res)=> console.log(`component outpout:`, res))*/)
     .subscribe(loadedPrivateChannels => {
+    //  console.log(`thisfires`)
      // const ownedChannels = loadedPrivateChannels.filter((channel: { isOwner: any; }) => channel.isOwner);
      // const isOwner = ownedChannels.some((channel: { id: number; }) => channel.id == this.channelId);
 
@@ -173,12 +178,12 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
       //   this.chanelService.isOwnerOfPrivateChannel$.next(false)
       // }
 
-      const checkChannelType = loadedPrivateChannels.some((channel: { id: number; }) => channel.id == this.channelId);
-      if (checkChannelType) {
-        this.chanelService.isPrivateChannel$.next(true)
-      } else {
-        this.chanelService.isPrivateChannel$.next(false)
-      }
+      // const checkChannelType = loadedPrivateChannels.some((channel: { id: number; }) => channel.id == this.channelId);
+      // if (checkChannelType) {
+      //   this.chanelService.isPrivateChannel$.next(true)
+      // } else {
+      //   this.chanelService.isPrivateChannel$.next(false)
+      // }
     });
   }
 

@@ -1,7 +1,7 @@
 
 
                 
-    <span *ngIf="(this.channelService.isPrivateChannel$ | async)" 
+    <span *ngIf="(this.selectedPrivateChannel$ | async)" 
     (click)="this.channelService.inviteUserToPrivateChannel((this.channelService.curentlyClickedPrivateChannel$.value))"><button
             mat-icon-button matTooltip="user list">
             <mat-icon color="primary">group</mat-icon></button>

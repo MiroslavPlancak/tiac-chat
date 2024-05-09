@@ -8,7 +8,7 @@ import * as rxjs from 'rxjs';
 
 @Injectable()
 
-export class ChannelEffect{
+export class ChannelEffect {
 
     private channelService = inject(ChannelService)
     private connectionService = inject(ConnectionService)
@@ -16,28 +16,37 @@ export class ChannelEffect{
     private store = inject(Store)
 
     /// API calls ///
-    loadAllChannels$ = createEffect(()=>
+    loadAllChannels$ = createEffect(() =>
         this.action$.pipe(
             ofType(Channels.Api.Actions.loadAllChannelsStarted),
-            rxjs.switchMap(()=>
+            rxjs.switchMap(() =>
                 this.channelService.getListOfChannels().pipe(
-                   // rxjs.tap((res) => console.log(`effect output:`,res)),
-                    rxjs.map((result) => Channels.Api.Actions.loadAllChannelsSucceeded({ channels: result})),
+                    //rxjs.tap((res) => console.log(`effect output:`, res)),
+                    rxjs.map((result) => Channels.Api.Actions.loadAllChannelsSucceeded({ channels: result })),
                     rxjs.catchError((error) => rxjs.of(Channels.Api.Actions.loadAllChannelsFailed({ error: error })))
                 )
             )
         )
     )
 
-    loadPrivateChannelsByUserId$ = createEffect(()=>
+    loadPrivateChannelsByUserId$ = createEffect(() =>
         this.action$.pipe(
             ofType(Channels.Api.Actions.loadPrivateChannelsByUserIdStarted),
-            rxjs.switchMap((action)=>
+            rxjs.switchMap((action) =>
                 this.channelService.getListOfPrivateChannelsByUserId(action.userId).pipe(
-                    rxjs.map((response) => Channels.Api.Actions.loadPrivateChannelsByUserIdSucceeded({ privateChannels: response})),
+                    rxjs.map((response) => Channels.Api.Actions.loadPrivateChannelsByUserIdSucceeded({ privateChannels: response })),
                     rxjs.catchError((error) => rxjs.of(Channels.Api.Actions.loadPrivateChannelsByUserIdFailed({ error: error })))
                 )
             )
+        )
+    )
+
+    loadPrivateChannelById$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Channels.Api.Actions.loadPrivateChannelByIdStarted),
+            rxjs.switchMap((action) => {
+                return rxjs.of(Channels.Api.Actions.loadPrivateChannelByIdSucceeded({ channelId: action.channelId }))
+            })
         )
     )
 }

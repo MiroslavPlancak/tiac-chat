@@ -56,7 +56,7 @@ export class AddUserToPrivateChannelComponent implements OnInit {
   ngOnInit(): void {
 
     //load all users from state
-    this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
+   // this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
     //extract channel name
     this.store.select(selectAllChannels)
       .pipe(

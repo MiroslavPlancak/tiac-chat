@@ -7,6 +7,7 @@ import { ConnectionService } from '../../Services/connection.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { selectAllUsers, selectCurrentUser, selectUserById } from '../../state/user/user.selector';
+import { Channels } from '../../state/channel/channel.action';
 
 @Component({
   selector: 'app-login',
@@ -54,6 +55,8 @@ export class LoginComponent {
           //this essentially fixes an edge case where the user would not turn off the browser tab, thus not logging out completely and then logging another account
           // where he would have the previous account details in the state until the first refresh of the page.
           this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserId: Number(this.authService.userId$.getValue()) }))
+          //load all channels (public and private)
+          this.store.dispatch(Channels.Api.Actions.loadAllChannelsStarted())
           //this.authService.setLoggedInUser(response); 
          // this.router.navigate(['/chatMat']);
           

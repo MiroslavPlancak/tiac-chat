@@ -4,11 +4,14 @@ import { Channel } from "../../Models/channel.model"
 
 export interface ChannelState {
     allChannels: Channel[],
-    error?:string
+    error?:string,
+    clickedPrivateChannelID?:number,
 }
 
 export const initialState: ChannelState = {
-    allChannels: []
+    allChannels: [],
+    error:'',
+    clickedPrivateChannelID: 0,
 }
 
 export const channelReducer  = createReducer(
@@ -27,11 +30,12 @@ export const channelReducer  = createReducer(
         }
     }),
 
-    // //load private channels by user ID
-    // on(Channels.Api.Actions.loadPrivateChannelsByUserIdSucceeded, (state, { privateChannels }) => {
-
-    //     return {
-    //         ...state
-    //     }
-    // })
+ //load private channel by channel ID
+ on(Channels.Api.Actions.loadPrivateChannelByIdSucceeded, (state, {channelId})=>{
+    
+    return {
+        ...state,
+        clickedPrivateChannelID: channelId
+    }
+ })
 )

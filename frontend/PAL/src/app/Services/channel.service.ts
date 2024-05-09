@@ -44,12 +44,12 @@ export class ChannelService implements OnDestroy {
     private store: Store
   ) {
 
-    this.store.select(selectAllChannels).pipe(rxjs.tap((res) => console.log(`channelService output:`, res))).subscribe()
-    this.store.select(selectPrivateChannels).pipe(rxjs.tap((res) => console.log(`channelService output:`, res))).subscribe()
-
-    this.getAllPrivateChannelsByUserId$
-      .pipe(rxjs.takeUntil(this.destroy$))
-      .subscribe(/*console.log(`getAllPrivateChannelsByUserId$ constructor`,res)*/)
+    this.store.select(selectAllChannels).pipe(rxjs.tap()).subscribe()
+    this.store.select(selectPrivateChannels).subscribe()
+    //#1
+    // this.getAllPrivateChannelsByUserId$
+    //   .pipe(rxjs.takeUntil(this.destroy$))
+    //   .subscribe(/*console.log(`getAllPrivateChannelsByUserId$ constructor`,res)*/)
 
     ///////////////////Hub methods//////////////////////////
 
@@ -159,25 +159,11 @@ export class ChannelService implements OnDestroy {
     this.matDialog.open(AddUserToPrivateChannelComponent, dialogConfig);
   }
 
-  //private channels obs$
-  public getAllPrivateChannelsByUserId$ = this.currentUserId$.pipe(
-    rxjs.filter(currentUserId => currentUserId != undefined),
-    rxjs.switchMap(currentUserId => {
-      return this.getListOfPrivateChannelsByUserId(currentUserId as number).pipe(
-        rxjs.tap((res)=> console.log(`investigation:`, res)),
-        rxjs.map(privatelyOwnedChannels => {
 
-          return privatelyOwnedChannels.map((channel: { createdBy: number; }) =>
-            ({ ...channel, isOwner: channel.createdBy === currentUserId }))
-        })
-      )
-    }),
-    rxjs.takeUntil(this.destroy$)
-  );
-
+  //todo: refactor
   //add the newest created private channel to the list dynamicaly obs$ 
   public latestPrivateChannels$ = rxjs.combineLatest([
-    this.getAllPrivateChannelsByUserId$,
+    this.store.select(selectPrivateChannels),
     this.newlyCreatedPrivateChannel$,
     this.removeChannelId$
   ]).pipe(

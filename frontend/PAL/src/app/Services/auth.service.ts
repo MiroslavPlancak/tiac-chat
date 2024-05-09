@@ -19,7 +19,7 @@ export class AuthService {
   
   public userId$ = new BehaviorSubject<number | null>(null);
   //this needs to be updated properly, there is an edge case where this is not nexted properly and then its 0 causing it to malfunction
-  public accessTokenExpirationTimer = new BehaviorSubject<number>(10);
+  public accessTokenExpirationTimer = new BehaviorSubject<number>(300);
   public refreshTokenStatus = new BehaviorSubject<boolean>(true)
   public loggedOut$ = new Subject<boolean>();
   // private logoutSubject$ = new Subject<void>();

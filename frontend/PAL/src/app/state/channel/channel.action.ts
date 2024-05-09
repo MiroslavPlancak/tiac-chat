@@ -22,6 +22,12 @@ export namespace Channels {
                 LoadPrivateChannelsByUserIdStarted: props<{ userId: number }>(),
                 LoadPrivateChannelsByUserIdSucceeded: props<{ privateChannels: Channel[] }>(),
                 LoadPrivateChannelsByUserIdFailed: props<{ error: any}>(),
+
+                //load channel by channel ID
+                LoadPrivateChannelByIdStarted: props<{ channelId: number }>(),
+                LoadPrivateChannelByIdSucceeded: props<{ channelId: number }>(),
+                LoadPrivateChannelByIdFailed: props<{ error: any}>(),
+
             },
             source: SOURCE
         })
