@@ -246,19 +246,19 @@ namespace TiacChat.Presentation.Hubs
                     foreach (var connectionId in onlineUsers.Values)
                     {
                         Console.WriteLine("broadcasting to all clients that the new channel has been created.");
-                        if (newChannelDTO.Visibility == 1)
-                        {
+                    //  if (newChannelDTO.Visibility == 1)
+                    //   {
                             await Clients.Client(connectionId).SendAsync("NewChannelCreated", newChannelDTO);
-                        }
+                    //   }
 
                     }
-                    if (newChannelDTO.Visibility == 0)
-                    {
-                        if (onlineUsers.TryGetValue(newChannelDTO.CreatedBy, out var userConnectionId))
-                        {
-                            await Clients.Client(userConnectionId).SendAsync("NewChannelCreated", newChannelDTO);
-                        }
-                    }
+                    // if (newChannelDTO.Visibility == 0)
+                    // {
+                    //     if (onlineUsers.TryGetValue(newChannelDTO.CreatedBy, out var userConnectionId))
+                    //     {
+                    //         await Clients.Client(userConnectionId).SendAsync("NewChannelCreated", newChannelDTO);
+                    //     }
+                    // }
                 }
             }
             catch (Exception ex)

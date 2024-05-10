@@ -87,4 +87,17 @@ export class ChannelEffect {
             )
         )
     )
+
+    addNewPrivateChannel$ = createEffect(()=>
+        this.action$.pipe(
+            ofType(Channels.Hub.Actions.addNewPrivateChannelStarted),
+            rxjs.switchMap((action) =>
+                rxjs.of(action.newPrivateChannel).pipe(
+                    rxjs.tap((res)=> console.log(`effect:`,res)),
+                    rxjs.map((newPrivateChannel) => Channels.Hub.Actions.addNewPrivateChannelSucceeded({ newPrivateChannel: newPrivateChannel})),
+                    rxjs.catchError((error) => rxjs.of(Channels.Hub.Actions.addNewPrivateChannelFailed({ error: error })))
+                )
+            )
+        )
+    )
 }

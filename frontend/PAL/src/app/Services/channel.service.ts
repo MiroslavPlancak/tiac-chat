@@ -12,6 +12,7 @@ import { Store } from '@ngrx/store';
 import { Channels } from '../state/channel/channel.action'
 import { selectAllChannels, selectAllPrivateChannels, selectPrivateChannels } from '../state/channel/channel.selector';
 import { UserChannel } from '../Models/userChannel.model';
+import { selectCurrentUser } from '../state/user/user.selector';
 
 @Injectable({
   providedIn: 'root'
@@ -28,7 +29,11 @@ export class ChannelService implements OnDestroy {
   isOwnerOfPrivateChannel$ = new rxjs.BehaviorSubject<boolean>(false);
   curentlyClickedPrivateChannel$ = new rxjs.BehaviorSubject<number>(0);
 
-  currentUserId$ = this.authService.userId$;
+  currentUserId$ = this.store.select(selectCurrentUser).pipe(
+    rxjs.filter(currentUser => !!currentUser),
+    rxjs.map(currentUser => currentUser.id),
+   
+  )
 
   
   public newlyCreatedPublicChannel$ = new rxjs.BehaviorSubject<any[]>([]);
@@ -53,14 +58,23 @@ export class ChannelService implements OnDestroy {
 
     //create new channel
     this.connectionService.hubConnection.on("NewChannelCreated", (newChannel) => {
-      console.log('new channel from constructor of chat service:', newChannel)
+      console.log('new channel created broadcast to everyone:', newChannel)
+      //refresh the state of all loaded channels after the new has been created.
+      this.store.dispatch(Channels.Api.Actions.loadAllChannelsStarted())
       if (newChannel.visibility === 1) {
 
         this.newlyCreatedPublicChannel$.next([...this.newlyCreatedPublicChannel$.value, newChannel])
 
       }
       else if (newChannel.visibility === 0) {
-
+       
+        this.currentUserId$.subscribe(currentUserId =>{
+          if(newChannel.createdBy === currentUserId){
+            this.store.dispatch(Channels.Hub.Actions.addNewPrivateChannelStarted({ newPrivateChannel: newChannel }))
+          }
+        })
+       
+        
         
       }
     })

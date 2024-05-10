@@ -54,6 +54,11 @@ export namespace Channels {
                     RemoveUserFromPrivateChannelStarted: props<{ privateChannelId: number }>(),
                     RemoveUserFromPrivateChannelSucceeded: props<{ privateChannelId: number }>(),
                     RemoveUserFromPrivateChannelFailed: props<{ error: any }>(),
+
+                    //add new private channel to the state
+                    AddNewPrivateChannelStarted: props<{ newPrivateChannel: Channel }>(),
+                    AddNewPrivateChannelSucceeded: props<{ newPrivateChannel: Channel }>(),
+                    AddNewPrivateChannelFailed: props<{ error: any }>(),
                 },
 
                 source:SOURCE

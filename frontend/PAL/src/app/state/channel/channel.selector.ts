@@ -59,8 +59,10 @@ export const selectPrivateChannelById = createSelector(
 export const selectAllPrivateChannels = createSelector(
     selectedChannelState,
     (channelState:ChannelState) =>{
+        console.log(`newprivatechannel selector:`, channelState.newPrivateChannel)
+        console.log(`selector all channels:`, channelState.allChannels)
         const allPrivateChannels = channelState.allChannels.filter(channel => channelState.privateChannelIds?.includes(channel.id))
-        //console.log(`selector:`, allPrivateChannels)
+        console.log(`selector:`, allPrivateChannels)
         return allPrivateChannels
     }
 )
