@@ -45,9 +45,9 @@ export const channelReducer  = createReducer(
 
  //load userChannel objects by userID
  on(Channels.Api.Actions.loadUserChannelByUserIdSucceeded, (state, { userChannels}) =>{
-        console.log(`reducer output:`, userChannels)
+        //console.log(`reducer output:`, userChannels)
         const extractedPrivateChannelIds = userChannels.map(userChannel => userChannel.channel_Id)
-        console.log(`reducer output #2:`, extractedPrivateChannelIds)
+        //console.log(`reducer output #2:`, extractedPrivateChannelIds)
         return {
             ...state,
             privateChannelIds: extractedPrivateChannelIds

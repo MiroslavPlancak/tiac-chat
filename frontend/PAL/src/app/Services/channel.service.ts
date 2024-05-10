@@ -126,7 +126,7 @@ export class ChannelService implements OnDestroy {
   getAllUserChannelsByUserId(userId: number): Observable<UserChannel[]>{
     const url = `${this.apiUrl}/allPrivateChannels?userId=${userId}`
     return this.http.get<UserChannel[]>(url).pipe(
-      rxjs.tap((res)=> console.log(`service:`, res)),
+//      rxjs.tap((res)=> console.log(`service:`, res)),
       rxjs.catchError((error) =>{
         return rxjs.throwError(error.error.message)
       })

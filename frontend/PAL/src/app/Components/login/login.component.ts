@@ -52,6 +52,9 @@ export class LoginComponent {
         next: response => {
         
           console.log("AuthenticateAsync responds with:", response);
+          //setting the initial expiration timer of access token as soon as we login.
+          const initialExpirationTimer = this.authService.getAccessTokenExpTime()
+          this.authService.accessTokenExpirationTimer.next(initialExpirationTimer)
           //this essentially fixes an edge case where the user would not turn off the browser tab, thus not logging out completely and then logging another account
           // where he would have the previous account details in the state until the first refresh of the page.
           this.store.dispatch(Users.Hub.Actions.loadConnectedUserStarted({ connectedUserId: Number(this.authService.userId$.getValue()) }))
