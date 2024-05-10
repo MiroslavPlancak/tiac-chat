@@ -61,4 +61,30 @@ export class ChannelEffect {
             )
         )
     )
+
+    /// Hub calls ///
+
+    addUserToPrivateChannel$ = createEffect(()=>
+        this.action$.pipe(
+            ofType(Channels.Hub.Actions.addUserToPrivateChannelStarted),
+            rxjs.switchMap((action) =>
+                rxjs.of(action.privateChannel).pipe(
+                    rxjs.map((channel)=> Channels.Hub.Actions.addUserToPrivateChannelSucceeded({ channelId:channel.id })),
+                    rxjs.catchError((error) => rxjs.of(Channels.Hub.Actions.addUserToPrivateChannelFailed({ error: error })))
+                )
+            )
+        )
+    )
+
+    removeUserFromPrivateChannel$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Channels.Hub.Actions.removeUserFromPrivateChannelStarted),
+            rxjs.switchMap((action) =>
+                rxjs.of(action.privateChannelId).pipe(
+                    rxjs.map((channelId) => Channels.Hub.Actions.removeUserFromPrivateChannelSucceeded({ privateChannelId: channelId })),
+                    rxjs.catchError((error) => rxjs.of(Channels.Hub.Actions.removeUserFromPrivateChannelFailed({ error: error })))
+                )
+            )
+        )
+    )
 }

@@ -6,14 +6,16 @@ export interface ChannelState {
     allChannels: Channel[],
     error?:string,
     clickedPrivateChannelID?:number,
-    privateChannelIds?:number[]
+    privateChannelIds?:number[],
+    addedToPrivateChannelId?:number
 }
 
 export const initialState: ChannelState = {
     allChannels: [],
     error: '',
     clickedPrivateChannelID: 0,
-    privateChannelIds: []
+    privateChannelIds: [],
+    addedToPrivateChannelId: 0
 }
 
 export const channelReducer  = createReducer(
@@ -50,5 +52,27 @@ export const channelReducer  = createReducer(
             ...state,
             privateChannelIds: extractedPrivateChannelIds
         }
+ }),
+
+ /// Hub calls ///
+
+ //add user to private channel
+ on(Channels.Hub.Actions.addUserToPrivateChannelSucceeded, (state, {channelId})=>{
+    const addChannel = [...(state.privateChannelIds ?? []), channelId]
+    return {
+        ...state,
+        privateChannelIds: addChannel
+    }
+ }),
+
+ //remove user from private channel
+ on(Channels.Hub.Actions.removeUserFromPrivateChannelSucceeded, (state,{privateChannelId})=>{
+    const updatedPrivateChannelIds = state.privateChannelIds?.filter(channelId => channelId !==privateChannelId)
+    return {
+        ...state,
+        privateChannelIds: updatedPrivateChannelIds 
+    }
  })
+
+
 )

@@ -30,7 +30,7 @@ export class ChannelService implements OnDestroy {
 
   currentUserId$ = this.authService.userId$;
 
-  public newlyCreatedPrivateChannel$ = new rxjs.BehaviorSubject<any[]>([]);
+  
   public newlyCreatedPublicChannel$ = new rxjs.BehaviorSubject<any[]>([]);
 
   public removeChannelId$ = new rxjs.BehaviorSubject<number>(0);
@@ -45,13 +45,9 @@ export class ChannelService implements OnDestroy {
     private store: Store
   ) {
 
+    //ngRx selectors for all channels and private channels
     this.store.select(selectAllChannels).pipe(rxjs.tap()).subscribe()
-    this.store.select(selectPrivateChannels).subscribe()
-    
-    //#1
-    // this.getAllPrivateChannelsByUserId$
-    //   .pipe(rxjs.takeUntil(this.destroy$))
-    //   .subscribe(/*console.log(`getAllPrivateChannelsByUserId$ constructor`,res)*/)
+    //this.store.select(selectPrivateChannels).pipe(rxjs.take(1)).subscribe((res)=> console.log(res))
 
     ///////////////////Hub methods//////////////////////////
 
@@ -64,19 +60,17 @@ export class ChannelService implements OnDestroy {
 
       }
       else if (newChannel.visibility === 0) {
-        const newPrivateChannel =
-        {
-          ...newChannel,
-          isOwner: true
-        }
-        this.newlyCreatedPrivateChannel$.next([...this.newlyCreatedPrivateChannel$.value, newPrivateChannel])
+
+        
       }
     })
 
     //add user to private conversation
     this.connectionService.hubConnection.on('YouHaveBeenAdded', (channelId, userId, entireChannel) => {
-      //console.log(`You have been added to private channel ${channelId} by ${userId}`)
-      this.newlyCreatedPrivateChannel$.next([...this.newlyCreatedPrivateChannel$.value, entireChannel])
+      //console.log(`You have been added to private channel ${channelId} by ${userId}, ${entireChannel.name}`)
+
+      //add channel to the privateChannels state
+      this.store.dispatch(Channels.Hub.Actions.addUserToPrivateChannelStarted({ privateChannel: entireChannel}))
 
       this.dialogService.openNotificationDialog(
        
@@ -90,14 +84,16 @@ export class ChannelService implements OnDestroy {
     //kick user from private conversation    
     this.connectionService.hubConnection.on('YouHaveBeenKicked', (channelId, userId) => {
 
+      //remove channel to the privateChannels state
+      this.store.dispatch(Channels.Hub.Actions.removeUserFromPrivateChannelStarted({ privateChannelId: channelId}))
      // console.log(`You have been kicked from private channel: ${channelId}/${userId}`);
-      const updateChannelList = this.newlyCreatedPrivateChannel$.value.filter(
-        (channel: { id: number | null }) =>
-          channel.id !== channelId
-      )
+      //const updateChannelList = this.newlyCreatedPrivateChannel$.value.filter(
+      // (channel: { id: number | null }) =>
+      //   channel.id !== channelId
+      // )
       //here I need to remove the user from the private channel that has no more access  as he has been kicked
-      this.newlyCreatedPrivateChannel$.next(updateChannelList)
-      this.removeChannelId$.next(channelId)
+      //this.newlyCreatedPrivateChannel$.next(updateChannelList)
+     // this.removeChannelId$.next(channelId)
 
       this.dialogService.openNotificationDialog(
         `Kicked from private channel`,
@@ -172,23 +168,6 @@ export class ChannelService implements OnDestroy {
   }
 
 
-  //todo: refactor
-  //add the newest created private channel to the list dynamicaly obs$ 
-  // public latestPrivateChannels$ = rxjs.combineLatest([
-  //   this.store.select(selectPrivateChannels),
-  //   this.newlyCreatedPrivateChannel$,
-  // ]).pipe(
-  //   rxjs.map(([getAllPrivateChannelsByUserId, newlyCreatedPrivateChannel]) => {
-
-  //     return [
-  //       ...getAllPrivateChannelsByUserId,
-  //       ...newlyCreatedPrivateChannel
-  //     ];
-  //   }),
-  //   rxjs.takeUntil(this.destroy$),
-  //   rxjs.tap(res => console.log(/*`87.latestPrivateChannels$:`, res*/)),
-
-  // );
 
 
   //public channels obs$

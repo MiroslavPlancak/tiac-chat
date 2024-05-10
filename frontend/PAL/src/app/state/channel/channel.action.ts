@@ -39,4 +39,25 @@ export namespace Channels {
         })
     }
 
+    export namespace Hub{
+        
+        export const SOURCE = SafeType.Source.from(CHANNEL_SOURCE, 'Hub')
+
+            export const Actions = createActionGroup({
+                events:{
+                    //add user to private channel
+                    AddUserToPrivateChannelStarted: props<{ privateChannel: Channel }>(),
+                    AddUserToPrivateChannelSucceeded: props<{ channelId: number }>(),
+                    AddUserToPrivateChannelFailed: props<{ error: any }>(),
+
+                    //remove user from private channel
+                    RemoveUserFromPrivateChannelStarted: props<{ privateChannelId: number }>(),
+                    RemoveUserFromPrivateChannelSucceeded: props<{ privateChannelId: number }>(),
+                    RemoveUserFromPrivateChannelFailed: props<{ error: any }>(),
+                },
+
+                source:SOURCE
+            })
+    }
+
 }

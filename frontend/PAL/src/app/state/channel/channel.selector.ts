@@ -64,3 +64,7 @@ export const selectAllPrivateChannels = createSelector(
         return allPrivateChannels
     }
 )
+
+/////// HUB calls /////////
+
+//add private channel to the list of private channels 
