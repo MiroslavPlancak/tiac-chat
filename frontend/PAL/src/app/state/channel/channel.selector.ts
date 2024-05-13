@@ -59,14 +59,25 @@ export const selectPrivateChannelById = createSelector(
 export const selectAllPrivateChannels = createSelector(
     selectedChannelState,
     (channelState:ChannelState) =>{
-        console.log(`newprivatechannel selector:`, channelState.newPrivateChannel)
-        console.log(`selector all channels:`, channelState.allChannels)
-        const allPrivateChannels = channelState.allChannels.filter(channel => channelState.privateChannelIds?.includes(channel.id))
+        //console.log(`newprivatechannel selector:`, channelState.newPrivateChannel)
+        //console.log(`selector all channels:`, channelState.allChannels)
+        const allPrivateChannels = channelState.allChannels.filter(
+            channel => channelState.privateChannelIds?.includes(channel.id) &&
+            channel.visibility === 0
+        )
         console.log(`selector:`, allPrivateChannels)
         return allPrivateChannels
     }
 )
 
+//select all public channels
+export const selectAllPublicChannels = createSelector(
+    selectedChannelState,
+    (channelState:ChannelState)=> {
+        const allPublicChannels = channelState.allChannels.filter(channel=> channel.visibility === 1)
+        return allPublicChannels
+    }
+)
 /////// HUB calls /////////
 
 //add private channel to the list of private channels 

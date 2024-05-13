@@ -61,15 +61,12 @@ export class ChannelService implements OnDestroy {
       console.log('new channel created broadcast to everyone:', newChannel)
       //refresh the state of all loaded channels after the new has been created.
       this.store.dispatch(Channels.Api.Actions.loadAllChannelsStarted())
-      if (newChannel.visibility === 1) {
 
-        this.newlyCreatedPublicChannel$.next([...this.newlyCreatedPublicChannel$.value, newChannel])
-
-      }
-      else if (newChannel.visibility === 0) {
+      if (newChannel.visibility === 0) {
        
-        this.currentUserId$.subscribe(currentUserId =>{
+        this.currentUserId$.pipe(rxjs.take(1)).subscribe(currentUserId =>{
           if(newChannel.createdBy === currentUserId){
+            console.log(`this XXX runs`)
             this.store.dispatch(Channels.Hub.Actions.addNewPrivateChannelStarted({ newPrivateChannel: newChannel }))
           }
         })
@@ -100,14 +97,6 @@ export class ChannelService implements OnDestroy {
 
       //remove channel to the privateChannels state
       this.store.dispatch(Channels.Hub.Actions.removeUserFromPrivateChannelStarted({ privateChannelId: channelId}))
-     // console.log(`You have been kicked from private channel: ${channelId}/${userId}`);
-      //const updateChannelList = this.newlyCreatedPrivateChannel$.value.filter(
-      // (channel: { id: number | null }) =>
-      //   channel.id !== channelId
-      // )
-      //here I need to remove the user from the private channel that has no more access  as he has been kicked
-      //this.newlyCreatedPrivateChannel$.next(updateChannelList)
-     // this.removeChannelId$.next(channelId)
 
       this.dialogService.openNotificationDialog(
         `Kicked from private channel`,
@@ -140,7 +129,6 @@ export class ChannelService implements OnDestroy {
   getAllUserChannelsByUserId(userId: number): Observable<UserChannel[]>{
     const url = `${this.apiUrl}/allPrivateChannels?userId=${userId}`
     return this.http.get<UserChannel[]>(url).pipe(
-//      rxjs.tap((res)=> console.log(`service:`, res)),
       rxjs.catchError((error) =>{
         return rxjs.throwError(error.error.message)
       })
@@ -181,29 +169,6 @@ export class ChannelService implements OnDestroy {
     this.matDialog.open(AddUserToPrivateChannelComponent, dialogConfig);
   }
 
-
-
-
-  //public channels obs$
-  public allPublicChannels$ = this.store.select(selectAllChannels).pipe(
-    rxjs.map(publicChannels => publicChannels.filter((channel: { visibility: number; }) => channel.visibility !== 0)),
-    rxjs.takeUntil(this.destroy$)
-  )
-
-  public latestPublicChannels$ = rxjs.combineLatest([
-    this.allPublicChannels$,
-    this.newlyCreatedPublicChannel$
-  ]).pipe(
-    rxjs.map(([allPublicChannels, newlyCreatedChannel]) => [
-      ...allPublicChannels,
-      ...newlyCreatedChannel
-    ]),
-    rxjs.takeUntil(this.destroy$)
-    //    rxjs.tap(channels => console.log('Latest public channels:', channels))
-  )
-
-  /////service methods/////
-
  /////Hub methods/////
 
   //create a channel
@@ -242,6 +207,4 @@ export class ChannelService implements OnDestroy {
     console.log('added user info:',userId, channelId)
   }
 
-  
-  /////Hub methods/////
 }

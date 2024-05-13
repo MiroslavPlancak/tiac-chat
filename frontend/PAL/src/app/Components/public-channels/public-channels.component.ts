@@ -11,7 +11,7 @@ import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import {  selectCurrentUser } from '../../state/user/user.selector';
 import { Channels } from '../../state/channel/channel.action'
-import { selectAllChannels, selectAllPrivateChannels, selectPrivateChannels } from '../../state/channel/channel.selector';
+import { selectAllChannels, selectAllPrivateChannels, selectAllPublicChannels, selectPrivateChannels } from '../../state/channel/channel.selector';
 
 
 @Component({
@@ -22,7 +22,7 @@ import { selectAllChannels, selectAllPrivateChannels, selectPrivateChannels } fr
 export class PublicChannelsComponent implements OnInit,OnDestroy {
 
   private destroy$ = new rxjs.Subject<void>();
-  latestPublicChannels$ = this.chanelService.latestPublicChannels$
+  latestPublicChannels$ = this.store.select(selectAllPublicChannels)
   latestPrivateChannels$ = this.store.select(selectAllPrivateChannels)
   currentUserId$ = this.authService.userId$
   currentUserIdNgRx$ = this.store.select(selectCurrentUser).pipe(

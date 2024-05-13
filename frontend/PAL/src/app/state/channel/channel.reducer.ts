@@ -2,6 +2,7 @@ import { createReducer, on } from "@ngrx/store";
 import { Channels } from "./channel.action"
 import { Channel } from "../../Models/channel.model"
 
+
 export interface ChannelState {
     allChannels: Channel[],
     error?: string,
@@ -79,6 +80,7 @@ export const channelReducer = createReducer(
 
     //add newly created private channel to the state
     on(Channels.Hub.Actions.addNewPrivateChannelSucceeded, (state,{ newPrivateChannel }) =>{
+           
             const addNewPrivateChannelId = [...(state.privateChannelIds ?? []), newPrivateChannel.id]
             console.log(`reducer:`, addNewPrivateChannelId)
             return {
