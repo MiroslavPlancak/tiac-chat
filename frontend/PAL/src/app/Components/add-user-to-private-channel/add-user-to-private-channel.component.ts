@@ -1,13 +1,11 @@
 import { Component, EventEmitter, Inject, OnInit, Output } from '@angular/core';
-import { UserService } from '../../Services/user.service';
-import { map, switchMap, take } from 'rxjs';
+import { map, take } from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ChannelService } from '../../Services/channel.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../Services/auth.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
-import { selectAllUsers, selectUserById } from '../../state/user/user.selector';
+import { selectUserById } from '../../state/user/user.selector';
 import * as rxjs from 'rxjs';
 import { User } from '../../Models/user.model';
 import { Channels } from '../../state/channel/channel.action'
@@ -23,9 +21,9 @@ export class AddUserToPrivateChannelComponent implements OnInit {
 
   @Output() userAddedToPrivateChannel = new EventEmitter<any>();
 
-  listOfUsers: User[] = [];   ////////////////
+ 
   //ngRx props
-  participants$!: rxjs.Observable<User[]>
+  currentParticipants$!: rxjs.Observable<User[]>
   remainingParticipants$!: rxjs.Observable<User[]>
 
   selectedUserId: number = 0
@@ -36,13 +34,12 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     lastName: ''
   };
   selectedChannelIdName: string | null = '';
-  listOfAddedUsers: User[] = [];   ///////////////
+
   isOwnerOfPrivateChannel: boolean = false;
   selectedPrivateChannelId: any;
 
 
   constructor(
-    private userService: UserService,
     @Inject(MAT_DIALOG_DATA) public matData: any,
     private dialogRef: MatDialogRef<AddUserToPrivateChannelComponent>,
     private channelService: ChannelService,
@@ -54,14 +51,12 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     this.isOwnerOfPrivateChannel = this.matData.isOwner;
     this.selectedPrivateChannelId = this.matData.privateChannelId
 
-    //console.log(`x`,this.selectedPrivateChannelId)
+ 
   }
 
   ngOnInit(): void {
 
-    //load all users from state
-   // this.store.dispatch(Users.Api.Actions.loadAllUsersStarted())
-    //extract channel name
+    //extract channel name from the state
     this.store.select(selectAllChannels)
       .pipe(
         map(channels => channels.filter((channelName: { id: any; }) => channelName.id === this.matData.privateChannelId)),
@@ -73,51 +68,12 @@ export class AddUserToPrivateChannelComponent implements OnInit {
         this.selectedChannelIdName = channelName;
       })
 
-
     //current participants in the private channels
-    //ngRx implementation 
     this.store.dispatch(Channels.Api.Actions.loadParticipantsOfPrivateChannelStarted({ channelId: this.matData.privateChannelId}))
-    this.participants$ = this.store.select(selectParticipantsOfPrivateChannel).pipe(rxjs.filter(participantsLoaded => !!participantsLoaded))
+    this.currentParticipants$ = this.store.select(selectParticipantsOfPrivateChannel).pipe(rxjs.filter(participantsLoaded => !!participantsLoaded))
    
-
-    //old implementation
-    // this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).pipe(
-    //   switchMap(participantIds => {
-
-    //     const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
-    //     //ngRx implementation
-    //     return this.store.select(selectAllUsers).pipe(
-    //       rxjs.map(users => users.filter(user => userIds.includes(user.id)))
-    //     )
-
-    //   })
-    // ).subscribe(filteredParticipants => {
-    //   console.log(`transformed users`, filteredParticipants)
-    //   this.listOfAddedUsers.push(...filteredParticipants);
-    // })
-
     // remaining participants that can be added to private channel
     this.remainingParticipants$ = this.store.select(selectRemainingParticipantsOfPrivateChannel)
-
-    // //create the list of users that remain  to be added
-    // this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).pipe(
-    //   switchMap(participantIds => {
-    //     console.log(`list of users in a private channel:`, participantIds)
-
-    //     const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
-    //     //ngRx implementation
-    //     return this.store.select(selectAllUsers).pipe(
-    //       rxjs.map(users => users.filter(user => !userIds.includes(user.id)))
-    //     )
-    //     //old implementation
-    //     // return this.userService.getAllUsers().pipe(
-    //     //   map(users => users.filter(user => !userIds.includes(user.id)))
-    //     // )
-    //   })
-    // ).subscribe(filteredParticipants => {
-    //   console.log(`transformed users(new);`, filteredParticipants)
-    //   this.listOfUsers.push(...filteredParticipants);
-    // })
 
   }
 
@@ -139,29 +95,9 @@ export class AddUserToPrivateChannelComponent implements OnInit {
       channel_Id: +privateChannelId,
       isOwner: isOwner
     }
+
     this.store.dispatch(Channels.Api.Actions.loadPrivateUserChannelStarted({ userChannelObj: userChannel}))
-    // this.channelService.addUserToPrivateChannel(userChannel).subscribe({
-    //   next: (response: any) => {
-    //     console.log('Response from server:', response);
-
-    //     const addedUser = this.listOfUsers.find(u => u.id === response.user_Id)
-
-    //     if (addedUser) {
-    //       this.listOfAddedUsers.push(addedUser);
-    //       this.listOfUsers = this.listOfUsers.filter(u => u.id !== addedUser.id); // Remove user from the list
-    //     }
-    //     // Handle successful response if needed
-    //   },
-    //   error: (error: any) => {
-    //     console.error('Error adding user to private channel:', error);
-    //     if (error instanceof HttpErrorResponse) {
-    //       if (error.status === 500 && error.error) {
-    //         const errorMessage = error.error;
-    //         this.ErrorMessage = 'Selected user is already in this channel.'
-    //       }
-    //     }
-    //   }
-    // })
+ 
 
     //get UserName
     //ngRx implementation
@@ -206,17 +142,6 @@ export class AddUserToPrivateChannelComponent implements OnInit {
   removeUserFromPrivateChannel(userId: number) {
     this.channelService.kickUser(userId, this.selectedPrivateChannelId)
     this.store.dispatch(Channels.Api.Actions.removeUserFromUserChannelStarted({ userId: userId, channelId: this.selectedPrivateChannelId}))
-    // this.channelService.removeUserFromPrivateConversation(userId, this.selectedPrivateChannelId).subscribe(() => {
-    //   const removedUser = this.listOfAddedUsers.find(user => user.id === userId);
-    //   this.listOfAddedUsers = this.listOfAddedUsers.filter(user => user.id !== userId);
-
-    //   if (removedUser) {
-    //     this.listOfUsers.push(removedUser);
-    //   }
-    // })
-
-
-
   }
 
 }

@@ -81,4 +81,20 @@ export namespace Channels {
             })
     }
 
+    export namespace Flag{
+
+        export const SOURCE = SafeType.Source.from(CHANNEL_SOURCE, 'Flag')
+
+            export const Actions = createActionGroup({
+                events:{
+
+                    //load currently clicked conversation   
+                    LoadCurrentlyClickedConversationStarted: props<{ conversationId: number | undefined }>(),
+                    LoadCurrentlyClickedConversationSucceeded: props<{ conversationId: number | undefined }>(),
+                    LoadCurrentlyClickedConversationFailed: props<{ error: any}>(),
+                },
+                source: SOURCE
+            })
+    }
+
 }

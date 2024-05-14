@@ -103,8 +103,13 @@ export const selectRemainingParticipantsOfPrivateChannel = createSelector(
     }
 )
 
-//load user to private channel
 
-/////// HUB calls /////////
+/////// Flag selectors /////////
 
-//add private channel to the list of private channels 
+// select currently clicked conversation
+
+export const selectCurrentlyClickedConversation = createSelector(
+    selectedChannelState,
+    (channelState:ChannelState) =>
+        channelState.currentConversationId
+)

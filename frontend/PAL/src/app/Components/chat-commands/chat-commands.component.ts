@@ -8,6 +8,7 @@ import { ChannelService } from '../../Services/channel.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { selectCurrentUser } from '../../state/user/user.selector';
+import { selectCurrentlyClickedConversation } from '../../state/channel/channel.selector';
 
 @Component({
   selector: 'app-chat-commands',
@@ -32,7 +33,7 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
   isUserTyping$ = this.chatService.isUserTyping$
   senderId$ = this.chatService.senderId$
 
-  SelectedChannel$ = this.channelService.SelectedChannel$
+  //SelectedChannel$ = this.channelService.SelectedChannel$
 
   constructor(
     public chatService: ChatService,
@@ -102,15 +103,15 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
 
     //scroll logic
     this.messageService.maxScrollValue$.pipe(rxjs.take(1)).subscribe(maxScrollValue => {
-      //console.log(`maxScrollValue from sendMessage()`,maxScrollValue)
       this.messageService.endScrollValue$.next(maxScrollValue)
     })
 
-    const selectedChannel = this.SelectedChannel$.getValue();
+    
+    const selectedChannelNgRx$ = this.store.select(selectCurrentlyClickedConversation)
+    selectedChannelNgRx$.subscribe((selectedConversation) => {
+    if (this.currentUserId$.getValue() && this.newPublicMessage && selectedConversation) {
 
-    if (this.currentUserId$.getValue() && this.newPublicMessage && selectedChannel) {
-
-      this.messageService.sendMessage(this.currentUserId$.getValue() as number, this.newPublicMessage, selectedChannel);
+      this.messageService.sendMessage(this.currentUserId$.getValue() as number, this.newPublicMessage, selectedConversation);
 
       const newPubMessage = this.newPublicMessage;
       this.messageService.extractUserName(this.currentUserId$.getValue()).subscribe(firstName => {
@@ -129,10 +130,11 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
         }
 
         this.messageService.receivedPublicMessages$.next([...this.receivedPublicMessages$.value, publicMessage])
-        this.chatService.getLatestNumberOfPublicChannelMessages(selectedChannel, this.currentUserId$.getValue() as number)
+        this.chatService.getLatestNumberOfPublicChannelMessages(selectedConversation, this.currentUserId$.getValue() as number)
       })
       //clear the input for the next message
       this.newPublicMessage = '';
     }
+  })
   }
 }

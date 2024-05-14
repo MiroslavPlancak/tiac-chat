@@ -22,8 +22,8 @@ export class ChannelService implements OnDestroy {
   private apiUrl = "http://localhost:5008/api/channels"
   private destroy$ = new rxjs.Subject<void>();
 
-  SelectedChannel$ = new rxjs.BehaviorSubject<number | undefined>(8);
-  isPrivateChannel$ = new rxjs.BehaviorSubject<boolean>(false);
+  //SelectedChannel$ = new rxjs.BehaviorSubject<number | undefined>(8);
+ // isPrivateChannel$ = new rxjs.BehaviorSubject<boolean>(false);
   selectedConversation$ = new rxjs.BehaviorSubject<number>(8);
   isCurrentUserOwner$ = new rxjs.BehaviorSubject<object>({});
   curentlyClickedPrivateChannel$ = new rxjs.BehaviorSubject<number>(0);
@@ -143,7 +143,7 @@ export class ChannelService implements OnDestroy {
     dialogConfig.autoFocus = true
 
     const dialogData = {
-      privateChannelId: this.SelectedChannel$.value,
+      privateChannelId: channelId,
       isOwner: this.isCurrentUserOwner$.value
     }
 

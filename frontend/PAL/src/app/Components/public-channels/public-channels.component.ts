@@ -11,7 +11,7 @@ import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import {  selectCurrentUser } from '../../state/user/user.selector';
 import { Channels } from '../../state/channel/channel.action'
-import { selectAllChannels, selectAllPrivateChannels, selectAllPublicChannels, selectPrivateChannels } from '../../state/channel/channel.selector';
+import { selectAllChannels, selectAllPrivateChannels, selectAllPublicChannels, selectCurrentlyClickedConversation, selectPrivateChannels } from '../../state/channel/channel.selector';
 
 
 @Component({
@@ -32,7 +32,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   curentlyClickedPrivateChannel = this.chanelService.curentlyClickedPrivateChannel$
   selectedConversation = this.chanelService.selectedConversation$
   isDirectMessage = this.messageService.isDirectMessage
-  SelectedChannel$ = this.chanelService.SelectedChannel$
+  SelectedChannel$ = this.store.select(selectCurrentlyClickedConversation)
   isDirectMessageOffline = this.messageService.isDirectMessageOffline
 
   // loadedPublicChannels: any[] = [];
@@ -80,20 +80,39 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
 //      console.log(`kicked from component's constructor`, channelId)
     })
 
-    this.messageService.receiveMessage().pipe(
-      rxjs.filter(message => message.sentToChannelId === this.SelectedChannel$.getValue()),
-      rxjs.takeUntil(this.destroy$)
-    )
-      .subscribe((message: any) => {
-
-        if (this.messageService.receivedPublicMessages$.value.length >= this.messageService.initialPublicMessageStartIndex$.value) {
-          this.messageService.receivedPublicMessages$.value.shift()
-        }
-
-        if (this.currentUserId$.getValue() !== message.sentFromUserId) {
-          this.messageService.receivedPublicMessages$.next([...this.messageService.receivedPublicMessages$.value, message])
-        }
+    //ngRx implementation
+    this.store.select(selectCurrentlyClickedConversation).pipe(
+      rxjs.switchMap(selectedChannel =>{
+        return this.messageService.receiveMessage().pipe(
+          rxjs.filter(message => message.sentToChannelId === selectedChannel),
+          rxjs.takeUntil(this.destroy$)
+        )
       })
+    ).subscribe((message: any) => {
+      if (this.messageService.receivedPublicMessages$.value.length >= this.messageService.initialPublicMessageStartIndex$.value) {
+        this.messageService.receivedPublicMessages$.value.shift();
+      }
+    
+      if (this.currentUserId$.getValue() !== message.sentFromUserId) {
+        this.messageService.receivedPublicMessages$.next([...this.messageService.receivedPublicMessages$.value, message]);
+      }
+    });
+
+    //old implementation
+    // this.messageService.receiveMessage().pipe(
+    //   rxjs.filter(message => message.sentToChannelId === this.SelectedChannel$.getValue()),
+    //   rxjs.takeUntil(this.destroy$)
+    // )
+    //   .subscribe((message: any) => {
+
+    //     if (this.messageService.receivedPublicMessages$.value.length >= this.messageService.initialPublicMessageStartIndex$.value) {
+    //       this.messageService.receivedPublicMessages$.value.shift()
+    //     }
+
+    //     if (this.currentUserId$.getValue() !== message.sentFromUserId) {
+    //       this.messageService.receivedPublicMessages$.next([...this.messageService.receivedPublicMessages$.value, message])
+    //     }
+    //   })
 
       // Enable the load more button on the initial loading.
       this.getConcurrentNumberOfPublicChanelMessages(8)
@@ -106,7 +125,8 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
 
   public channelIdSelectedClickHandler(channelId: number): void {
 
-    this.SelectedChannel$.next(channelId);
+    this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: channelId}))
+   
     this.channelId = channelId
   
     this.messageService.initialPrivateMessageStartIndex$.next(0)

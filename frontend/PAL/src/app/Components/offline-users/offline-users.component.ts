@@ -7,6 +7,7 @@ import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
+import { Channels } from '../../state/channel/channel.action'
 import { selectUserById,selectOfflineUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
 
@@ -79,11 +80,12 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
 
       this.getConcurrentNumberOfMessages()
 
-      this.channelService.SelectedChannel$.next(undefined);
+      this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: undefined}))
+      //this.channelService.SelectedChannel$.next(undefined);
       this.isDirectMessage.next(false);
       this.isDirectMessageOffline.next(true);
 
-      this.channelService.isPrivateChannel$.next(false);
+      //this.channelService.isPrivateChannel$.next(false);
       this.chatService.privateConversationId$.next(conversationId)
 
       this.displayOfflineUserNameToWriteTo()

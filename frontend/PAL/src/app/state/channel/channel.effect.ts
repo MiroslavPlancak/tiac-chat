@@ -136,5 +136,17 @@ export class ChannelEffect {
         )
     )
 
-    
+    /// Flags /// 
+
+    loadCurrentlyClickedConversation$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted),
+            rxjs.switchMap((action) =>
+                rxjs.of(action.conversationId).pipe(
+                    rxjs.map((response) => Channels.Flag.Actions.loadCurrentlyClickedConversationSucceeded({ conversationId: response })),
+                    rxjs.catchError((error) => rxjs.of(Channels.Flag.Actions.loadCurrentlyClickedConversationFailed({ error: error })))
+                )
+            )
+        )
+    )
 }

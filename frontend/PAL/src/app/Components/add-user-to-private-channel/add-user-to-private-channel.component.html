@@ -2,7 +2,7 @@
 
     <h4>users in {{selectedChannelIdName}}:</h4>
     <ul>
-        <li *ngFor="let user of participants$ | async">
+        <li *ngFor="let user of currentParticipants$ | async">
             {{ user.firstName }} {{ user.lastName }} 
             <span *ngIf="isOwnerOfPrivateChannel && user.id !== (authService.userId$ | async)" (click)="removeUserFromPrivateChannel(user.id)">
                     <mat-icon color="primary">delete</mat-icon>

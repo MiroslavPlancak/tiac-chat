@@ -11,6 +11,8 @@ import { ConnectionService } from './connection.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../state/user/user.action'
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
+import { selectCurrentlyClickedConversation } from '../state/channel/channel.selector';
+import { Channels } from '../state/channel/channel.action';
 
 @Injectable({
   providedIn: 'root'
@@ -37,7 +39,7 @@ export class MessageService implements OnInit, OnDestroy {
   isDirectMessage = new rxjs.BehaviorSubject<boolean>(false);
   isDirectMessageOffline = new rxjs.BehaviorSubject<boolean>(false);
 
-  SelectedChannel$ = this.channelService.SelectedChannel$
+  //SelectedChannel$ = this.channelService.SelectedChannel$
 
   endScrollValue$ = new rxjs.BehaviorSubject<number>(0);
   maxScrollValue$ = new rxjs.BehaviorSubject<number>(0);
@@ -193,16 +195,16 @@ export class MessageService implements OnInit, OnDestroy {
   loadMorePublicMessages() {
     //console.log(`loading more public messages...`)
 
-    const selectedChannelId = this.SelectedChannel$.value
-
-    if (this.canLoadMorePublicMessages$.value !== false && selectedChannelId !== undefined) {
+    
+    this.store.select(selectCurrentlyClickedConversation).pipe(rxjs.take(1)).subscribe((selectedChannel) =>{
+    if (this.canLoadMorePublicMessages$.value !== false && selectedChannel !== undefined) {
 
       let startIndex = this.initialPublicMessageStartIndex$.value
       let endIndex = startIndex + 10
       this.initialPublicMessageStartIndex$.next(endIndex)
       //console.log(`startIndex from public`, startIndex)
       //console.log(`endIndex from public`, endIndex)
-      this.loadPaginatedPublicMessagesById(+selectedChannelId as number, startIndex, endIndex)
+      this.loadPaginatedPublicMessagesById(+selectedChannel as number, startIndex, endIndex)
         .pipe(
           rxjs.take(1),
           rxjs.map(messages => {
@@ -241,6 +243,7 @@ export class MessageService implements OnInit, OnDestroy {
 
         })
     }
+  })
   }
   // load more private messages method()
   loadMorePrivateMessages(): void {
@@ -330,11 +333,12 @@ export class MessageService implements OnInit, OnDestroy {
       }
 
       if (this.currentUserId$.value !== conversationId) {
-        this.channelService.SelectedChannel$.next(undefined);
+        this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: undefined }))
+        //this.channelService.SelectedChannel$.next(undefined);
       }
 
       this.isDirectMessage.next(true)
-      this.channelService.isPrivateChannel$.next(false)
+      //this.channelService.isPrivateChannel$.next(false)
       this.chatService.privateNotification[conversationId] = false;
 
       this.seenMessageStatus()

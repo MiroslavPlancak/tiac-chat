@@ -11,7 +11,10 @@ export interface ChannelState {
     privateChannelIds?: number[],
     addedToPrivateChannelId?: number,
     newPrivateChannel:Channel[],
-    privateChannelParticipants:UserChannel[]
+    privateChannelParticipants:UserChannel[],
+    //flags
+    currentConversationId:number | undefined
+
     
 }
 
@@ -22,7 +25,8 @@ export const initialState: ChannelState = {
     privateChannelIds: [],
     addedToPrivateChannelId: 0,
     newPrivateChannel: [],
-    privateChannelParticipants: []
+    privateChannelParticipants: [],
+    currentConversationId: 8
 }
 
 export const channelReducer = createReducer(
@@ -32,7 +36,7 @@ export const channelReducer = createReducer(
 
     //load all channels
     on(Channels.Api.Actions.loadAllChannelsSucceeded, (state, { channels }) => {
-        // console.log(`channel reducer:`, channels)
+
         const loadAllChannelsDeepCopy = channels.map(channel => ({ ...channel }))
 
         return {
@@ -52,9 +56,9 @@ export const channelReducer = createReducer(
 
     //load userChannel objects by userID
     on(Channels.Api.Actions.loadUserChannelByUserIdSucceeded, (state, { userChannels }) => {
-        //console.log(`reducer output:`, userChannels)
+
         const extractedPrivateChannelIds = userChannels.map(userChannel => userChannel.channel_Id)
-        //console.log(`reducer output #2:`, extractedPrivateChannelIds)
+
         return {
             ...state,
             privateChannelIds: extractedPrivateChannelIds
@@ -120,12 +124,20 @@ export const channelReducer = createReducer(
             console.log(`reducer:`, addNewPrivateChannelId)
             return {
                 ...state,
-                // /allChannels: state.allChannels.concat(newPrivateChannel) - this is more efficient thant he approach below
                 allChannels:[...state.allChannels,newPrivateChannel],
                 newPrivateChannel: [newPrivateChannel],
                 privateChannelIds:addNewPrivateChannelId
             }
-    })
+    }),
 
+    /// Flags changes ///
+
+    // set currently clicked conversation flag
+    on(Channels.Flag.Actions.loadCurrentlyClickedConversationSucceeded, (state, {conversationId})=>{
+        return {
+            ...state,
+            currentConversationId: conversationId
+        }
+    })
 
 )
