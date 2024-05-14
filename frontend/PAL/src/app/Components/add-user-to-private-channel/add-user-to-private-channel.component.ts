@@ -11,7 +11,7 @@ import { selectAllUsers, selectUserById } from '../../state/user/user.selector';
 import * as rxjs from 'rxjs';
 import { User } from '../../Models/user.model';
 import { Channels } from '../../state/channel/channel.action'
-import { selectAllChannels } from '../../state/channel/channel.selector';
+import { selectAllChannels, selectParticipantsOfPrivateChannel, selectRemainingParticipantsOfPrivateChannel } from '../../state/channel/channel.selector';
 
 @Component({
   selector: 'app-add-user-to-private-channel',
@@ -24,6 +24,10 @@ export class AddUserToPrivateChannelComponent implements OnInit {
   @Output() userAddedToPrivateChannel = new EventEmitter<any>();
 
   listOfUsers: User[] = [];   ////////////////
+  //ngRx props
+  participants$!: rxjs.Observable<User[]>
+  remainingParticipants$!: rxjs.Observable<User[]>
+
   selectedUserId: number = 0
   addedEntryToPrivateChannel: boolean = false;
   ErrorMessage: string = '';
@@ -70,45 +74,50 @@ export class AddUserToPrivateChannelComponent implements OnInit {
       })
 
 
-    //fill the list of added users
-    this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).pipe(
-      switchMap(participantIds => {
+    //current participants in the private channels
+    //ngRx implementation 
+    this.store.dispatch(Channels.Api.Actions.loadParticipantsOfPrivateChannelStarted({ channelId: this.matData.privateChannelId}))
+    this.participants$ = this.store.select(selectParticipantsOfPrivateChannel).pipe(rxjs.filter(participantsLoaded => !!participantsLoaded))
+   
 
-        const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
-        //ngRx implementation
-        return this.store.select(selectAllUsers).pipe(
-          rxjs.map(users => users.filter(user => userIds.includes(user.id)))
-        )
-        //old implementation
-        // return this.userService.getAllUsers().pipe(
-        //   map(users => users.filter(user => userIds.includes(user.id)))
-        // )
-      })
-    ).subscribe(filteredParticipants => {
-      //console.log(`transformed users`, filteredParticipants)
-      this.listOfAddedUsers.push(...filteredParticipants);
-    })
+    //old implementation
+    // this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).pipe(
+    //   switchMap(participantIds => {
 
+    //     const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
+    //     //ngRx implementation
+    //     return this.store.select(selectAllUsers).pipe(
+    //       rxjs.map(users => users.filter(user => userIds.includes(user.id)))
+    //     )
 
-    //create the list of users that remain  to be added
-    this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).pipe(
-      switchMap(participantIds => {
-        console.log(`list of users in a private channel:`, participantIds)
+    //   })
+    // ).subscribe(filteredParticipants => {
+    //   console.log(`transformed users`, filteredParticipants)
+    //   this.listOfAddedUsers.push(...filteredParticipants);
+    // })
 
-        const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
-        //ngRx implementation
-        return this.store.select(selectAllUsers).pipe(
-          rxjs.map(users => users.filter(user => !userIds.includes(user.id)))
-        )
-        //old implementation
-        // return this.userService.getAllUsers().pipe(
-        //   map(users => users.filter(user => !userIds.includes(user.id)))
-        // )
-      })
-    ).subscribe(filteredParticipants => {
-      console.log(`transformed users(new);`, filteredParticipants)
-      this.listOfUsers.push(...filteredParticipants);
-    })
+    // remaining participants that can be added to private channel
+    this.remainingParticipants$ = this.store.select(selectRemainingParticipantsOfPrivateChannel)
+
+    // //create the list of users that remain  to be added
+    // this.channelService.getParticipantsOfPrivateChannel(this.matData.privateChannelId).pipe(
+    //   switchMap(participantIds => {
+    //     console.log(`list of users in a private channel:`, participantIds)
+
+    //     const userIds = participantIds.map((participant: { user_Id: number; }) => participant.user_Id)
+    //     //ngRx implementation
+    //     return this.store.select(selectAllUsers).pipe(
+    //       rxjs.map(users => users.filter(user => !userIds.includes(user.id)))
+    //     )
+    //     //old implementation
+    //     // return this.userService.getAllUsers().pipe(
+    //     //   map(users => users.filter(user => !userIds.includes(user.id)))
+    //     // )
+    //   })
+    // ).subscribe(filteredParticipants => {
+    //   console.log(`transformed users(new);`, filteredParticipants)
+    //   this.listOfUsers.push(...filteredParticipants);
+    // })
 
   }
 
@@ -125,33 +134,34 @@ export class AddUserToPrivateChannelComponent implements OnInit {
     this.channelService.inviteUser(selectedUser, privateChannelId)
 
     const userChannel = {
-      user_id: +selectedUser,
-      channel_id: +privateChannelId,
+      id:0,
+      user_Id: +selectedUser,
+      channel_Id: +privateChannelId,
       isOwner: isOwner
     }
+    this.store.dispatch(Channels.Api.Actions.loadPrivateUserChannelStarted({ userChannelObj: userChannel}))
+    // this.channelService.addUserToPrivateChannel(userChannel).subscribe({
+    //   next: (response: any) => {
+    //     console.log('Response from server:', response);
 
-    this.channelService.addUserToPrivateChannel(userChannel).subscribe({
-      next: (response: any) => {
-        console.log('Response from server:', response);
+    //     const addedUser = this.listOfUsers.find(u => u.id === response.user_Id)
 
-        const addedUser = this.listOfUsers.find(u => u.id === response.user_Id)
-
-        if (addedUser) {
-          this.listOfAddedUsers.push(addedUser);
-          this.listOfUsers = this.listOfUsers.filter(u => u.id !== addedUser.id); // Remove user from the list
-        }
-        // Handle successful response if needed
-      },
-      error: (error: any) => {
-        console.error('Error adding user to private channel:', error);
-        if (error instanceof HttpErrorResponse) {
-          if (error.status === 500 && error.error) {
-            const errorMessage = error.error;
-            this.ErrorMessage = 'Selected user is already in this channel.'
-          }
-        }
-      }
-    })
+    //     if (addedUser) {
+    //       this.listOfAddedUsers.push(addedUser);
+    //       this.listOfUsers = this.listOfUsers.filter(u => u.id !== addedUser.id); // Remove user from the list
+    //     }
+    //     // Handle successful response if needed
+    //   },
+    //   error: (error: any) => {
+    //     console.error('Error adding user to private channel:', error);
+    //     if (error instanceof HttpErrorResponse) {
+    //       if (error.status === 500 && error.error) {
+    //         const errorMessage = error.error;
+    //         this.ErrorMessage = 'Selected user is already in this channel.'
+    //       }
+    //     }
+    //   }
+    // })
 
     //get UserName
     //ngRx implementation
@@ -170,13 +180,6 @@ export class AddUserToPrivateChannelComponent implements OnInit {
           lastName: userName?.lastName
         }
       })
-    //old implementation
-    // this.userService.getById(this.selectedUserId).pipe(take(1)).subscribe(userName => {
-    //   this.selectedUserIdName = {
-    //     firstName: userName.firstName,
-    //     lastName: userName.lastName
-    //   }
-    // })
 
     //get ChannelName
     this.store.select(selectAllChannels)
@@ -201,17 +204,18 @@ export class AddUserToPrivateChannelComponent implements OnInit {
   }
 
   removeUserFromPrivateChannel(userId: number) {
-
-    this.channelService.removeUserFromPrivateConversation(userId, this.selectedPrivateChannelId).subscribe(() => {
-      const removedUser = this.listOfAddedUsers.find(user => user.id === userId);
-      this.listOfAddedUsers = this.listOfAddedUsers.filter(user => user.id !== userId);
-
-      if (removedUser) {
-        this.listOfUsers.push(removedUser);
-      }
-    })
-
     this.channelService.kickUser(userId, this.selectedPrivateChannelId)
+    this.store.dispatch(Channels.Api.Actions.removeUserFromUserChannelStarted({ userId: userId, channelId: this.selectedPrivateChannelId}))
+    // this.channelService.removeUserFromPrivateConversation(userId, this.selectedPrivateChannelId).subscribe(() => {
+    //   const removedUser = this.listOfAddedUsers.find(user => user.id === userId);
+    //   this.listOfAddedUsers = this.listOfAddedUsers.filter(user => user.id !== userId);
+
+    //   if (removedUser) {
+    //     this.listOfUsers.push(removedUser);
+    //   }
+    // })
+
+
 
   }
 

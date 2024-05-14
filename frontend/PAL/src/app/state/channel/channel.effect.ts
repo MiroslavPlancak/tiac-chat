@@ -62,27 +62,63 @@ export class ChannelEffect {
         )
     )
 
-    /// Hub calls ///
-
-    addUserToPrivateChannel$ = createEffect(()=>
+    loadParticipantsOfPrivateChannel$ = createEffect(() =>
         this.action$.pipe(
-            ofType(Channels.Hub.Actions.addUserToPrivateChannelStarted),
+            ofType(Channels.Api.Actions.loadParticipantsOfPrivateChannelStarted),
             rxjs.switchMap((action) =>
-                rxjs.of(action.privateChannel).pipe(
-                    rxjs.map((channel)=> Channels.Hub.Actions.addUserToPrivateChannelSucceeded({ channelId:channel.id })),
-                    rxjs.catchError((error) => rxjs.of(Channels.Hub.Actions.addUserToPrivateChannelFailed({ error: error })))
+                this.channelService.getParticipantsOfPrivateChannel(action.channelId).pipe(
+                    rxjs.map((response) => Channels.Api.Actions.loadParticipantsOfPrivateChannelSucceeded({ participants: response })),
+                    rxjs.catchError((error) => rxjs.of(Channels.Api.Actions.loadParticipantsOfPrivateChannelFailed({ error: error })))
                 )
             )
         )
     )
 
-    removeUserFromPrivateChannel$ = createEffect(() =>
+    loadPrivateUserChannelObj$ = createEffect(() =>
         this.action$.pipe(
-            ofType(Channels.Hub.Actions.removeUserFromPrivateChannelStarted),
+            ofType(Channels.Api.Actions.loadPrivateUserChannelStarted),
+            rxjs.switchMap((action) =>
+                this.channelService.addUserToPrivateChannel(action.userChannelObj).pipe(
+                    rxjs.map((response) => Channels.Api.Actions.loadPrivateUserChannelSucceeded({ userChannelObj: response })),
+                    rxjs.catchError((error) => rxjs.of(Channels.Api.Actions.loadPrivateUserChannelFailed({ error: error })))
+                )
+            )
+        )
+    )
+
+    removeUserFromUserChannelObj$ = createEffect(()=>
+        this.action$.pipe(
+            ofType(Channels.Api.Actions.removeUserFromUserChannelStarted),
+            rxjs.switchMap((action) => 
+                this.channelService.removeUserFromPrivateConversation(action.userId, action.channelId).pipe(
+                    rxjs.map((response) => Channels.Api.Actions.removeUserFromUserChannelSucceeded({ userId: response.userId, channelId: response.channelId})),
+                    rxjs.catchError((error) => rxjs.of(Channels.Api.Actions.removeUserFromUserChannelFailed({ error: error })))
+                )
+            )
+        )
+    )
+
+    /// Hub calls ///
+
+    addUserToPrivateChannel$ = createEffect(()=>
+        this.action$.pipe(
+            ofType(Channels.Hub.Actions.inviteUserToPrivateChannelStarted),
+            rxjs.switchMap((action) =>
+                rxjs.of(action.privateChannel).pipe(
+                    rxjs.map((channel)=> Channels.Hub.Actions.inviteUserToPrivateChannelSucceeded({ channelId:channel.id })),
+                    rxjs.catchError((error) => rxjs.of(Channels.Hub.Actions.inviteUserToPrivateChannelFailed({ error: error })))
+                )
+            )
+        )
+    )
+
+    kickUserFromPrivateChannel$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Channels.Hub.Actions.kickUserFromPrivateChannelStarted),
             rxjs.switchMap((action) =>
                 rxjs.of(action.privateChannelId).pipe(
-                    rxjs.map((channelId) => Channels.Hub.Actions.removeUserFromPrivateChannelSucceeded({ privateChannelId: channelId })),
-                    rxjs.catchError((error) => rxjs.of(Channels.Hub.Actions.removeUserFromPrivateChannelFailed({ error: error })))
+                    rxjs.map((channelId) => Channels.Hub.Actions.kickUserFromPrivateChannelSucceeded({ privateChannelId: channelId })),
+                    rxjs.catchError((error) => rxjs.of(Channels.Hub.Actions.kickUserFromPrivateChannelFailed({ error: error })))
                 )
             )
         )
@@ -93,13 +129,12 @@ export class ChannelEffect {
             ofType(Channels.Hub.Actions.addNewPrivateChannelStarted),
             rxjs.switchMap((action) =>
                 rxjs.of(action.newPrivateChannel).pipe(
-                    rxjs.tap((res)=> console.log(`effect:`,res)),
-                   
                     rxjs.map((newPrivateChannel) => Channels.Hub.Actions.addNewPrivateChannelSucceeded({ newPrivateChannel: newPrivateChannel})),
-                    
                     rxjs.catchError((error) => rxjs.of(Channels.Hub.Actions.addNewPrivateChannelFailed({ error: error })))
                 )
             )
         )
     )
+
+    
 }

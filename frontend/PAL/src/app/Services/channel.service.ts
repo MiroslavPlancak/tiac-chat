@@ -10,7 +10,7 @@ import { AddUserToPrivateChannelComponent } from '../Components/add-user-to-priv
 import { Channel } from '../Models/channel.model';
 import { Store } from '@ngrx/store';
 import { Channels } from '../state/channel/channel.action'
-import { selectAllChannels, selectAllPrivateChannels, selectPrivateChannels } from '../state/channel/channel.selector';
+import { selectAllChannels } from '../state/channel/channel.selector';
 import { UserChannel } from '../Models/userChannel.model';
 import { selectCurrentUser } from '../state/user/user.selector';
 
@@ -26,24 +26,15 @@ export class ChannelService implements OnDestroy {
   isPrivateChannel$ = new rxjs.BehaviorSubject<boolean>(false);
   selectedConversation$ = new rxjs.BehaviorSubject<number>(8);
   isCurrentUserOwner$ = new rxjs.BehaviorSubject<object>({});
-  isOwnerOfPrivateChannel$ = new rxjs.BehaviorSubject<boolean>(false);
   curentlyClickedPrivateChannel$ = new rxjs.BehaviorSubject<number>(0);
 
   currentUserId$ = this.store.select(selectCurrentUser).pipe(
     rxjs.filter(currentUser => !!currentUser),
     rxjs.map(currentUser => currentUser.id),
-   
-  )
-
-  
-  public newlyCreatedPublicChannel$ = new rxjs.BehaviorSubject<any[]>([]);
-
-  public removeChannelId$ = new rxjs.BehaviorSubject<number>(0);
-
+   )
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService,
     private connectionService: ConnectionService,
     private dialogService: NotificationDialogService,
     private matDialog: MatDialog,
@@ -52,7 +43,7 @@ export class ChannelService implements OnDestroy {
 
     //ngRx selectors for all channels and private channels
     this.store.select(selectAllChannels).pipe(rxjs.tap()).subscribe()
-    //this.store.select(selectPrivateChannels).pipe(rxjs.take(1)).subscribe((res)=> console.log(res))
+
 
     ///////////////////Hub methods//////////////////////////
 
@@ -63,28 +54,21 @@ export class ChannelService implements OnDestroy {
       this.store.dispatch(Channels.Api.Actions.loadAllChannelsStarted())
 
       if (newChannel.visibility === 0) {
-       
         this.currentUserId$.pipe(rxjs.take(1)).subscribe(currentUserId =>{
           if(newChannel.createdBy === currentUserId){
             console.log(`this XXX runs`)
             this.store.dispatch(Channels.Hub.Actions.addNewPrivateChannelStarted({ newPrivateChannel: newChannel }))
           }
-        })
-       
-        
-        
+        })   
       }
     })
 
     //add user to private conversation
     this.connectionService.hubConnection.on('YouHaveBeenAdded', (channelId, userId, entireChannel) => {
-      //console.log(`You have been added to private channel ${channelId} by ${userId}, ${entireChannel.name}`)
-
       //add channel to the privateChannels state
-      this.store.dispatch(Channels.Hub.Actions.addUserToPrivateChannelStarted({ privateChannel: entireChannel}))
+      this.store.dispatch(Channels.Hub.Actions.inviteUserToPrivateChannelStarted({ privateChannel: entireChannel}))
 
       this.dialogService.openNotificationDialog(
-       
         `joined private channel`,
         `You have been added to private channel ${entireChannel.name}`,
         `Close`,
@@ -94,9 +78,8 @@ export class ChannelService implements OnDestroy {
     
     //kick user from private conversation    
     this.connectionService.hubConnection.on('YouHaveBeenKicked', (channelId, userId) => {
-
       //remove channel to the privateChannels state
-      this.store.dispatch(Channels.Hub.Actions.removeUserFromPrivateChannelStarted({ privateChannelId: channelId}))
+      this.store.dispatch(Channels.Hub.Actions.kickUserFromPrivateChannelStarted({ privateChannelId: channelId}))
 
       this.dialogService.openNotificationDialog(
         `Kicked from private channel`,
@@ -106,7 +89,6 @@ export class ChannelService implements OnDestroy {
       )
     });
 
-    ///////////////////Hub methods//////////////////////////
   }
 
   ngOnDestroy(): void {
@@ -134,17 +116,17 @@ export class ChannelService implements OnDestroy {
       })
     )
   }
-
-  getParticipantsOfPrivateChannel(channelId: number): Observable<any> {
+ //todo
+  getParticipantsOfPrivateChannel(channelId: number): Observable<UserChannel[]> {
     const url = `${this.apiUrl}/participants?channelId=${channelId}`
-    return this.http.get(url);
+    return this.http.get<UserChannel[]>(url);
   }
-  
-  addUserToPrivateChannel(userChannel: any): Observable<any> {
+  //todo
+  addUserToPrivateChannel(userChannel: UserChannel): Observable<UserChannel> {
     const url = `${this.apiUrl}/userChannel`;
-    return this.http.post(url, userChannel);
+    return this.http.post<UserChannel>(url, userChannel);
   }
-
+ //todo
   removeUserFromPrivateConversation(userId: number, channelId: number): Observable<any> {
     const url = `${this.apiUrl}/userchannel?userId=${userId}&channelId=${channelId}`
     return this.http.delete(url);

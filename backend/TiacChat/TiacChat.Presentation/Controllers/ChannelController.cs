@@ -82,10 +82,10 @@ namespace TiacChat.Presentation.Controllers
         public async Task<IActionResult> DeleteUserChannel(int userId, int channelId)
         {
             var deleteChannel = await _services.DeleteUserChannelByIdsAsync(userId,channelId);
-
+           
             if(deleteChannel != null)
             {
-                return Ok(userId);
+                return Ok(new { userId, channelId });
             }
             return NotFound(new { message = $"Channel with the ID of {channelId} was not found." });
         }

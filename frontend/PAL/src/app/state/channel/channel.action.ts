@@ -2,6 +2,7 @@ import { createActionGroup, emptyProps, props } from "@ngrx/store";
 import { Channel } from '../../Models/channel.model'
 import { SafeType } from '../../Utilities/safeType.action'
 import { UserChannel } from "../../Models/userChannel.model";
+import { User } from "../../Models/user.model";
 
 export const CHANNEL_SOURCE = 'Channels'
 
@@ -34,6 +35,21 @@ export namespace Channels {
                 LoadUserChannelByUserIdSucceeded:props<{ userChannels: UserChannel[] }>(),
                 LoadUserChannelByUserIdFailed:props<{ error: any }>(),
 
+                //load participants of the private channel by channelID
+                LoadParticipantsOfPrivateChannelStarted: props<{ channelId: number }>(),
+                LoadParticipantsOfPrivateChannelSucceeded: props<{ participants: UserChannel[] }>(),
+                LoadParticipantsOfPrivateChannelFailed: props<{ error: any }>(),
+
+                //load user to private channel by userChannel obj
+                LoadPrivateUserChannelStarted: props<{ userChannelObj: UserChannel }>(),
+                LoadPrivateUserChannelSucceeded: props<{ userChannelObj: UserChannel }>(),
+                LoadPrivateUserChannelFailed: props<{ error: any }>(),
+
+                //remove user from private channel by userId
+                RemoveUserFromUserChannelStarted: props<{ userId: number, channelId: number }>(),
+                RemoveUserFromUserChannelSucceeded: props<{ userId: number, channelId: number }>(),
+                RemoveUserFromUserChannelFailed: props<{ error: any }>(),
+
             },
             source: SOURCE
         })
@@ -46,14 +62,14 @@ export namespace Channels {
             export const Actions = createActionGroup({
                 events:{
                     //add user to private channel
-                    AddUserToPrivateChannelStarted: props<{ privateChannel: Channel }>(),
-                    AddUserToPrivateChannelSucceeded: props<{ channelId: number }>(),
-                    AddUserToPrivateChannelFailed: props<{ error: any }>(),
+                    InviteUserToPrivateChannelStarted: props<{ privateChannel: Channel }>(),
+                    InviteUserToPrivateChannelSucceeded: props<{ channelId: number }>(),
+                    InviteUserToPrivateChannelFailed: props<{ error: any }>(),
 
                     //remove user from private channel
-                    RemoveUserFromPrivateChannelStarted: props<{ privateChannelId: number }>(),
-                    RemoveUserFromPrivateChannelSucceeded: props<{ privateChannelId: number }>(),
-                    RemoveUserFromPrivateChannelFailed: props<{ error: any }>(),
+                    KickUserFromPrivateChannelStarted: props<{ privateChannelId: number }>(),
+                    KickUserFromPrivateChannelSucceeded: props<{ privateChannelId: number }>(),
+                    KickUserFromPrivateChannelFailed: props<{ error: any }>(),
 
                     //add new private channel to the state
                     AddNewPrivateChannelStarted: props<{ newPrivateChannel: Channel }>(),

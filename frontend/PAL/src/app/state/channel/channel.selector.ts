@@ -65,7 +65,7 @@ export const selectAllPrivateChannels = createSelector(
             channel => channelState.privateChannelIds?.includes(channel.id) &&
             channel.visibility === 0
         )
-        console.log(`selector:`, allPrivateChannels)
+       // console.log(`selector:`, allPrivateChannels)
         return allPrivateChannels
     }
 )
@@ -78,6 +78,33 @@ export const selectAllPublicChannels = createSelector(
         return allPublicChannels
     }
 )
+
+//select current participants of the private channel 
+export const selectParticipantsOfPrivateChannel = createSelector(
+    selectedChannelState,
+    selectedUserState,
+    (channelState:ChannelState, userState: UserState) =>{
+        const extractParticipantIds = channelState.privateChannelParticipants.map(participant => participant.user_Id)
+        const participantsUserObjects = userState.allUsers.filter(user => extractParticipantIds.includes(user.id))
+       
+        return participantsUserObjects
+    }
+)
+
+// select remaining participants of the private channel
+export const selectRemainingParticipantsOfPrivateChannel = createSelector(
+    selectedChannelState,
+    selectedUserState,
+    (channelState:ChannelState, userState: UserState) =>{
+        const extractCurrentParticipantIds = channelState.privateChannelParticipants.map(participant => participant.user_Id)
+        const remainingParticipantsUserObjects = userState.allUsers.filter(user => !extractCurrentParticipantIds.includes(user.id))
+        console.log(`remaining users selector`,remainingParticipantsUserObjects)
+        return remainingParticipantsUserObjects
+    }
+)
+
+//load user to private channel
+
 /////// HUB calls /////////
 
 //add private channel to the list of private channels 

@@ -1,6 +1,7 @@
 import { createReducer, on } from "@ngrx/store";
 import { Channels } from "./channel.action"
 import { Channel } from "../../Models/channel.model"
+import { UserChannel } from "../../Models/userChannel.model";
 
 
 export interface ChannelState {
@@ -9,7 +10,8 @@ export interface ChannelState {
     clickedPrivateChannelID?: number,
     privateChannelIds?: number[],
     addedToPrivateChannelId?: number,
-    newPrivateChannel:Channel[]
+    newPrivateChannel:Channel[],
+    privateChannelParticipants:UserChannel[]
     
 }
 
@@ -19,7 +21,8 @@ export const initialState: ChannelState = {
     clickedPrivateChannelID: 0,
     privateChannelIds: [],
     addedToPrivateChannelId: 0,
-    newPrivateChannel: []
+    newPrivateChannel: [],
+    privateChannelParticipants: []
 }
 
 export const channelReducer = createReducer(
@@ -58,10 +61,42 @@ export const channelReducer = createReducer(
         }
     }),
 
+    //load participants of the private channel
+    on(Channels.Api.Actions.loadParticipantsOfPrivateChannelSucceeded, (state, { participants })=>{
+        console.log(`private channel participants:`, participants)
+        return {
+            ...state,
+            privateChannelParticipants: participants
+        }
+    }),
+
+    //load user to private channel
+    on(Channels.Api.Actions.loadPrivateUserChannelSucceeded, (state,{userChannelObj})=>{
+        console.log(`after addition:`,[...state.privateChannelParticipants, userChannelObj])
+        return {
+            ...state,
+            privateChannelParticipants: [...state.privateChannelParticipants, userChannelObj]
+        }
+    }),
+
+    //filter out user from the private channel
+    on(Channels.Api.Actions.removeUserFromUserChannelSucceeded, (state,{userId,channelId})=>{
+        const updatedPrivateChannelParticipants = state.privateChannelParticipants.filter(
+            userChannelObj => userChannelObj.user_Id !== userId &&
+            userChannelObj.channel_Id == channelId 
+       
+        )
+       
+        return {
+            ...state,
+            privateChannelParticipants: updatedPrivateChannelParticipants
+        }
+    }),
+
     /// Hub calls ///
 
     //add user to private channel
-    on(Channels.Hub.Actions.addUserToPrivateChannelSucceeded, (state, { channelId }) => {
+    on(Channels.Hub.Actions.inviteUserToPrivateChannelSucceeded, (state, { channelId }) => {
         const addChannel = [...(state.privateChannelIds ?? []), channelId]
         return {
             ...state,
@@ -70,7 +105,7 @@ export const channelReducer = createReducer(
     }),
 
     //remove user from private channel
-    on(Channels.Hub.Actions.removeUserFromPrivateChannelSucceeded, (state, { privateChannelId }) => {
+    on(Channels.Hub.Actions.kickUserFromPrivateChannelSucceeded, (state, { privateChannelId }) => {
         const updatedPrivateChannelIds = state.privateChannelIds?.filter(channelId => channelId !== privateChannelId)
         return {
             ...state,

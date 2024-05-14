@@ -2,7 +2,7 @@
 
     <h4>users in {{selectedChannelIdName}}:</h4>
     <ul>
-        <li *ngFor="let user of listOfAddedUsers">
+        <li *ngFor="let user of participants$ | async">
             {{ user.firstName }} {{ user.lastName }} 
             <span *ngIf="isOwnerOfPrivateChannel && user.id !== (authService.userId$ | async)" (click)="removeUserFromPrivateChannel(user.id)">
                     <mat-icon color="primary">delete</mat-icon>
@@ -19,7 +19,7 @@
     <mat-form-field>
         <mat-label>add user</mat-label>
         <mat-select [(value)]="selectedUserId">
-            <mat-option *ngFor="let user of listOfUsers" [value]="user.id">
+            <mat-option *ngFor="let user of remainingParticipants$ | async" [value]="user.id">
                 {{ user.firstName }}
             </mat-option>
         </mat-select>
