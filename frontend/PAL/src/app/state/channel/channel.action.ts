@@ -2,7 +2,7 @@ import { createActionGroup, emptyProps, props } from "@ngrx/store";
 import { Channel } from '../../Models/channel.model'
 import { SafeType } from '../../Utilities/safeType.action'
 import { UserChannel } from "../../Models/userChannel.model";
-import { User } from "../../Models/user.model";
+
 
 export const CHANNEL_SOURCE = 'Channels'
 
