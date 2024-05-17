@@ -9,6 +9,7 @@ import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { selectUserById,selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
+import { selectPaginatedPrivateMessages } from '../../state/message/message.selector';
 
 @Component({
   selector: 'app-chat-body',
@@ -29,6 +30,26 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   isUserTyping$ = new rxjs.BehaviorSubject<boolean>(false)
   typingStatusMap = new Map<number, string>()
   receivedPrivateMessages$ = this.messageService.receivedPrivateMessages$;
+
+  receivePrivateMessagesNgRx$ = this.store.select(selectPaginatedPrivateMessages).pipe(
+    //rxjs.take(2),
+    rxjs.tap((res)=> console.log(`test:`, res)),
+    rxjs.switchMap((privateMessages) => {
+      const userName = privateMessages.map((message) => {
+        return this.messageService.extractUserName(message.sentFromUserId)
+      })
+      return rxjs.forkJoin(userName).pipe(
+        rxjs.map(userNames => {
+          return privateMessages.map((message, index) => ({
+            isSeen: message.isSeen,
+            senderId: userNames[index],
+            message: message.body
+          }))
+        })
+      )
+    })
+  )
+
   privateConversationUsers$!: rxjs.Observable<User[]>;
   
   //scroll properties

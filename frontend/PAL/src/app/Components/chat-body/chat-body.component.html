@@ -7,7 +7,7 @@
             (click)="this.messageService.loadMorePrivateMessages()">Load More</button>
             
         <ng-container
-            *cdkVirtualFor="let privateMessage of this.receivedPrivateMessages$; let i = index; last as isLast">
+            *cdkVirtualFor="let privateMessage of (receivePrivateMessagesNgRx$ | async); let i = index; last as isLast">
            
             <div class="conversation-row">
                 <div class="chater-font">
@@ -23,7 +23,7 @@
                         *ngIf="privateMessage.senderId !== (this.currentUserLogged$| async)?.firstName"></span>
                     <strong>{{ privateMessage.senderId }}</strong>:
                 </div>
-                <div class="chater-message">{{ privateMessage.message }} {{i}}</div>
+                <div class="chater-message">{{ privateMessage.message }} </div>
             </div>
         </ng-container>
     </cdk-virtual-scroll-viewport>

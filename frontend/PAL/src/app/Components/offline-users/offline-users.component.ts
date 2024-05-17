@@ -7,9 +7,13 @@ import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
+
 import { Channels } from '../../state/channel/channel.action'
 import { selectUserById,selectOfflineUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
+
+import { Messages } from '../../state/message/message.action';
+import { selectPaginatedPrivateMessages } from '../../state/message/message.selector';
 
 @Component({
   selector: 'app-offline-users',
@@ -73,6 +77,9 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
   conversationIdSelectedOfflineClickHandler(conversationId: number): void {
     this.conversationId = conversationId;
 
+    //ngRx clear private messages state
+    this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({userId: conversationId}))
+    
     if (conversationId !== this.currentUserId$.getValue()) {
 
       this.messageService.initialPublicMessageStartIndex$.next(0)
@@ -122,34 +129,48 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
           //displays the button if there are messages to be loaded/disappears it when there arent.
           this.messageService.canLoadMorePrivateMessages$.next(totalMessagesNumber > 10);
           const startIndex = 0
-
+          console.log(`start index:`, startIndex)
 
           const endIndex = totalMessagesNumber - (totalMessagesNumber - 10);
+          console.log(`end index:`, endIndex)
           this.messageService.initialPrivateMessageStartIndex$.next(endIndex)
+          return rxjs.of(totalMessagesNumber)
+ 
 
+ 
 
-          return this.messageService.loadPaginatedPrivateMessages(
-            this.currentUserId$.getValue() as number,
-            this.conversationId,
-            startIndex,
-            endIndex
-          ).pipe(rxjs.first());
+          // return this.messageService.loadPaginatedPrivateMessages(
+          //   this.currentUserId$.getValue() as number,
+          //   this.conversationId,
+          //   startIndex,
+          //   endIndex
+          // ).pipe(rxjs.first());
         }),
-        rxjs.takeUntil(this.destroy$)
-      )
-      .subscribe(res => {
-        const privateMessages: any = res.map(async (message: any) => {
-          const senderId = await this.extractUserName(message.sentFromUserId).toPromise()
-          return {
-            isSeen: message.isSeen,
-            senderId: senderId,
-            message: message.body
-          }
-        })
-        Promise.all(privateMessages).then((messsages: any) => {
-          this.messageService.receivedPrivateMessages$.next(messsages)
-        })
-      });
+        rxjs.take(1)
+      ).subscribe((totalMessages)=> {
+        console.log(`initialPrivateMessageStartIndex`, this.messageService.initialPrivateMessageStartIndex$.getValue())
+         //ngRx foothold (the initial loading of private message 10/10)
+         this.store.dispatch(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted({
+          senderId:Number(this.currentUserId$.getValue()),
+          receiverId: this.conversationId,
+          startIndex: 0,
+          endIndex: totalMessages - (totalMessages - 10)
+        }))
+      })
+      // .subscribe(res => {
+      //   console.log(`old output`, res)
+      //   const privateMessages: any = res.map(async (message: any) => {
+      //     const senderId = await this.extractUserName(message.sentFromUserId).toPromise()
+      //     return {
+      //       isSeen: message.isSeen,
+      //       senderId: senderId,
+      //       message: message.body
+      //     }
+      //   })
+      //   Promise.all(privateMessages).then((messsages: any) => {
+      //     this.messageService.receivedPrivateMessages$.next(messsages)
+      //   })
+      // });
   }
 
   displayOfflineUserNameToWriteTo(): void {

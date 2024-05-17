@@ -10,9 +10,11 @@ import { AuthService } from './auth.service';
 import { ConnectionService } from './connection.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../state/user/user.action'
+import { Messages } from '../state/message/message.action';
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
 import { selectCurrentlyClickedConversation } from '../state/channel/channel.selector';
 import { Channels } from '../state/channel/channel.action';
+import { selectPaginatedPrivateMessages } from '../state/message/message.selector';
 
 @Injectable({
   providedIn: 'root'
@@ -55,6 +57,8 @@ export class MessageService implements OnInit, OnDestroy {
   privateMessageCounter$ = new rxjs.BehaviorSubject<PrivateMessage[]>(this.initialPrivateMessages);
   privateMessageMap$ = new rxjs.BehaviorSubject<Map<number,number>>(new Map<number,number>)
   privateMessageMap = new Map<number, number>()
+
+   totalLoadedMessages:number = 0;
 
   private apiUrl = "http://localhost:5008/api/messages/";
 
@@ -254,43 +258,68 @@ export class MessageService implements OnInit, OnDestroy {
       if (this.canLoadMorePrivateMessages$.value !== false && privateConversationId !== undefined) {
 
         let startIndex = this.initialPrivateMessageStartIndex$.value
+        console.log(`start index from service:`,startIndex)
         let endIndex = startIndex + 10
         this.initialPrivateMessageStartIndex$.next(endIndex)
+        console.log(`end indext from service:`, endIndex)
+        
+        //ngRx
+        this.store.dispatch(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted({
+          senderId:currentUserId,
+          receiverId:privateConversationId,
+          startIndex:startIndex,
+          endIndex:endIndex
+        }))
+   
+      this.store.select(selectPaginatedPrivateMessages)
+        .subscribe((messages) => {
+          this.totalLoadedMessages = 0 
+          const totalMessages = messages.length
+          this.totalLoadedMessages += totalMessages
+          const batches = Math.ceil( this.totalLoadedMessages / 10 )
+          console.log(`TotalMessages: ${this.totalLoadedMessages}, Batches: ${batches}`);
+          if(totalMessages % 10 !== 0){
+            this.canLoadMorePrivateMessages$.next(false)
+          }else if( totalMessages > endIndex && totalMessages % 10 !== 0 ) {
+            this.canLoadMorePrivateMessages$.next(false)
+          }
+        })
 
-        this.loadPaginatedPrivateMessages(currentUserId, privateConversationId, startIndex, endIndex)
-          .pipe(
-            rxjs.take(1),
-            rxjs.map(messages => {
-              if (messages.length == 0) {
-                console.log(`no more messages left to load`)
-                this.canLoadMorePrivateMessages$.next(false)
-                console.log(`canLoadMore$`, this.canLoadMorePrivateMessages$.value)
-              }
-              return messages.map(message => {
-                return this.extractUserName(message.sentFromUserId).pipe(
-                  rxjs.map(senderId => ({
-                    isSeen: message.isSeen,
-                    senderId: senderId,
-                    message: message.body
-                  }))
-                )
-              })
+        // //this.loadPaginatedPrivateMessages(currentUserId, privateConversationId, startIndex, endIndex)
+        //   .pipe(
+        //     rxjs.tap((res)=> console.log(`output test old:`, res)),
+        //     rxjs.take(2),
+        //     rxjs.map(messages => {
+        //       if (messages.length == 0) {
+        //         console.log(`no more messages left to load`)
+        //         this.canLoadMorePrivateMessages$.next(false)
+        //         console.log(`canLoadMore$`, this.canLoadMorePrivateMessages$.value)
+        //       }
+        //       return messages.map(message => {
+        //         return this.extractUserName(message.sentFromUserId).pipe(
+        //           rxjs.map(senderId => ({
+        //             isSeen: message.isSeen,
+        //             senderId: senderId,
+        //             message: message.body
+        //           }))
+        //         )
+        //       })
 
-            }),
-            rxjs.switchMap(asyncOperations => {
-              return rxjs.forkJoin(asyncOperations)
-            }),
-            rxjs.takeUntil(this.destroy$)
-          ).subscribe(privateMesssages => {
-            this.receivedPrivateMessages$.next([
-              ...privateMesssages,
-              ...this.receivedPrivateMessages$.value
-            ])
+        //     }),
+        //     rxjs.switchMap(asyncOperations => {
+        //       return rxjs.forkJoin(asyncOperations)
+        //     }),
+        //     rxjs.takeUntil(this.destroy$))
+          // .subscribe(privateMesssages => {
+          //   this.receivedPrivateMessages$.next([
+          //     ...privateMesssages,
+          //     ...this.receivedPrivateMessages$.value
+          //   ])
 
-            //needs looking into to make it function properly 
-            this.virtualScrollViewportPrivate$.next(3)
-            this.maxScrollValue$.next(endIndex - 1)
-          })
+          //   //needs looking into to make it function properly 
+          //   this.virtualScrollViewportPrivate$.next(3)
+          //   this.maxScrollValue$.next(endIndex - 1)
+          // })
       }
     }
   }
@@ -298,6 +327,9 @@ export class MessageService implements OnInit, OnDestroy {
   // select user for private messaging directly from public chat method()
   public conversationIdSelectedClickHandler(conversationId: number): void {
 
+    //ngRx clear private messages state
+    this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({ userId: conversationId }))
+    
     // reset the private message counter and clear the map
     this.privateMessageCounter$.next([])
     this.privateMessageMap$.getValue().forEach((value,key,map)=>{
@@ -368,30 +400,40 @@ export class MessageService implements OnInit, OnDestroy {
           const endIndex = totalMessagesNumber - (totalMessagesNumber - 10);
           this.initialPrivateMessageStartIndex$.next(endIndex)
 
-          return this.loadPaginatedPrivateMessages(
-            this.currentUserId$.getValue() as number,
-            this.conversationId,
-            startIndex,
-            endIndex
-          ).pipe(rxjs.first());
+          //ngRx
+          this.store.dispatch(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted({
+            senderId: this.currentUserId$.getValue() as number,
+            receiverId: this.conversationId,
+            startIndex: startIndex,
+            endIndex: endIndex
+          }))
+          return this.store.select(selectPaginatedPrivateMessages)
+
+          // return this.loadPaginatedPrivateMessages(
+          //   this.currentUserId$.getValue() as number,
+          //   this.conversationId,
+          //   startIndex,
+          //   endIndex
+          // ).pipe(rxjs.first());
         }),
         rxjs.takeUntil(this.destroy$)
       )
       .subscribe(res => {
+        console.log(`old output:`,res.length)
+   
+        // const privateMessages: any = res.map(async (message: any) => {
+        //   const senderId = await this.extractUserName(message.sentFromUserId).toPromise()
+        //   return {
+        //     isSeen: message.isSeen,
+        //     senderId: senderId,
+        //     message: message.body
+        //   }
+        // })
+        // Promise.all(privateMessages).then((messsages: any) => {
 
-        const privateMessages: any = res.map(async (message: any) => {
-          const senderId = await this.extractUserName(message.sentFromUserId).toPromise()
-          return {
-            isSeen: message.isSeen,
-            senderId: senderId,
-            message: message.body
-          }
-        })
-        Promise.all(privateMessages).then((messsages: any) => {
-
-          this.receivedPrivateMessages$.next(messsages)
-          //console.log(this.messageService.receivedPrivateMessages$.value)
-        })
+        //   this.receivedPrivateMessages$.next(messsages)
+        //   //console.log(this.messageService.receivedPrivateMessages$.value)
+        // })
       });
   }
 

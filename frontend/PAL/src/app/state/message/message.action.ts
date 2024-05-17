@@ -12,7 +12,15 @@ export namespace Messages{
 
         export const Actions = createActionGroup({
             events:{
-                
+                //load paginated private messages
+                LoadPaginatedPrivateMessagesStarted: props<{ senderId: number, receiverId: number, startIndex: number, endIndex: number }>(),
+                LoadPaginatedPrivateMessagesSucceeded: props<{ privateMessages: any[]}>(),
+                LoadPaginatedPrivateMessagesFailed: props<{ error: any }>(),
+
+                //clear private messages 
+                ClearPaginatedPrivateMessagesStarted: props<{ userId: number }>(),
+                ClearPaginatedPrivateMessagesSucceeded: props<{ userId: number }>(),
+                ClearPaginatedPrivateMessagesFailed: props<{ error: any }>(),
             },
             source: SOURCE
         })
