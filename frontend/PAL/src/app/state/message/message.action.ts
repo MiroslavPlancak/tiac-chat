@@ -14,7 +14,7 @@ export namespace Messages{
             events:{
                 //load paginated private messages
                 LoadPaginatedPrivateMessagesStarted: props<{ senderId: number, receiverId: number, startIndex: number, endIndex: number }>(),
-                LoadPaginatedPrivateMessagesSucceeded: props<{ privateMessages: any[]}>(),
+                LoadPaginatedPrivateMessagesSucceeded: props<{ receiverId: number, privateMessages: any[]}>(),
                 LoadPaginatedPrivateMessagesFailed: props<{ error: any }>(),
 
                 //clear private messages 

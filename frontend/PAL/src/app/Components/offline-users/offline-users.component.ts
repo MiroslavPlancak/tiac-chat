@@ -13,7 +13,7 @@ import { selectUserById,selectOfflineUsers } from '../../state/user/user.selecto
 import { User } from '../../Models/user.model';
 
 import { Messages } from '../../state/message/message.action';
-import { selectPaginatedPrivateMessages } from '../../state/message/message.selector';
+import { selectPaginatedRecordById } from '../../state/message/message.selector';
 
 @Component({
   selector: 'app-offline-users',
@@ -76,7 +76,8 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
 
   conversationIdSelectedOfflineClickHandler(conversationId: number): void {
     this.conversationId = conversationId;
-
+     //ng rx record
+     this.chatService.privateConversationId$.next(conversationId)
     //ngRx clear private messages state
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({userId: conversationId}))
     
@@ -84,7 +85,7 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
 
       this.messageService.initialPublicMessageStartIndex$.next(0)
       this.messageService.canLoadMorePrivateMessages$.next(false)
-
+      
       this.getConcurrentNumberOfMessages()
 
       this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: undefined}))
@@ -93,7 +94,7 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
       this.isDirectMessageOffline.next(true);
 
       //this.channelService.isPrivateChannel$.next(false);
-      this.chatService.privateConversationId$.next(conversationId)
+    
 
       this.displayOfflineUserNameToWriteTo()
     }
@@ -129,10 +130,10 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
           //displays the button if there are messages to be loaded/disappears it when there arent.
           this.messageService.canLoadMorePrivateMessages$.next(totalMessagesNumber > 10);
           const startIndex = 0
-          console.log(`start index:`, startIndex)
+          //console.log(`start index:`, startIndex)
 
           const endIndex = totalMessagesNumber - (totalMessagesNumber - 10);
-          console.log(`end index:`, endIndex)
+          //console.log(`end index:`, endIndex)
           this.messageService.initialPrivateMessageStartIndex$.next(endIndex)
           return rxjs.of(totalMessagesNumber)
  
@@ -148,7 +149,7 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
         }),
         rxjs.take(1)
       ).subscribe((totalMessages)=> {
-        console.log(`initialPrivateMessageStartIndex`, this.messageService.initialPrivateMessageStartIndex$.getValue())
+       // console.log(`initialPrivateMessageStartIndex`, this.messageService.initialPrivateMessageStartIndex$.getValue())
          //ngRx foothold (the initial loading of private message 10/10)
          this.store.dispatch(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted({
           senderId:Number(this.currentUserId$.getValue()),
@@ -156,6 +157,8 @@ export class OfflineUsersComponent implements OnInit, OnDestroy {
           startIndex: 0,
           endIndex: totalMessages - (totalMessages - 10)
         }))
+
+
       })
       // .subscribe(res => {
       //   console.log(`old output`, res)

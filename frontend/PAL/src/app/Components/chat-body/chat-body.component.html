@@ -7,7 +7,7 @@
             (click)="this.messageService.loadMorePrivateMessages()">Load More</button>
             
         <ng-container
-            *cdkVirtualFor="let privateMessage of (receivePrivateMessagesNgRx$ | async); let i = index; last as isLast">
+            *cdkVirtualFor="let privateMessage of (receivePrivateMessagesRecordsNgRx$ | async); let i = index; last as isLast">
            
             <div class="conversation-row">
                 <div class="chater-font">

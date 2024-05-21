@@ -9,7 +9,7 @@ import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { selectUserById,selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
-import { selectPaginatedPrivateMessages } from '../../state/message/message.selector';
+import { selectPaginatedRecordById } from '../../state/message/message.selector';
 
 @Component({
   selector: 'app-chat-body',
@@ -31,25 +31,52 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   typingStatusMap = new Map<number, string>()
   receivedPrivateMessages$ = this.messageService.receivedPrivateMessages$;
 
-  receivePrivateMessagesNgRx$ = this.store.select(selectPaginatedPrivateMessages).pipe(
-    //rxjs.take(2),
-    rxjs.tap((res)=> console.log(`test:`, res)),
-    rxjs.switchMap((privateMessages) => {
-      const userName = privateMessages.map((message) => {
-        return this.messageService.extractUserName(message.sentFromUserId)
-      })
-      return rxjs.forkJoin(userName).pipe(
-        rxjs.map(userNames => {
-          return privateMessages.map((message, index) => ({
-            isSeen: message.isSeen,
-            senderId: userNames[index],
-            message: message.body
-          }))
+  // //old ngrx implementation
+  // receivePrivateMessagesNgRx$ = this.store.select(selectPaginatedPrivateMessages).pipe(
+  //   //rxjs.take(2),
+  //   rxjs.tap((res)=> console.log(`test:`, res)),
+  //   rxjs.switchMap((privateMessages) => {
+  //     const userName = privateMessages.map((message) => {
+  //       return this.messageService.extractUserName(message.sentFromUserId)
+  //     })
+  //     return rxjs.forkJoin(userName).pipe(
+  //       rxjs.map(userNames => {
+  //         return privateMessages.map((message, index) => ({
+  //           isSeen: message.isSeen,
+  //           senderId: userNames[index],
+  //           message: message.body
+  //         }))
+  //       })
+  //     )
+  //   })
+  // )
+
+  //new ngrx implementation
+  receivePrivateMessagesRecordsNgRx$ = this.chatService.privateConversationId$.pipe(
+   
+    rxjs.switchMap((privateConvo) =>{
+      
+      return this.store.select(selectPaginatedRecordById(Number(privateConvo))).pipe(
+        rxjs.switchMap((privateMessages) => {
+          
+          const userNameObservables = privateMessages.map((message) =>
+            this.messageService.extractUserName(message.sentFromUserId)
+          );
+          return rxjs.forkJoin(userNameObservables).pipe(
+            rxjs.map((userNames) =>
+              privateMessages.map((message, index) => ({
+                isSeen: message.isSeen,
+                senderId: userNames[index],
+                message: message.body,
+              }))
+            )
+          );
         })
       )
     })
-  )
-
+  );
+  
+  
   privateConversationUsers$!: rxjs.Observable<User[]>;
   
   //scroll properties
@@ -72,7 +99,10 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
   ngOnInit(): void {
     //testing 
- 
+
+    this.receivePrivateMessagesRecordsNgRx$.subscribe(messages => {
+      console.log('Messages in component:', messages);})
+
    //scroll after sending a private message
    this.messageService.endScrollValue$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
     if(res !== 0)

@@ -14,7 +14,7 @@ import { Messages } from '../state/message/message.action';
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
 import { selectCurrentlyClickedConversation } from '../state/channel/channel.selector';
 import { Channels } from '../state/channel/channel.action';
-import { selectPaginatedPrivateMessages } from '../state/message/message.selector';
+import { selectPaginatedRecordById } from '../state/message/message.selector';
 
 @Injectable({
   providedIn: 'root'
@@ -94,7 +94,8 @@ export class MessageService implements OnInit, OnDestroy {
     ): Observable<any[]> {
     const fullPath = `getPaginatedPrivateMessages?senderId=${senderId}&receiverId=${receiverId}&startIndex=${startIndex}&endIndex=${endIndex}`;
     return this.http.get<PrivateMessage[]>(this.apiUrl + fullPath).pipe(
-      map(messages => messages.reverse())
+      map(messages => messages.reverse()),
+
     )
   }
 
@@ -271,7 +272,7 @@ export class MessageService implements OnInit, OnDestroy {
           endIndex:endIndex
         }))
    
-      this.store.select(selectPaginatedPrivateMessages)
+      this.store.select(selectPaginatedRecordById(privateConversationId))
         .subscribe((messages) => {
           this.totalLoadedMessages = 0 
           const totalMessages = messages.length
@@ -407,7 +408,7 @@ export class MessageService implements OnInit, OnDestroy {
             startIndex: startIndex,
             endIndex: endIndex
           }))
-          return this.store.select(selectPaginatedPrivateMessages)
+          return this.store.select(selectPaginatedRecordById(this.conversationId))
 
           // return this.loadPaginatedPrivateMessages(
           //   this.currentUserId$.getValue() as number,
