@@ -20,7 +20,7 @@ export const selectedMessageState = createFeatureSelector<MessageState>("message
 export const selectPaginatedRecordById = (receiverId:number) => createSelector(
     selectedMessageState,
     (messageState:MessageState) =>{
-        console.log(`selector/receiverID:`, receiverId)
+        //console.log(`selector/receiverID:`, receiverId)
         const messages = messageState.paginatedRecords[receiverId] || []
         console.log(`selector record:`,messageState.paginatedRecords)
         console.log(`selector messages `, messages)

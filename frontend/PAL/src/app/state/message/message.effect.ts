@@ -33,7 +33,7 @@ export class MessageEffects {
             ofType(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted),
             rxjs.switchMap((action) =>{
                 return rxjs.of(action.userId).pipe(
-                    rxjs.tap((res)=> console.log(`effect :`,res)),
+                   // rxjs.tap((res)=> console.log(`effect :`,res)),
                     rxjs.map((result) => Messages.Api.Actions.clearPaginatedPrivateMessagesSucceeded({ userId: result})),
                     rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.clearPaginatedPrivateMessagesFailed({ error: error })))
                 )

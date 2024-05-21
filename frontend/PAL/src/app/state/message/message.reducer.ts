@@ -42,7 +42,7 @@ export const messageReducer = createReducer(
 
     //clear paginated private messages state
     on(Messages.Api.Actions.clearPaginatedPrivateMessagesSucceeded,(state,{userId})=>{
-        console.log(`reducer/userId (clearing)`,userId)
+       // console.log(`reducer/userId (clearing)`,userId)
         return {
             ...state,
            // paginatedPrivateMessages:[],
