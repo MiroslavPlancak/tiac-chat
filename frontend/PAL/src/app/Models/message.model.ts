@@ -1,7 +1,7 @@
 export interface Message{
     id: number,
     body: string,
-    sentFromUser: number,
+    sentFromUserId: number,
     sentToUser?: number,
     sentToChannel?:number,
     time: Date,

@@ -82,7 +82,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
         return this.messageService.receivedPrivateMessages$.pipe(
           rxjs.take(1),
           rxjs.tap(messages => {
-          //  console.log(messages)
+          console.log(`online users component`,messages)
             messages.forEach(message => message.isSeen = true);
           })
         );

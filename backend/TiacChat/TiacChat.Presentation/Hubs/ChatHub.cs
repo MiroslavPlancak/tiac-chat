@@ -125,7 +125,7 @@ namespace TiacChat.Presentation.Hubs
                 if (onlineUsers.TryGetValue(recipientUserId, out var recipientConnectionId))
                 {
                     await Clients.Client(recipientConnectionId)
-                    .SendAsync("ReceivePrivateMessages", senderId, message, savedMessage.Id, savedMessage.IsSeen);
+                    .SendAsync("ReceivePrivateMessages", senderId, message, savedMessage.Id, savedMessage.IsSeen, savedMessage);
                 }
             }
             catch (Exception ex)

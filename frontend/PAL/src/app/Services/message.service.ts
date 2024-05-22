@@ -174,8 +174,9 @@ export class MessageService implements OnInit, OnDestroy {
   public sendPrivateMessage = (
     recipientId: number | null | undefined,
     message: string) => {
-   return rxjs.from( this.connectionService.hubConnection?.invoke("SendPrivateMessage", recipientId, message))
+   return rxjs.of( this.connectionService.hubConnection?.invoke("SendPrivateMessage", recipientId, message))
    .pipe(
+ 
     rxjs.catchError(err => {
       console.log(err);
       return (err);
@@ -184,10 +185,14 @@ export class MessageService implements OnInit, OnDestroy {
   }
 
   /// recieve private message()
-  public receivePrivateMesages = (): rxjs.Observable<PrivateMessage> => {
-    return new rxjs.Observable<PrivateMessage>(observer => {
-      this.connectionService.hubConnection?.on("ReceivePrivateMessages", (senderId, message, messageId, isSeen) => {
-        observer.next({ senderId, message, isSeen });
+  public receivePrivateMesages = (): rxjs.Observable<any> => {
+    return new rxjs.Observable<any>(observer => {
+      this.connectionService.hubConnection?.on("ReceivePrivateMessages", (senderId, message, messageId, isSeen, savedMessage) => {
+        //console.log(`savedPrivateMessage#1:`, savedMessage)
+        //observer.next({ senderId, message, isSeen });
+       
+        observer.next({savedMessage,senderId});
+        
       })
     })
   }
@@ -420,7 +425,7 @@ export class MessageService implements OnInit, OnDestroy {
         rxjs.takeUntil(this.destroy$)
       )
       .subscribe(res => {
-        console.log(`old output:`,res.length)
+        //console.log(`old output:`,res.length)
    
         // const privateMessages: any = res.map(async (message: any) => {
         //   const senderId = await this.extractUserName(message.sentFromUserId).toPromise()

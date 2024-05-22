@@ -7,6 +7,7 @@ import { AuthService } from '../../Services/auth.service';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
+import { Messages } from '../../state/message/message.action'
 import { selectUserById,selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
 import { selectPaginatedRecordById } from '../../state/message/message.selector';
@@ -105,8 +106,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   ngOnInit(): void {
     //testing 
 
-    this.receivePrivateMessagesRecordsNgRx$.subscribe(messages => {
-      console.log('Messages in component:', messages);})
+
 
    //scroll after sending a private message
    this.messageService.endScrollValue$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
@@ -215,6 +215,10 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
 
       //receive private messages ###problem with the multicasting of private messages is here
+    this.messageService.receivePrivateMesages().subscribe((res)=> {
+      console.log(`private message received:`, res.savedMessage)
+      this.store.dispatch(Messages.Hub.Actions.receivePrivateMessageStarted({privateMessage: res.savedMessage, senderId: res.senderId}))
+    })
     this.messageService.receivePrivateMesages()
     .pipe(
       rxjs.withLatestFrom(this.privateConversationUsers$),

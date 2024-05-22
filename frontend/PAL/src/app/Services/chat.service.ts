@@ -161,7 +161,7 @@ export class ChatService implements OnInit,OnDestroy {
       // })
      
       this.typingStatusMap.set(this.senderId$.getValue() as number, this.userNameTyping$.getValue());
-      console.log(this.typingStatusMap)
+//      console.log(this.typingStatusMap)
       // Send typing status to the server
       this.sendTypingStatus(this.isUserTyping$.getValue(), this.senderId$.getValue() as number, receiverId);
 
