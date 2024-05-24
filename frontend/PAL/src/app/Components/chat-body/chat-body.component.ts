@@ -10,7 +10,8 @@ import { Users } from '../../state/user/user.action'
 import { Messages } from '../../state/message/message.action'
 import { selectUserById,selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
-import { selectPaginatedRecordById } from '../../state/message/message.selector';
+import { selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
+import { selectCurrentlyClickedConversation } from '../../state/channel/channel.selector';
 
 @Component({
   selector: 'app-chat-body',
@@ -51,8 +52,16 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   //     )
   //   })
   // )
-
-  //new ngrx implementation
+  //new ngrx public messages implementation
+ 
+  receivePublicMessagesRecordsNgRx$ =  this.store.select(selectCurrentlyClickedConversation).pipe(
+    rxjs.filter(channelId => !!channelId),
+    rxjs.switchMap((channelId)=>{
+      console.log(`channelID emission:`, channelId)
+      return this.store.select(selectPublicRecordById(Number(channelId))).pipe( )
+    })
+  )
+  //new ngrx private messages implementation
   receivePrivateMessagesRecordsNgRx$ = this.chatService.privateConversationId$.pipe(
     rxjs.switchMap((privateConvo) => {
       return this.store.select(selectPaginatedRecordById(Number(privateConvo))).pipe(

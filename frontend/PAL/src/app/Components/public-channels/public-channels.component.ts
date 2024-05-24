@@ -130,7 +130,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: channelId}))
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPublicMessagesStarted({ channelId: channelId}))
     this.channelId = channelId
-  
+    this.messageService.conversationId$.next(channelId)
     this.messageService.initialPrivateMessageStartIndex$.next(0)
     this.messageService.canLoadMorePublicMessages$.next(false)
     
@@ -175,21 +175,14 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
           //ngRx
           
           this.store.dispatch(Messages.Api.Actions.loadPaginatedPublicMessagesStarted({channelId: this.channelId, startIndex: startIndex, endIndex:endIndex}))
-          return this.store.select(selectPublicRecordById(this.channelId))
-          
+          //return this.store.select(selectPublicRecordById(this.channelId))
+          return rxjs.of(rxjs.EMPTY)
          
           // return this.messageService.loadPaginatedPublicMessagesById(this.channelId, startIndex, endIndex)
           //   .pipe(rxjs.first())
         }),
         rxjs.takeUntil(this.destroy$)
-      ).subscribe(paginatedPublicMessages => {
-       
-        //console.log(`public messages intial loading:`, paginatedPublicMessages)
-        this.messageService.receivedPublicMessages$.next(
-          paginatedPublicMessages
-        )
- 
-      })
+      ).subscribe()
   }
 
   loadPrivateChannels():void{

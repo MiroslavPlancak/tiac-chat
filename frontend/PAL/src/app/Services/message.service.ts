@@ -49,7 +49,7 @@ export class MessageService implements OnInit, OnDestroy {
   virtualScrollViewportPrivate$ = new rxjs.BehaviorSubject<number>(0);
   private virtualScrollViewport: CdkVirtualScrollViewport | undefined;
 
-  conversationId: number = 0
+  public conversationId$ = new rxjs.BehaviorSubject<number>(8)
   selectedConversation = this.channelService.selectedConversation$
 
    initialPrivateMessages: PrivateMessage[] = [];
@@ -354,7 +354,7 @@ export class MessageService implements OnInit, OnDestroy {
       this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, this.selectedConversation.getValue());
     }
 
-    this.conversationId = conversationId;
+    this.conversationId$.next(conversationId)
 
     //make self unclickable in a public chat
     if (conversationId !== this.currentUserId$.getValue()) {
@@ -392,7 +392,7 @@ export class MessageService implements OnInit, OnDestroy {
 
   getConcurrentNumberOfMessages(): void {
 
-    this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId)
+    this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId$.getValue())
     this.chatService.receiveLatestNumberOfPrivateMessages()
       .pipe(
         rxjs.first(),
@@ -409,11 +409,11 @@ export class MessageService implements OnInit, OnDestroy {
           //ngRx
           this.store.dispatch(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted({
             senderId: this.currentUserId$.getValue() as number,
-            receiverId: this.conversationId,
+            receiverId: this.conversationId$.getValue(),
             startIndex: startIndex,
             endIndex: endIndex
           }))
-          return this.store.select(selectPaginatedRecordById(this.conversationId))
+          return this.store.select(selectPaginatedRecordById(this.conversationId$.getValue()))
 
           // return this.loadPaginatedPrivateMessages(
           //   this.currentUserId$.getValue() as number,
@@ -445,7 +445,7 @@ export class MessageService implements OnInit, OnDestroy {
 
   seenMessageStatus(): void {
 
-    this.loadPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId as number).pipe(
+    this.loadPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId$.getValue()).pipe(
       rxjs.first(),
       rxjs.map(allMessages => allMessages.filter((message: { isSeen: boolean; }) => !message.isSeen)),
       rxjs.takeUntil(this.destroy$)
@@ -462,7 +462,7 @@ export class MessageService implements OnInit, OnDestroy {
    
     this.store.select(selectConnectedUsers).pipe(
       rxjs.first(),
-      rxjs.map(users => users.find(user => user.id === this.conversationId)),
+      rxjs.map(users => users.find(user => user.id === this.conversationId$.getValue())),
       rxjs.takeUntil(this.destroy$)
     ).subscribe(user => {
       if (user) {
