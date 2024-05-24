@@ -9,9 +9,11 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { CreateChannelComponent } from '../create-channel/create-channel.component';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
+import { Messages } from '../../state/message/message.action'
 import {  selectCurrentUser } from '../../state/user/user.selector';
 import { Channels } from '../../state/channel/channel.action'
 import { selectAllChannels, selectAllPrivateChannels, selectAllPublicChannels, selectCurrentlyClickedConversation, selectPrivateChannels } from '../../state/channel/channel.selector';
+import { selectPublicRecordById } from '../../state/message/message.selector';
 
 
 @Component({
@@ -126,13 +128,13 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   public channelIdSelectedClickHandler(channelId: number): void {
 
     this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: channelId}))
-   
+    this.store.dispatch(Messages.Api.Actions.clearPaginatedPublicMessagesStarted({ channelId: channelId}))
     this.channelId = channelId
   
     this.messageService.initialPrivateMessageStartIndex$.next(0)
     this.messageService.canLoadMorePublicMessages$.next(false)
     
-    this.getConcurrentNumberOfPublicChanelMessages();
+    this.getConcurrentNumberOfPublicChanelMessages(channelId);
 
     this.curentlyClickedPrivateChannel.next(channelId)
   
@@ -170,13 +172,19 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
           const startIndex = 0
           const endIndex = totalNumberofPublicMessages - (totalNumberofPublicMessages - 10);
           this.messageService.initialPublicMessageStartIndex$.next(endIndex)
-      
-          return this.messageService.loadPaginatedPublicMessagesById(this.channelId, startIndex, endIndex)
-            .pipe(rxjs.first())
+          //ngRx
+          
+          this.store.dispatch(Messages.Api.Actions.loadPaginatedPublicMessagesStarted({channelId: this.channelId, startIndex: startIndex, endIndex:endIndex}))
+          return this.store.select(selectPublicRecordById(this.channelId))
+          
+         
+          // return this.messageService.loadPaginatedPublicMessagesById(this.channelId, startIndex, endIndex)
+          //   .pipe(rxjs.first())
         }),
         rxjs.takeUntil(this.destroy$)
       ).subscribe(paginatedPublicMessages => {
-
+       
+        //console.log(`public messages intial loading:`, paginatedPublicMessages)
         this.messageService.receivedPublicMessages$.next(
           paginatedPublicMessages
         )

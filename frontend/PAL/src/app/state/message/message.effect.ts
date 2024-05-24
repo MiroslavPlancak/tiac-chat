@@ -41,6 +41,33 @@ export class MessageEffects {
         )
     )
 
+    //load paginated public messages
+    loadPaginatedPublicMessages$ = createEffect(()=>
+        this.action$.pipe(
+            ofType(Messages.Api.Actions.loadPaginatedPublicMessagesStarted),
+            rxjs.switchMap((action)=>
+                this.messageService.loadPaginatedPublicMessagesById(action.channelId, action.startIndex, action.endIndex).pipe(
+                    rxjs.map((response) => Messages.Api.Actions.loadPaginatedPublicMessagesSucceeded({ channelId: action.channelId, publicMessages:response})),
+                    rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.loadPaginatedPublicMessagesFailed({ error: error })))
+                )
+            )
+        )
+    )
+
+    //clear paginated private messages
+    clearPaginatedPublicMessages$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Api.Actions.clearPaginatedPublicMessagesStarted),
+            rxjs.switchMap((action) => {
+                return rxjs.of(action.channelId).pipe(
+                    // rxjs.tap((res)=> console.log(`effect :`,res)),
+                    rxjs.map((result) => Messages.Api.Actions.clearPaginatedPublicMessagesSucceeded({ channelId: result })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.clearPaginatedPublicMessagesFailed({ error: error })))
+                )
+            })
+        )
+    )
+
     /// HUB calls /// 
 
     loadPrivateMessage$ = createEffect(() =>

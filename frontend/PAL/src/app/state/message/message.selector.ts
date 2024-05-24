@@ -19,11 +19,21 @@ export const selectedMessageState = createFeatureSelector<MessageState>("message
 //select paginated private messages by record id
 export const selectPaginatedRecordById = (receiverId:number) => createSelector(
     selectedMessageState,
-    (messageState:MessageState) =>{
+    (messageState: MessageState) =>{
         //console.log(`selector/receiverID:`, receiverId)
-        const messages = messageState.paginatedRecords[receiverId] || []
-       console.log(`selector record:`,messageState.paginatedRecords)
+        const messages = messageState.privateMessageRecords[receiverId] || []
+       console.log(`selector record(private):`,messageState.privateMessageRecords)
        // console.log(`selector messages `, messages)
+        return messages
+    }
+)
+
+//select paginated public messages by record id
+export const selectPublicRecordById = (channelId: number) => createSelector(
+    selectedMessageState,
+    (messagesState: MessageState) => {
+        const messages = messagesState.publicMessageRecords[channelId] || []
+        console.log(`selector record(public)`, messagesState.publicMessageRecords)
         return messages
     }
 )

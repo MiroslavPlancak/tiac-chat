@@ -22,6 +22,16 @@ export namespace Messages{
                 ClearPaginatedPrivateMessagesStarted: props<{ userId: number }>(),
                 ClearPaginatedPrivateMessagesSucceeded: props<{ userId: number }>(),
                 ClearPaginatedPrivateMessagesFailed: props<{ error: any }>(),
+
+                //load paginated public messages
+                LoadPaginatedPublicMessagesStarted: props<{ channelId: number, startIndex: number, endIndex: number }>(),
+                LoadPaginatedPublicMessagesSucceeded: props<{ channelId: number, publicMessages: any[]}>(),
+                LoadPaginatedPublicMessagesFailed: props<{ error: any }>(),
+
+                //clear paginated public messages
+                ClearPaginatedPublicMessagesStarted: props<{ channelId: number }>(),
+                ClearPaginatedPublicMessagesSucceeded: props<{ channelId: number }>(),
+                ClearPaginatedPublicMessagesFailed: props<{ error: any }>(),
             },
             source: SOURCE
         })
