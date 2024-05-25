@@ -10,7 +10,7 @@ import { Users } from '../../state/user/user.action'
 import { Messages } from '../../state/message/message.action'
 import { selectUserById,selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
-import { selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
+import { selectIsTypingStatusIds, selectIsTypingStatusMap, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
 import { selectCurrentlyClickedConversation } from '../../state/channel/channel.selector';
 
 @Component({
@@ -27,7 +27,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   private destroy$ = new rxjs.Subject<void>();
 
   //seen properties
-  currentlyTypingUsers = this.chatService.currentlyTypingUsers$
+  //currentlyTypingUsers = this.chatService.currentlyTypingUsers$
   senderId$ = new rxjs.BehaviorSubject<number | undefined>(0);
   isUserTyping$ = new rxjs.BehaviorSubject<boolean>(false)
   typingStatusMap = new Map<number, string>()
@@ -52,6 +52,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   //     )
   //   })
   // )
+
   //new ngrx public messages implementation
  
   receivePublicMessagesRecordsNgRx$ =  this.store.select(selectCurrentlyClickedConversation).pipe(
@@ -90,7 +91,8 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
     })
   );
   
-  
+  currentlyTypingUsersNgRx$ =  this.store.select(selectIsTypingStatusIds)
+  currentlyTypingStatusMapNgRx$ =  this.store.select(selectIsTypingStatusMap)
   
   privateConversationUsers$!: rxjs.Observable<User[]>;
   
@@ -116,7 +118,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
     //testing 
 
 
-
+   // this.currentlyTypingUsers.subscribe((res)=> console.log(`xx`, res))
    //scroll after sending a private message
    this.messageService.endScrollValue$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
     if(res !== 0)
@@ -157,57 +159,61 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
       })
     }
 
+    //ngRx is typing logic initiator
+    this.store.dispatch(Messages.Hub.Actions.receiveIsTypingStatusStarted())
+   
+   
     //is typing logic
-    this.chatService.receiveTypingStatus()
-      .pipe(
+    // this.chatService.receiveTypingStatus()
+    //   .pipe(
         
-        rxjs.takeUntil(this.destroy$),
+    //     rxjs.takeUntil(this.destroy$),
 
-      )
-      .subscribe(res => {
+    //   )
+    //   .subscribe(res => {
 
-        this.chatService.senderId$.next(res.senderId)
-        this.chatService.isUserTyping$.next(res.isTyping)
-        this.chatService.currentlyTypingUsers$.next(res.currentlyTypingList)
-      //  console.log(`receive:`,this.chatService.currentlyTypingUsers$.value)
-        //this.typingStatusMap.clear();
+    //     this.chatService.senderId$.next(res.senderId)
+    //     this.chatService.isUserTyping$.next(res.isTyping)
+    //     this.chatService.currentlyTypingUsers$.next(res.currentlyTypingList)
+    //   //  console.log(`receive:`,this.chatService.currentlyTypingUsers$.value)
+    //     //this.typingStatusMap.clear();
 
-        // get user details for each senderId
+    //     // get user details for each senderId
        
 
-        //investigate what happens with senderId through the flow
-        res.currentlyTypingList.forEach((senderId: number) => {
-        //ngRX implementation
-          this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: senderId}))
-         // this.store.select(selectUserById)  
-          this.store.select(selectUserById).pipe(
-            rxjs.filter(users => users.some(user => user.id == senderId)),
-            rxjs.map(users => {
-              const user = users.find(user => user.id == senderId)
-              return user
-            }),
-            rxjs.switchMap((user) => {
-              if (user) {
-                const firstName = user.firstName;
+    //     //investigate what happens with senderId through the flow
+    //     res.currentlyTypingList.forEach((senderId: number) => {
+    //     //ngRX implementation
+    //       this.store.dispatch(Users.Api.Actions.loadUserByIdStarted({ userId: senderId}))
+    //      // this.store.select(selectUserById)  
+    //       this.store.select(selectUserById).pipe(
+    //         rxjs.filter(users => users.some(user => user.id == senderId)),
+    //         rxjs.map(users => {
+    //           const user = users.find(user => user.id == senderId)
+    //           return user
+    //         }),
+    //         rxjs.switchMap((user) => {
+    //           if (user) {
+    //             const firstName = user.firstName;
                 
  
-               // console.log(`receive:this runs`)
+    //            // console.log(`receive:this runs`)
               
-                const currentMap = this.typingStatusMap.set(senderId,firstName)
+    //             const currentMap = this.typingStatusMap.set(senderId,firstName)
               
-                this.chatService.typingStatusMap$.next(currentMap)
-               // console.log(`receive:this runs + typingStatusMap$.value`, this.chatService.typingStatusMap$.getValue())
+    //             this.chatService.typingStatusMap$.next(currentMap)
+    //            // console.log(`receive:this runs + typingStatusMap$.value`, this.chatService.typingStatusMap$.getValue())
   
-              } else {
-                console.error(`User with senderId ${senderId} not found.`);
-              }
-              return rxjs.of(null);
-            }),
-            rxjs.takeUntil(this.destroy$)
-          ).subscribe();
-        });
+    //           } else {
+    //             console.error(`User with senderId ${senderId} not found.`);
+    //           }
+    //           return rxjs.of(null);
+    //         }),
+    //         rxjs.takeUntil(this.destroy$)
+    //       ).subscribe();
+    //     });
 
-      })
+    //   })
 
       this.privateConversationUsers$ = rxjs.combineLatest([this.chatService.privateConversationId$, this.authService.userId$, this.store.select(selectAllUsers)]).pipe(
         rxjs.filter(([privateConversationId, userId]) => {

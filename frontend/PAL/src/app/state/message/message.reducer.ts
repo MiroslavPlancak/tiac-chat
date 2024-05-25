@@ -1,16 +1,27 @@
 import { createReducer, on } from "@ngrx/store";
 import { Messages } from "./message.action"
 
+export interface TypingStatusState{
+    isTyping:boolean
+    currentlyTypingUsers: number[]
+    typingStatusMap: Map<number,string>
+}
+
 export interface MessageState {
     
     privateMessageRecords: Record<number, any[]>
     publicMessageRecords: Record<number,any[]>
+    typingStatus:TypingStatusState
 }
 
 export const initialState: MessageState = {
-    
     privateMessageRecords: {},
-    publicMessageRecords: {}
+    publicMessageRecords: {},
+    typingStatus: {
+        isTyping:false,
+        currentlyTypingUsers:[],
+        typingStatusMap: new Map<number, string>()
+    }
 }
 
 
@@ -102,15 +113,15 @@ export const messageReducer = createReducer(
         }
     }),
 
-    //set private message as seen up on receiver's click on private conversation
+    //set private message as `seen` up on receiver's click on private conversation
     on(Messages.Hub.Actions.receivePrivateMessageClickConversationSucceeded,(state, {receiverId,messageId,isSeen})=>{
         const currentMessages = state.privateMessageRecords[receiverId] || []
-        console.log(`reducer/current convo`, currentMessages)
-        console.log(`reducer/messageId`,messageId )
+        //console.log(`reducer/current convo`, currentMessages)
+        //console.log(`reducer/messageId`,messageId )
         const updatedMessages = currentMessages.map(message => 
             (message.isSeen === false) ? { ...message, isSeen: true } : message
         );
-        console.log(`reducer:`, updatedMessages)
+        //console.log(`reducer:`, updatedMessages)
         return {
             ...state,
             privateMessageRecords: {
@@ -118,5 +129,38 @@ export const messageReducer = createReducer(
                 [receiverId]: updatedMessages
             }
         }
+    }),
+
+    //set `is typing...` status to the state
+    // on(Messages.Hub.Actions.sendIsTypingStatusSucceeded, (state,{isTyping, senderId, user})=>{
+    //     const senderFirstName = user.firstName
+    //     const typingStatusUpdated = {
+    //         ...state.typingStatus,
+    //             isTyping: isTyping,
+    //             typingStatusMap: new Map(state.typingStatus.typingStatusMap).set(senderId,senderFirstName)
+    //     }
+    //     console.log("Sender ID:", senderId);
+    //     console.log("Is Typing:", isTyping);
+    //     console.log("Sender First Name:", senderFirstName);
+    //     console.log("Updated Typing Status:", typingStatusUpdated);
+    //     return {
+    //         ...state,
+    //         typingStatus:typingStatusUpdated
+            
+    //     }
+    // })
+
+    //receive and set `is typing...` status to the state
+    on(Messages.Hub.Actions.receiveIsTypingStatusSucceeded, (state, {isTyping, senderId, typingUsers })=>{
+        console.log(`reducer/typingUsers:`, typingUsers)
+        return {
+            ...state,
+            typingStatus:{
+                ...state.typingStatus,
+                currentlyTypingUsers:typingUsers
+            }
+        }
     })
+
+
 )

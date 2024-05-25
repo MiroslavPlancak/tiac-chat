@@ -1,5 +1,7 @@
 import { createFeatureSelector, createSelector } from "@ngrx/store";
 import { MessageState } from './message.reducer'
+import { selectedUserState } from "../user/user.selector";
+import { UserState } from "../user/user.reducer";
 
 
 
@@ -22,7 +24,7 @@ export const selectPaginatedRecordById = (receiverId:number) => createSelector(
     (messageState: MessageState) =>{
         //console.log(`selector/receiverID:`, receiverId)
         const messages = messageState.privateMessageRecords[receiverId] || []
-       console.log(`selector record(private):`,messageState.privateMessageRecords)
+       //console.log(`selector record(private):`,messageState.privateMessageRecords)
        // console.log(`selector messages `, messages)
         return messages
     }
@@ -33,8 +35,41 @@ export const selectPublicRecordById = (channelId: number) => createSelector(
     selectedMessageState,
     (messagesState: MessageState) => {
         const messages = messagesState.publicMessageRecords[channelId] || []
-        console.log(`selector record(public)`, messagesState.publicMessageRecords)
+       // console.log(`selector record(public)`, messagesState.publicMessageRecords)
         return messages
     }
 )
+
+/// HUB calls ///
+
+//select Map<number,string> where number = userId, string = FirstName
+export const selectIsTypingStatusMap = createSelector(
+    selectedMessageState,
+    selectedUserState,
+    (messageState: MessageState, userState: UserState) =>{
+        const currentTypingUserIds = messageState.typingStatus.currentlyTypingUsers
+        const typingStatusMap = new Map <number, string> ()
+
+        currentTypingUserIds.forEach(userId =>{
+            const user = userState.allUsers.find(user => user.id === userId)
+            if(user) {
+                typingStatusMap.set(userId, user.firstName)
+            }
+        })
+        return typingStatusMap
+    }
+)
+
+//select number[userId1, userId2, userId3]
+export const selectIsTypingStatusIds = createSelector(
+    selectedMessageState,
+   
+    (messageState: MessageState) =>{
+        const currentTypingUserIds = messageState.typingStatus.currentlyTypingUsers
+  
+        return currentTypingUserIds
+    }
+)
+
+
 

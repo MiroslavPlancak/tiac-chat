@@ -5,6 +5,7 @@ import { UserService } from './user.service';
 import { ConnectionService } from './connection.service';
 import { Store } from '@ngrx/store';
 import { Users } from '../state/user/user.action'
+import { Messages } from '../state/message/message.action';
 import { selectUserById } from '../state/user/user.selector';
 
 export interface PrivateMessage {
@@ -28,7 +29,7 @@ export class ChatService implements OnInit,OnDestroy {
   senderId$ = new rxjs.BehaviorSubject<number | undefined>(0);
   isUserTyping$ = new rxjs.BehaviorSubject<boolean>(false)
   currentlyTypingUsers$ = new rxjs.BehaviorSubject<number[]>([])
-  typingStatusMap = new Map<number, string>()
+  //typingStatusMap = new Map<number, string>()
   typingStatusMap$ = new rxjs.BehaviorSubject<Map<number,string>>(new Map<number,string>)
   userNameTyping$ = new rxjs.BehaviorSubject<string>('')
 
@@ -39,11 +40,8 @@ export class ChatService implements OnInit,OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private userService: UserService,
     private connectionService:ConnectionService,
     private store: Store
-
-
   ) { }
 
 
@@ -79,9 +77,10 @@ export class ChatService implements OnInit,OnDestroy {
     isTyping:boolean, 
     senderId: number, 
     receiverId:number
-    ) =>{
+    ) :rxjs.Observable<any> =>{
     this.hubConnection?.invoke("SendTypingStatus", isTyping, senderId, receiverId )
     .catch(err => console.log(err))
+    return rxjs.of(rxjs.EMPTY)
   }
 
   //recieve `is typing` status
@@ -160,24 +159,35 @@ export class ChatService implements OnInit,OnDestroy {
       //   this.userNameTyping$.next(res.firstName) 
       // })
      
-      this.typingStatusMap.set(this.senderId$.getValue() as number, this.userNameTyping$.getValue());
-//      console.log(this.typingStatusMap)
+     // this.typingStatusMap.set(this.senderId$.getValue() as number, this.userNameTyping$.getValue());
+     // console.log(this.typingStatusMap)
       // Send typing status to the server
-      this.sendTypingStatus(this.isUserTyping$.getValue(), this.senderId$.getValue() as number, receiverId);
-
+      //this.sendTypingStatus(this.isUserTyping$.getValue(), this.senderId$.getValue() as number, receiverId);
+      //ngRx foothold 
+      this.store.dispatch(Messages.Hub.Actions.sendIsTypingStatusStarted({ 
+        isTyping: this.isUserTyping$.getValue(),
+        senderId: Number(this.senderId$.getValue()),
+        receiverId: receiverId
+      }))
       // Set timeout to mark user as not typing after 6000ms
       this.typingTimeout = setTimeout(() => {
 
         this.typingTimeout = null;
        
-        this.currentlyTypingUsers$.next(this.currentlyTypingUsers$.value.filter(userId => userId !== this.currentUserId$.getValue()));
+        // this.currentlyTypingUsers$.next(this.currentlyTypingUsers$.value.filter(userId => userId !== this.currentUserId$.getValue()));
       
-        if(this.isUserTyping$.value == false){
-          const currentStatusMap = new Map(this.typingStatusMap)
-          this.typingStatusMap$.next(currentStatusMap)
-        }
-
-        this.sendTypingStatus(false, this.currentUserId$.getValue() as number, receiverId);
+        // if(this.isUserTyping$.value == false){
+        //   const currentStatusMap = new Map(this.typingStatusMap)
+        //   this.typingStatusMap$.next(currentStatusMap)
+        // }
+        //new ngRx
+        this.store.dispatch(Messages.Hub.Actions.sendIsTypingStatusStarted({ 
+          isTyping: false,
+          senderId: Number(this.currentUserId$.getValue()),
+          receiverId: receiverId
+        }))
+        //old
+       // this.sendTypingStatus(false, this.currentUserId$.getValue() as number, receiverId);
       }, 6000);
     }
   }

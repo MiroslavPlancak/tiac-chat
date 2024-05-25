@@ -3,13 +3,19 @@ import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Messages } from "./message.action"
 import * as rxjs from 'rxjs';
 import { MessageService } from "../../Services/message.service";
+import { ChatService } from "../../Services/chat.service";
+import { Store } from "@ngrx/store";
+import { selectCurrentUser } from "../user/user.selector";
 
 @Injectable()
 
 export class MessageEffects {
 
     private messageService = inject(MessageService)
+    private chatService = inject(ChatService)
+    private store = inject(Store)
     private action$ = inject(Actions)
+
 
     /// API calls /// 
 
@@ -107,6 +113,40 @@ export class MessageEffects {
                         isSeen: action.isSeen
                     })),
                     rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.receivePrivateMessageClickConversationFailed({ error: error })))
+                )
+            })
+        )
+    )
+
+    sendIsTypingStatus$ = createEffect(()=>
+        this.action$.pipe(
+            ofType(Messages.Hub.Actions.sendIsTypingStatusStarted),
+            rxjs.withLatestFrom(this.store.select(selectCurrentUser)),
+            rxjs.switchMap(([action,user])=>{
+                return this.chatService.sendTypingStatus(action.isTyping, action.senderId, action.receiverId).pipe(
+                    rxjs.map(() => Messages.Hub.Actions.sendIsTypingStatusSucceeded({ 
+                         isTyping: action.isTyping,
+                         senderId: action.senderId, 
+                         user:user
+                        })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.sendIsTypingStatusFailed({ error: error })))
+                )
+            })
+        )
+    )
+
+    receiveTypingStatus$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Hub.Actions.receiveIsTypingStatusStarted),
+            rxjs.switchMap((action) => {
+                return this.chatService.receiveTypingStatus().pipe(
+                    rxjs.map((response) => Messages.Hub.Actions.receiveIsTypingStatusSucceeded({
+                        isTyping:response.isTyping,
+                        senderId: response.senderId,
+                        typingUsers: response.currentlyTypingList
+                     }),
+                        rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.receiveIsTypingStatusFailed({ error: error })))
+                    )
                 )
             })
         )

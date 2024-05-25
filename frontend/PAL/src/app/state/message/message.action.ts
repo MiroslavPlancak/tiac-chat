@@ -2,6 +2,7 @@ import { createActionGroup, emptyProps, props } from "@ngrx/store";
 import { SafeType } from '../../Utilities/safeType.action'
 import { Message } from '../../Models/message.model'
 import { PrivateMessage } from "../../Models/privateMessage.model";
+import { User } from "../../Models/user.model";
 
 export const MESSAGE_SOURCE = 'Messages'
 
@@ -58,6 +59,17 @@ export namespace Messages{
                 ReceivePrivateMessageClickConversationStarted: props <{ receiverId: number ,messageId:number, isSeen:boolean }>(),
                 ReceivePrivateMessageClickConversationSucceeded: props <{ receiverId: number ,messageId:number, isSeen:boolean }>(),
                 ReceivePrivateMessageClickConversationFailed:  props<{ error: any }>(),
+
+                //send `is typing...` status 
+                SendIsTypingStatusStarted: props<{ isTyping: boolean, senderId: number, receiverId: number }>(),
+                SendIsTypingStatusSucceeded: props<{ isTyping: boolean, senderId: number, user:User }>(),
+                SendIsTypingStatusFailed: props<{ error: any }>(),
+
+                //receive `is typing...` status
+                ReceiveIsTypingStatusStarted: emptyProps(),
+                ReceiveIsTypingStatusSucceeded: props<{ isTyping: boolean, senderId: number, typingUsers: number[] }>(),
+                ReceiveIsTypingStatusFailed: props<{ error: any }>(),
+
             },
             source:SOURCE
         })
