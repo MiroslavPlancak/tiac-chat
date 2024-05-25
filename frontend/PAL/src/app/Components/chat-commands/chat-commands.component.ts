@@ -69,7 +69,7 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
               sentToUser: this.privateConversationId$.getValue(),
               sentToChannel: 0,
               time: new Date,
-              IsSeen: false
+              isSeen: false
             },
             receiverId: Number(this.privateConversationId$.getValue())
           }))

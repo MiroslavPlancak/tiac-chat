@@ -95,7 +95,7 @@ export class MessageService implements OnInit, OnDestroy {
     const fullPath = `getPaginatedPrivateMessages?senderId=${senderId}&receiverId=${receiverId}&startIndex=${startIndex}&endIndex=${endIndex}`;
     return this.http.get<PrivateMessage[]>(this.apiUrl + fullPath).pipe(
       map(messages => messages.reverse()),
-
+      tap((res)=> console.log(`service output:`,res))
     )
   }
 

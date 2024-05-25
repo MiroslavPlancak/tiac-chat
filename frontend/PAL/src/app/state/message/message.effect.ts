@@ -19,7 +19,7 @@ export class MessageEffects {
             ofType(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted),
             rxjs.switchMap((action) =>
                 this.messageService.loadPaginatedPrivateMessages(action.senderId, action.receiverId, action.startIndex, action.endIndex).pipe(
-                    //rxjs.tap((res)=> console.log(`effect type:`, res)),
+                   rxjs.tap((res)=> console.log(`effect type:`, res)),
                     rxjs.map((response) => Messages.Api.Actions.loadPaginatedPrivateMessagesSucceeded({ receiverId: action.receiverId, privateMessages: response })),
                     rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.loadPaginatedPrivateMessagesFailed({ error: error })))
                 )

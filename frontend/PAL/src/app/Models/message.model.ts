@@ -5,5 +5,5 @@ export interface Message{
     sentToUser?: number,
     sentToChannel?:number,
     time: Date,
-    IsSeen:boolean
+    isSeen:boolean
 }

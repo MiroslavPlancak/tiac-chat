@@ -108,7 +108,7 @@ export const messageReducer = createReducer(
         console.log(`reducer/current convo`, currentMessages)
         console.log(`reducer/messageId`,messageId )
         const updatedMessages = currentMessages.map(message => 
-            (message.IsSeen === false || message.isSeen === false) ? { ...message, isSeen: true } : message
+            (message.isSeen === false) ? { ...message, isSeen: true } : message
         );
         console.log(`reducer:`, updatedMessages)
         return {
