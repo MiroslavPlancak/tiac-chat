@@ -95,4 +95,20 @@ export class MessageEffects {
             })
         )
     )
+
+    receivePrivateMessageClickSeen$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Hub.Actions.receivePrivateMessageClickConversationStarted),
+            rxjs.switchMap((action) => {
+                return rxjs.of(action).pipe(
+                    rxjs.map(() => Messages.Hub.Actions.receivePrivateMessageClickConversationSucceeded({
+                        receiverId: action.receiverId,
+                        messageId: action.messageId,
+                        isSeen: action.isSeen
+                    })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.receivePrivateMessageClickConversationFailed({ error: error })))
+                )
+            })
+        )
+    )
 }

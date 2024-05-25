@@ -6,6 +6,7 @@ import { AuthService } from '../../Services/auth.service';
 import { MessageService } from '../../Services/message.service';
 import { ChannelService } from '../../Services/channel.service';
 import { Store } from '@ngrx/store';
+import { Messages } from '../../state/message/message.action'
 import { selectAllUsers, selectConnectedUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
 
@@ -78,14 +79,21 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
     //subscribe to the event of receiving a private message using switchMap()
     this.chatService.privateMessageReceived().pipe(
       rxjs.takeUntil(this.destroy$),
-      rxjs.switchMap(() => {
-        return this.messageService.receivedPrivateMessages$.pipe(
-          rxjs.take(1),
-          rxjs.tap(messages => {
-          console.log(`online users component`,messages)
-            messages.forEach(message => message.isSeen = true);
-          })
-        );
+      rxjs.switchMap((receivedPrivateMessage) => {
+        console.log(`received message:`,receivedPrivateMessage)
+        this.store.dispatch(Messages.Hub.Actions.receivePrivateMessageClickConversationStarted({
+          receiverId: receivedPrivateMessage.sentToUserId,
+           messageId: receivedPrivateMessage.id,
+           isSeen: receivedPrivateMessage.isSeen
+        }))
+        return rxjs.of(rxjs.EMPTY)
+        // return this.messageService.receivedPrivateMessages$.pipe(
+        //   rxjs.take(1),
+        //   rxjs.tap(messages => {
+        //   console.log(`online users component`,messages)
+        //     messages.forEach(message => message.isSeen = true);
+        //   })
+        // );
       })
     ).subscribe();
 

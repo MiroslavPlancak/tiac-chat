@@ -100,5 +100,23 @@ export const messageReducer = createReducer(
                 [senderId]:updatedMessages
             }
         }
+    }),
+
+    //set private message as seen up on receiver's click on private conversation
+    on(Messages.Hub.Actions.receivePrivateMessageClickConversationSucceeded,(state, {receiverId,messageId,isSeen})=>{
+        const currentMessages = state.privateMessageRecords[receiverId] || []
+        console.log(`reducer/current convo`, currentMessages)
+        console.log(`reducer/messageId`,messageId )
+        const updatedMessages = currentMessages.map(message => 
+            (message.IsSeen === false || message.isSeen === false) ? { ...message, isSeen: true } : message
+        );
+        console.log(`reducer:`, updatedMessages)
+        return {
+            ...state,
+            privateMessageRecords: {
+                ...state.privateMessageRecords,
+                [receiverId]: updatedMessages
+            }
+        }
     })
 )

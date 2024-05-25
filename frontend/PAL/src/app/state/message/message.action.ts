@@ -53,6 +53,11 @@ export namespace Messages{
                 ReceivePrivateMessageStarted: props<{ privateMessage: Message, senderId: number }>(),
                 ReceivePrivateMessageSucceeded: props<{ privateMessage: Message, senderId: number  }>(),
                 ReceivePrivateMessageFailed: props<{ error: any }>(),
+
+                //client receives confirmation of private message seen by the receiver
+                ReceivePrivateMessageClickConversationStarted: props <{ receiverId: number ,messageId:number, isSeen:boolean }>(),
+                ReceivePrivateMessageClickConversationSucceeded: props <{ receiverId: number ,messageId:number, isSeen:boolean }>(),
+                ReceivePrivateMessageClickConversationFailed:  props<{ error: any }>(),
             },
             source:SOURCE
         })
