@@ -28,9 +28,9 @@ export class ChatService implements OnInit,OnDestroy {
 
   senderId$ = new rxjs.BehaviorSubject<number | undefined>(0);
   isUserTyping$ = new rxjs.BehaviorSubject<boolean>(false)
-  currentlyTypingUsers$ = new rxjs.BehaviorSubject<number[]>([])
+  //currentlyTypingUsers$ = new rxjs.BehaviorSubject<number[]>([])
   //typingStatusMap = new Map<number, string>()
-  typingStatusMap$ = new rxjs.BehaviorSubject<Map<number,string>>(new Map<number,string>)
+  //typingStatusMap$ = new rxjs.BehaviorSubject<Map<number,string>>(new Map<number,string>)
   userNameTyping$ = new rxjs.BehaviorSubject<string>('')
 
   privateNotification: { [userId: number]: boolean } = {}

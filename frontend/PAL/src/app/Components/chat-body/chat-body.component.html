@@ -48,7 +48,7 @@
             <div class="conversation-row"
                 (click)="this.messageService.conversationIdSelectedClickHandler(receivedPublicMessage.sentFromUserDTO.id)">
                 <div class="chater-font">
-                    <strong>{{ receivedPublicMessage.sentFromUserDTO.firstName }}: </strong>
+                    <strong>{{ receivedPublicMessage?.sentFromUserDTO?.firstName }}: </strong>
                 </div>
                 <div class="chater-message">&nbsp;{{ receivedPublicMessage.body }} {{i}}</div>
             </div>

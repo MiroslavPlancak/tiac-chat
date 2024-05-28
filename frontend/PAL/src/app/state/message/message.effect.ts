@@ -78,11 +78,32 @@ export class MessageEffects {
 
     loadPrivateMessage$ = createEffect(() =>
         this.action$.pipe(
-            ofType(Messages.Hub.Actions.loadPrivateMessageStarted),
+            ofType(Messages.Hub.Actions.sendPrivateMessageStarted),
             rxjs.switchMap((actions) => {
                 return this.messageService.sendPrivateMessage(actions.privateMessage.sentToUser, actions.privateMessage.body).pipe(
-                    rxjs.map(() => Messages.Hub.Actions.loadPrivateMessageSucceeded({ privateMessage: actions.privateMessage, receiverId: actions.receiverId })),
-                    rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.loadPrivateMessageFailed({ error: error })))
+                    rxjs.map(() => Messages.Hub.Actions.sendPrivateMessageSucceeded({ privateMessage: actions.privateMessage, receiverId: actions.receiverId })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.sendPrivateMessageFailed({ error: error })))
+                )
+            })
+        )
+    )
+
+    loadPublicMessage$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Hub.Actions.sendPublicMessageStarted),
+            rxjs.tap(action => console.log('Action dispatched:', action)), // Add this line to log the action
+            rxjs.withLatestFrom(this.store.select(selectCurrentUser)),
+            rxjs.switchMap(([actions, user]) => {
+                console.log(`actions:`, actions)
+                return this.messageService.sendMessage(actions.senderId, actions.publicMessage, actions.channelId).pipe(
+                    rxjs.tap(response => console.log(`tap/effect response:`, response)), // Add this line to log the response
+                    rxjs.map(() => Messages.Hub.Actions.sendPublicMessageSucceeded({
+                        senderId: actions.senderId,
+                        publicMessage: actions.publicMessage,
+                        channelId: actions.channelId,
+                        user:user
+                    })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.sendPublicMessageFailed({ error: error })))
                 )
             })
         )

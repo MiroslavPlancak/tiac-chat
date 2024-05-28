@@ -63,7 +63,7 @@ export const messageReducer = createReducer(
     on(Messages.Api.Actions.loadPaginatedPublicMessagesSucceeded, (state,{channelId,publicMessages})=>{
         const currentMessages = state.publicMessageRecords[channelId] || []
         const paginatedRecords = [...publicMessages, ...currentMessages]
-
+        console.log(`reducer:`, paginatedRecords)
         return {
             ...state,
             publicMessageRecords:{
@@ -87,7 +87,7 @@ export const messageReducer = createReducer(
     /// HUB calls /// 
 
     //send private message 
-    on(Messages.Hub.Actions.loadPrivateMessageSucceeded, (state,{ privateMessage, receiverId}) =>{
+    on(Messages.Hub.Actions.sendPrivateMessageSucceeded, (state,{ privateMessage, receiverId}) =>{
         console.log(`reducer output:`, privateMessage, receiverId)
         const currentMessages = state.privateMessageRecords[receiverId] || []
         const updatedMessages = [...currentMessages, privateMessage]
@@ -112,6 +112,23 @@ export const messageReducer = createReducer(
             }
         }
     }),
+
+    //send public message 
+    on(Messages.Hub.Actions.sendPublicMessageSucceeded, (state,{senderId, publicMessage, channelId, user})=>{
+        const currentMessages = state.publicMessageRecords[channelId] || []
+        const transformPrivateMessage = {...publicMessage, sentFromUserDTO: user}
+        console.log(`reducer/transformPrivateMessage:`, transformPrivateMessage)        
+        const updatedMessages = [...currentMessages,transformPrivateMessage]
+        console.log(`reducer/updatedMessages:`, updatedMessages)
+        return {
+            ...state,
+            publicMessageRecords:{
+                ...state.publicMessageRecords,
+                [channelId]:updatedMessages
+            }
+        }
+    }),
+    //receive public message 
 
     //set private message as `seen` up on receiver's click on private conversation
     on(Messages.Hub.Actions.receivePrivateMessageClickConversationSucceeded,(state, {receiverId,messageId,isSeen})=>{

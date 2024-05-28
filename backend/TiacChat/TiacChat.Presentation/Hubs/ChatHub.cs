@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
 using TiacChat.BAL.DTOs;
 using TiacChat.BAL.Services;
+using TiacChat.DAL.Entities;
 
 namespace TiacChat.Presentation.Hubs
 {
@@ -179,7 +180,7 @@ namespace TiacChat.Presentation.Hubs
 
 
                 var newMessageDTO = await _messageServices.CreateAsync(messageDTO);
-
+                Console.WriteLine($"newMessageDTO: {newMessageDTO}");
 
                 if (newMessageDTO != null)
                 {

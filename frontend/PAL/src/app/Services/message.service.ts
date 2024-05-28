@@ -14,7 +14,8 @@ import { Messages } from '../state/message/message.action';
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
 import { selectCurrentlyClickedConversation } from '../state/channel/channel.selector';
 import { Channels } from '../state/channel/channel.action';
-import { selectPaginatedRecordById } from '../state/message/message.selector';
+import { selectIsTypingStatusIds, selectPaginatedRecordById } from '../state/message/message.selector';
+import { Message } from '../Models/message.model';
 
 @Injectable({
   providedIn: 'root'
@@ -155,12 +156,18 @@ export class MessageService implements OnInit, OnDestroy {
   ///// Hub methods /////
 
   /// send public message ()
-  public sendMessage = (user: number, message: string, selectedChannel: number) => {
-    this.connectionService.hubConnection?.invoke("SendPublicMessageTest", user, message, selectedChannel)
-   // .then(() => console.log('public message sent successfully. response from the server!'))
-      .catch(err => console.log(err));
-  }
-
+  public sendMessage = (user: number, message: Message, selectedChannel: number) => {
+   
+    return rxjs.from(
+        this.connectionService.hubConnection?.invoke("SendPublicMessageTest", user, message.body, selectedChannel)
+    ).pipe(
+        rxjs.tap(() => console.log('public message sent successfully')),
+        rxjs.catchError(err => {
+            console.log('Error sending public message:', err);
+            return rxjs.throwError(err);
+        })
+    );
+}
   /// recieve public message()
   public receiveMessage = (): rxjs.Observable<any> => {
     return new rxjs.Observable<any>(observer => {
@@ -336,7 +343,7 @@ export class MessageService implements OnInit, OnDestroy {
     //ngRx clear private messages state
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({ userId: conversationId }))
     
-    // reset the private message counter and clear the map
+    // reset the private message counter and clear the map (un-read messages counter logic)
     this.privateMessageCounter$.next([])
     this.privateMessageMap$.getValue().forEach((value,key,map)=>{
       map.delete(conversationId)
@@ -344,15 +351,22 @@ export class MessageService implements OnInit, OnDestroy {
 
     
     // these if statements ensure proper clean up of `is typing` if a different conversation is selected
-    const currentlyTypingFilteredConvoId = this.chatService.currentlyTypingUsers$.value.filter(correctUser => correctUser !== conversationId)
+    // const currentlyTypingFilteredConvoId = this.chatService.currentlyTypingUsers$.value.filter(correctUser => correctUser !== conversationId)
+   
+    // if (+currentlyTypingFilteredConvoId !== conversationId) {
+    //   this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, +currentlyTypingFilteredConvoId)
+    // }
 
-    if (+currentlyTypingFilteredConvoId !== conversationId) {
-      this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, +currentlyTypingFilteredConvoId)
-    }
-
-    if (this.chatService.currentlyTypingUsers$.value.length == 0) {
-      this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, this.selectedConversation.getValue());
-    }
+        this.store.dispatch(Messages.Hub.Actions.sendIsTypingStatusStarted({
+          isTyping: false,
+          senderId: Number(this.currentUserId$.getValue()),
+          receiverId: this.selectedConversation.getValue()
+        }))
+     
+    
+    // if (this.chatService.currentlyTypingUsers$.value.length == 0) {
+    //   this.chatService.sendTypingStatus(false, this.currentUserId$.getValue() as number, this.selectedConversation.getValue());
+    // }
 
     this.conversationId$.next(conversationId)
 

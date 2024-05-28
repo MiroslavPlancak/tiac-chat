@@ -45,15 +45,25 @@ export namespace Messages{
         export const Actions = createActionGroup({
 
             events:{
-                //load private message to the state
-                LoadPrivateMessageStarted: props<{ privateMessage: Message, receiverId: number }>(),
-                LoadPrivateMessageSucceeded: props<{ privateMessage: Message, receiverId: number }>(),
-                LoadPrivateMessageFailed: props<{ error: any }>(),
+                //send private message to the state
+               SendPrivateMessageStarted: props<{ privateMessage: Message, receiverId: number }>(),
+               SendPrivateMessageSucceeded: props<{ privateMessage: Message, receiverId: number }>(),
+               SendPrivateMessageFailed: props<{ error: any }>(),
 
                 //receive private message
                 ReceivePrivateMessageStarted: props<{ privateMessage: Message, senderId: number }>(),
                 ReceivePrivateMessageSucceeded: props<{ privateMessage: Message, senderId: number  }>(),
                 ReceivePrivateMessageFailed: props<{ error: any }>(),
+
+                //send public message to the state
+                SendPublicMessageStarted: props<{ senderId: number, publicMessage: Message, channelId: number }>(),
+                SendPublicMessageSucceeded: props<{ senderId: number, publicMessage: Message, channelId: number, user: User}>(),
+                SendPublicMessageFailed: props<{ error: any }>(),
+
+                //receive public message to the state
+                ReceivePublicMessageStarted: props<{ publicMessage: Message, senderId: number }>(),
+                ReceivePublicMessageSucceeded: props<{ publicMessage: Message, senderId: number  }>(),
+                ReceivePublicMessageFailed: props<{ error: any }>(),
 
                 //client receives confirmation of private message seen by the receiver
                 ReceivePrivateMessageClickConversationStarted: props <{ receiverId: number ,messageId:number, isSeen:boolean }>(),

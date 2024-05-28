@@ -58,8 +58,8 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   receivePublicMessagesRecordsNgRx$ =  this.store.select(selectCurrentlyClickedConversation).pipe(
     rxjs.filter(channelId => !!channelId),
     rxjs.switchMap((channelId)=>{
-      console.log(`channelID emission:`, channelId)
-      return this.store.select(selectPublicRecordById(Number(channelId))).pipe( )
+//      console.log(`channelID emission:`, channelId)
+      return this.store.select(selectPublicRecordById(Number(channelId))).pipe(rxjs.tap((res)=> console.log(`tapres:`, res)) )
     })
   )
   //new ngrx private messages implementation

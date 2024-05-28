@@ -61,7 +61,7 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
       rxjs.switchMap(currentUserName => {
         if (this.newPrivateMessage !== undefined && this.privateConversationId$.getValue() !== undefined) {
 
-          this.store.dispatch(Messages.Hub.Actions.loadPrivateMessageStarted({
+          this.store.dispatch(Messages.Hub.Actions.sendPrivateMessageStarted({
             privateMessage: {
               id: 0,
               body: this.newPrivateMessage,
@@ -130,7 +130,27 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
     selectedChannelNgRx$.subscribe((selectedConversation) => {
       if (this.currentUserId$.getValue() && this.newPublicMessage && selectedConversation) {
 
-        this.messageService.sendMessage(this.currentUserId$.getValue() as number, this.newPublicMessage, selectedConversation);
+        //ngRx new implementation
+        const publicMessage ={
+          id: 0,
+          body: this.newPublicMessage,
+          sentFromUserId: Number(this.currentUserId$.getValue()),
+          sentToUser: 0,
+          sentToChannel:selectedConversation,
+          time: new Date,
+          isSeen:false
+        }
+        // console.log(`SendMessage/userId:`, Number(this.currentUserId$.getValue()))
+        // console.log(`SendMessage/message:`, publicMessage)
+        // console.log(`SendMessage/selectedConversation`, selectedConversation)
+
+        this.store.dispatch(Messages.Hub.Actions.sendPublicMessageStarted({ 
+          senderId: Number(this.currentUserId$.getValue()),
+          publicMessage: publicMessage,
+          channelId: selectedConversation
+         }))
+
+       // this.messageService.sendMessage(this.currentUserId$.getValue() as number, publicMessage, selectedConversation);
 
         const newPubMessage = this.newPublicMessage;
         this.messageService.extractUserName(this.currentUserId$.getValue()).subscribe(firstName => {
