@@ -26,8 +26,8 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
   newPublicMessage: string = '';
   newPrivateMessage: string = '';
 
-  receivedPrivateMessages$ = this.messageService.receivedPrivateMessages$;
-  receivedPublicMessages$ = this.messageService.receivedPublicMessages$
+  //receivedPrivateMessages$ = this.messageService.receivedPrivateMessages$;
+ // receivedPublicMessages$ = this.messageService.receivedPublicMessages$
 
   currentUserId$ = this.authService.userId$;
 
@@ -41,7 +41,6 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
     public messageService: MessageService,
     public userService: UserService,
     private authService: AuthService,
-    private channelService: ChannelService,
     private store: Store
   ) { }
   ngOnInit(): void {
@@ -152,28 +151,41 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
 
        // this.messageService.sendMessage(this.currentUserId$.getValue() as number, publicMessage, selectedConversation);
 
-        const newPubMessage = this.newPublicMessage;
-        this.messageService.extractUserName(this.currentUserId$.getValue()).subscribe(firstName => {
+        // const newPubMessage = this.newPublicMessage;
+        // this.messageService.extractUserName(this.currentUserId$.getValue()).subscribe(firstName => {
 
-          //        console.log(firstName)
-          const publicMessage: any = {
-            sentFromUserDTO: {
-              firstName: firstName,
-            },
-            body: newPubMessage
-          }
+        //   //        console.log(firstName)
+        //   const publicMessage: any = {
+        //     sentFromUserDTO: {
+        //       firstName: firstName,
+        //     },
+        //     body: newPubMessage
+        //   }
 
-          //need to edit 10 here to be dynamic
-          if (this.messageService.receivedPublicMessages$.value.length >= this.messageService.initialPublicMessageStartIndex$.value) {
-            this.messageService.receivedPublicMessages$.value.shift()
-          }
+        //   //need to edit 10 here to be dynamic
+        //   if (this.messageService.receivedPublicMessages$.value.length >= this.messageService.initialPublicMessageStartIndex$.value) {
+        //     this.messageService.receivedPublicMessages$.value.shift()
+        //   }
 
-          this.messageService.receivedPublicMessages$.next([...this.receivedPublicMessages$.value, publicMessage])
-          this.chatService.getLatestNumberOfPublicChannelMessages(selectedConversation, this.currentUserId$.getValue() as number)
-        })
+        //   this.messageService.receivedPublicMessages$.next([...this.receivedPublicMessages$.value, publicMessage])
+        //   this.chatService.getLatestNumberOfPublicChannelMessages(selectedConversation, this.currentUserId$.getValue() as number)
+        // })
         //clear the input for the next message
         this.newPublicMessage = '';
       }
     })
   }
+    // Handle the Enter key press to send the message and prevent newline
+    handleKeyDown(event: KeyboardEvent, isPrivate: boolean): void {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault(); // Prevent default behavior (new line)
+        if (isPrivate) {
+          this.sendPrivateMessage(); // Send private message
+        } else {
+          this.sendMessage(); // Send public message
+        }
+      }
+    }
+  
+  
 }
