@@ -46,9 +46,9 @@ export namespace Messages{
 
             events:{
                 //send private message to the state
-               SendPrivateMessageStarted: props<{ privateMessage: Message, receiverId: number }>(),
-               SendPrivateMessageSucceeded: props<{ privateMessage: Message, receiverId: number }>(),
-               SendPrivateMessageFailed: props<{ error: any }>(),
+                SendPrivateMessageStarted: props<{ privateMessage: Message, receiverId: number }>(),
+                SendPrivateMessageSucceeded: props<{ privateMessage: Message, receiverId: number }>(),
+                SendPrivateMessageFailed: props<{ error: any }>(),
 
                 //receive private message
                 ReceivePrivateMessageStarted: props<{ privateMessage: Message, senderId: number }>(),
@@ -61,8 +61,8 @@ export namespace Messages{
                 SendPublicMessageFailed: props<{ error: any }>(),
 
                 //receive public message to the state
-                ReceivePublicMessageStarted: props<{ publicMessage: Message, senderId: number }>(),
-                ReceivePublicMessageSucceeded: props<{ publicMessage: Message, senderId: number  }>(),
+                ReceivePublicMessageStarted: props<{ publicMessage: Message, channelId: number }>(),
+                ReceivePublicMessageSucceeded: props<{ publicMessage: Message, channelId: number  }>(),
                 ReceivePublicMessageFailed: props<{ error: any }>(),
 
                 //client receives confirmation of private message seen by the receiver

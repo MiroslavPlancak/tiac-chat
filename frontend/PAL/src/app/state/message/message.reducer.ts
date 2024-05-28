@@ -114,12 +114,24 @@ export const messageReducer = createReducer(
     }),
 
     //send public message 
-    on(Messages.Hub.Actions.sendPublicMessageSucceeded, (state,{senderId, publicMessage, channelId, user})=>{
+    // on(Messages.Hub.Actions.sendPublicMessageSucceeded, (state,{senderId, publicMessage, channelId, user})=>{
+    //     const currentMessages = state.publicMessageRecords[channelId] || []
+    //     const transformPrivateMessage = {...publicMessage, sentFromUserDTO: user}
+    //     console.log(`reducer/transformPrivateMessage:`, transformPrivateMessage)        
+    //     const updatedMessages = [...currentMessages,transformPrivateMessage]
+    //     console.log(`reducer/updatedMessages:`, updatedMessages)
+    //     return {
+    //         ...state,
+    //         publicMessageRecords:{
+    //             ...state.publicMessageRecords,
+    //             [channelId]:updatedMessages
+    //         }
+    //     }
+    // }),
+    //receive public message 
+    on(Messages.Hub.Actions.receivePublicMessageSucceeded,(state,{publicMessage, channelId})=>{
         const currentMessages = state.publicMessageRecords[channelId] || []
-        const transformPrivateMessage = {...publicMessage, sentFromUserDTO: user}
-        console.log(`reducer/transformPrivateMessage:`, transformPrivateMessage)        
-        const updatedMessages = [...currentMessages,transformPrivateMessage]
-        console.log(`reducer/updatedMessages:`, updatedMessages)
+        const updatedMessages = [...currentMessages, publicMessage]
         return {
             ...state,
             publicMessageRecords:{
@@ -128,8 +140,6 @@ export const messageReducer = createReducer(
             }
         }
     }),
-    //receive public message 
-
     //set private message as `seen` up on receiver's click on private conversation
     on(Messages.Hub.Actions.receivePrivateMessageClickConversationSucceeded,(state, {receiverId,messageId,isSeen})=>{
         const currentMessages = state.privateMessageRecords[receiverId] || []

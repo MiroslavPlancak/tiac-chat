@@ -184,7 +184,7 @@ namespace TiacChat.Presentation.Hubs
 
                 if (newMessageDTO != null)
                 {
-                    await Clients.All.SendAsync("ReceiveMessage", newMessageDTO);
+                    await Clients.All.SendAsync("ReceiveMessage", newMessageDTO, SentToChannel);
                 }
             }
             catch (Exception ex)

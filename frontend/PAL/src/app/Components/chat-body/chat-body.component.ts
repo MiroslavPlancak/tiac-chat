@@ -59,7 +59,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
     rxjs.filter(channelId => !!channelId),
     rxjs.switchMap((channelId)=>{
 //      console.log(`channelID emission:`, channelId)
-      return this.store.select(selectPublicRecordById(Number(channelId))).pipe(rxjs.tap((res)=> console.log(`tapres:`, res)) )
+      return this.store.select(selectPublicRecordById(Number(channelId)))
     })
   )
   //new ngrx private messages implementation
@@ -233,6 +233,11 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
     this.messageService.receivePrivateMesages().subscribe((res)=> {
       console.log(`private message received:`, res.savedMessage)
       this.store.dispatch(Messages.Hub.Actions.receivePrivateMessageStarted({privateMessage: res.savedMessage, senderId: res.senderId}))
+    })
+
+    this.messageService.receiveMessage().subscribe((res)=>{
+      console.log(`public message received:`, res)
+      this.store.dispatch(Messages.Hub.Actions.receivePublicMessageStarted({publicMessage: res.message, channelId: res.channelId}))
     })
     this.messageService.receivePrivateMesages()
     .pipe(

@@ -123,6 +123,19 @@ export class MessageEffects {
         )
     )
 
+    receivePublicMessage$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Hub.Actions.receivePublicMessageStarted),
+            rxjs.switchMap((action) =>{
+                console.log(`effect:0`, action.channelId )
+                return rxjs.of(action).pipe(
+                    rxjs.tap((res) => console.log(`effect:`, res)),
+                    rxjs.map(()=> Messages.Hub.Actions.receivePublicMessageSucceeded({ publicMessage: action.publicMessage, channelId: action.channelId})),
+                    rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.receivePublicMessageFailed({ error: error })))
+                )
+            })
+        )
+    )
     receivePrivateMessageClickSeen$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Hub.Actions.receivePrivateMessageClickConversationStarted),

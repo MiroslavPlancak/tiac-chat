@@ -158,7 +158,7 @@ export class MessageService implements OnInit, OnDestroy {
   /// send public message ()
   public sendMessage = (user: number, message: Message, selectedChannel: number) => {
    
-    return rxjs.from(
+    return rxjs.of(
         this.connectionService.hubConnection?.invoke("SendPublicMessageTest", user, message.body, selectedChannel)
     ).pipe(
         rxjs.tap(() => console.log('public message sent successfully')),
@@ -171,8 +171,8 @@ export class MessageService implements OnInit, OnDestroy {
   /// recieve public message()
   public receiveMessage = (): rxjs.Observable<any> => {
     return new rxjs.Observable<any>(observer => {
-      this.connectionService.hubConnection?.on("ReceiveMessage", (message) => {
-        observer.next(message);
+      this.connectionService.hubConnection?.on("ReceiveMessage", (message,channelId) => {
+        observer.next({message,channelId});
       })
     }).pipe(rxjs.takeUntil(this.destroy$))
   }
