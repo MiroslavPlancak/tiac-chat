@@ -11,6 +11,7 @@ export interface MessageState {
     
     privateMessageRecords: Record<number, any[]>
     publicMessageRecords: Record<number,any[]>
+    publicMessageCounter: number,
     typingStatus:TypingStatusState
 }
 
@@ -18,10 +19,11 @@ export const initialState: MessageState = {
     privateMessageRecords: {},
     publicMessageRecords: {},
     typingStatus: {
-        isTyping:false,
-        currentlyTypingUsers:[],
+        isTyping: false,
+        currentlyTypingUsers: [],
         typingStatusMap: new Map<number, string>()
-    }
+    },
+    publicMessageCounter: 0
 }
 
 
@@ -61,15 +63,19 @@ export const messageReducer = createReducer(
 
     //add paginated public messages to the state
     on(Messages.Api.Actions.loadPaginatedPublicMessagesSucceeded, (state,{channelId,publicMessages})=>{
+        console.log(`reducer/publicMessages:`, publicMessages)
         const currentMessages = state.publicMessageRecords[channelId] || []
         const paginatedRecords = [...publicMessages, ...currentMessages]
-        console.log(`reducer:`, paginatedRecords)
+        const totalPublicMessages = paginatedRecords.length
+        console.log(`reducer:`, paginatedRecords.length)
+        
         return {
             ...state,
             publicMessageRecords:{
                 ...state.publicMessageRecords,
                 [channelId]: paginatedRecords
-            }
+            },
+            publicMessageCounter:totalPublicMessages
         }
     }),
 

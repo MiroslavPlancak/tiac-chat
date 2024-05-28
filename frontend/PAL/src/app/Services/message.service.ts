@@ -14,7 +14,7 @@ import { Messages } from '../state/message/message.action';
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
 import { selectCurrentlyClickedConversation } from '../state/channel/channel.selector';
 import { Channels } from '../state/channel/channel.action';
-import { selectIsTypingStatusIds, selectPaginatedRecordById } from '../state/message/message.selector';
+import { selectIsTypingStatusIds, selectPaginatedRecordById, totalPublicMessagesCount } from '../state/message/message.selector';
 import { Message } from '../Models/message.model';
 
 @Injectable({
@@ -214,13 +214,34 @@ export class MessageService implements OnInit, OnDestroy {
 
     
     this.store.select(selectCurrentlyClickedConversation).pipe(rxjs.take(1)).subscribe((selectedChannel) =>{
+      console.log(this.canLoadMorePublicMessages$.value , selectedChannel)
     if (this.canLoadMorePublicMessages$.value !== false && selectedChannel !== undefined) {
 
       let startIndex = this.initialPublicMessageStartIndex$.value
       let endIndex = startIndex + 10
       this.initialPublicMessageStartIndex$.next(endIndex)
-      //console.log(`startIndex from public`, startIndex)
-      //console.log(`endIndex from public`, endIndex)
+      console.log(`startIndex from public`, startIndex)
+      console.log(`endIndex from public`, endIndex)
+      
+      this.chatService.getLatestNumberOfPublicChannelMessages(selectedChannel, Number(this.currentUserId$.getValue()))
+      this.chatService.receiveLatestNumberOfPublicChannelMessages().pipe(
+        rxjs.switchMap((latestNumberOfPublicMessages)=>
+          this.store.select(totalPublicMessagesCount).pipe(
+            rxjs.map((totalPublicMessagesCount) =>({latestNumberOfPublicMessages, totalPublicMessagesCount}))
+          )
+        )
+      ).subscribe(({latestNumberOfPublicMessages, totalPublicMessagesCount})=>{
+        if(latestNumberOfPublicMessages === totalPublicMessagesCount){
+          this.canLoadMorePublicMessages$.next(false)
+        }
+      })
+      //ngRx load paginated public messages to the state
+      this.store.dispatch(Messages.Api.Actions.loadPaginatedPublicMessagesStarted({channelId:selectedChannel, startIndex:startIndex, endIndex:endIndex }))
+      //ngRx select total paginated public messages added to the state (loaded more into the state)
+      this.store.select(totalPublicMessagesCount).subscribe((res)=> console.log(`test output:`, res))
+
+
+      //everything below this is redundant, I just need a mechanism for scroll and canLoadMoreMessages (can be removed)
       this.loadPaginatedPublicMessagesById(+selectedChannel as number, startIndex, endIndex)
         .pipe(
           rxjs.take(1),

@@ -83,22 +83,24 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     })
 
     //ngRx implementation
-    this.store.select(selectCurrentlyClickedConversation).pipe(
-      rxjs.switchMap(selectedChannel =>{
-        return this.messageService.receiveMessage().pipe(
-          rxjs.filter(message => message.sentToChannelId === selectedChannel),
-          rxjs.takeUntil(this.destroy$)
-        )
-      })
-    ).subscribe((message: any) => {
-      if (this.messageService.receivedPublicMessages$.value.length >= this.messageService.initialPublicMessageStartIndex$.value) {
-        this.messageService.receivedPublicMessages$.value.shift();
-      }
+    // this.store.select(selectCurrentlyClickedConversation).pipe(
+    //   rxjs.switchMap(selectedChannel =>{
+    //     return this.messageService.receiveMessage().pipe(
+    //       rxjs.filter(message => message.sentToChannelId === selectedChannel),
+    //       rxjs.takeUntil(this.destroy$)
+    //     )
+    //   })
+    // ).subscribe((message: any) => {
+    //   console.log(`public message received(elsewhere:)`, message)
+    //   this.store.dispatch(Messages.Hub.Actions.receivePublicMessageStarted({ publicMessage:message }))
+    //   // if (this.messageService.receivedPublicMessages$.value.length >= this.messageService.initialPublicMessageStartIndex$.value) {
+    //   //   this.messageService.receivedPublicMessages$.value.shift();
+    //   // }
     
-      if (this.currentUserId$.getValue() !== message.sentFromUserId) {
-        this.messageService.receivedPublicMessages$.next([...this.messageService.receivedPublicMessages$.value, message]);
-      }
-    });
+    //   // if (this.currentUserId$.getValue() !== message.sentFromUserId) {
+    //   //   this.messageService.receivedPublicMessages$.next([...this.messageService.receivedPublicMessages$.value, message]);
+    //   // }
+    // });
 
     //old implementation
     // this.messageService.receiveMessage().pipe(

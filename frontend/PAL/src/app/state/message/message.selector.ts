@@ -7,7 +7,7 @@ import { UserState } from "../user/user.reducer";
 
 export const selectedMessageState = createFeatureSelector<MessageState>("messageReducer")
 
-/// API calls ///
+/// API selectors ///
 
 //select all paginated private messages
 // export const selectPaginatedPrivateMessages = createSelector(
@@ -40,7 +40,7 @@ export const selectPublicRecordById = (channelId: number) => createSelector(
     }
 )
 
-/// HUB calls ///
+/// HUB selectors ///
 
 //select Map<number,string> where number = userId, string = FirstName
 export const selectIsTypingStatusMap = createSelector(
@@ -72,4 +72,11 @@ export const selectIsTypingStatusIds = createSelector(
 )
 
 
+/// Helper selectors ///
+export const totalPublicMessagesCount = createSelector(
+    selectedMessageState,
+    (messageState: MessageState) =>{
+        return messageState.publicMessageCounter
+    }
+)
 
