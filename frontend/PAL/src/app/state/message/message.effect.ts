@@ -216,4 +216,16 @@ export class MessageEffects {
         )
     )
     
+      /// FLAG calls /// 
+    setCanLoadMorePublicMessagesFlag$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagStarted),
+            rxjs.switchMap((action) =>
+                rxjs.of(action.canLoadMore).pipe(
+                    rxjs.map((response) => Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagSucceeded({ canLoadMore: response })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagFailed({ error: error })))
+                )
+            )
+        )
+    )
 }

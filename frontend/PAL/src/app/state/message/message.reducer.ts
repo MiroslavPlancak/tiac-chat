@@ -13,6 +13,7 @@ export interface MessageState {
     publicMessagesRecord: Record<number,any[]>
     totalPublicMessagesCountRecord: Record<number,number>,
     loadedPublicMessagesCount: number,
+    canLoadMorePublicMessagesFlag: boolean,
     typingStatus:TypingStatusState
 }
 
@@ -21,12 +22,10 @@ export const initialState: MessageState = {
     publicMessagesRecord: {},
     totalPublicMessagesCountRecord: {},
     loadedPublicMessagesCount: 0,
+    canLoadMorePublicMessagesFlag: false,
     typingStatus: {
-       
         currentlyTypingUsers: [],
-       
     },
-  
    
 }
 
@@ -71,7 +70,7 @@ export const messageReducer = createReducer(
         const currentMessages = state.publicMessagesRecord[channelId] || []
         const paginatedRecords = [...publicMessages, ...currentMessages]
         const totalPublicMessages = paginatedRecords.length
-        // console.log(`reducer:`, paginatedRecords.length)
+        console.log(`reducer/totalPublicMessages:`,totalPublicMessages)
         
         return {
             ...state,
@@ -79,7 +78,7 @@ export const messageReducer = createReducer(
                 ...state.publicMessagesRecord,
                 [channelId]: paginatedRecords
             },
-            loadedPublicMessagesCount:totalPublicMessages
+            loadedPublicMessagesCount: totalPublicMessages
         }
     }),
 
@@ -90,7 +89,8 @@ export const messageReducer = createReducer(
             publicMessagesRecord: {
                 ...state.publicMessagesRecord,
                 [channelId]:[]
-            }
+            },
+            loadedPublicMessagesCount:0
         }
     }),
 
@@ -170,7 +170,13 @@ export const messageReducer = createReducer(
 
     //update the lastest number of public channel messages by channel ID
     on(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdSuccceded, (state,{ channelId, totalPublicMessages})=>{
-
+        const totalMessages = totalPublicMessages
+        const totalLoadedMessages = state.loadedPublicMessagesCount
+        console.log(`total messages ${totalMessages} / totalLoadedMessages ${totalLoadedMessages}`)
+        
+        if(totalMessages === totalLoadedMessages){
+            console.log(`reducer says its okay`)
+        }
         return {
             ...state,
             totalPublicMessagesCountRecord:{
@@ -180,5 +186,12 @@ export const messageReducer = createReducer(
         }
     }),
 
-
+  /// FLAG calls /// 
+  on(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagSucceeded,(state,{canLoadMore})=>{
+    console.log(`reducer/flag/canloadMore:`, canLoadMore)
+        return {
+            ...state,
+            canLoadMorePublicMessagesFlag:canLoadMore
+        }
+  })
 )

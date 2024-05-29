@@ -210,87 +210,48 @@ export class MessageService implements OnInit, OnDestroy {
 
   // load more public messages method()
   loadMorePublicMessages() {
-    //console.log(`loading more public messages...`)
-
-    
-    this.store.select(selectCurrentlyClickedConversation).pipe(rxjs.take(1)).subscribe((selectedChannel) =>{
-      console.log(this.canLoadMorePublicMessages$.value , selectedChannel)
-    if (this.canLoadMorePublicMessages$.value !== false && selectedChannel !== undefined) {
-
-      let startIndex = this.initialPublicMessageStartIndex$.value
-      let endIndex = startIndex + 10
-      this.initialPublicMessageStartIndex$.next(endIndex)
-      //console.log(`startIndex from public`, startIndex)
-      //console.log(`endIndex from public`, endIndex)
-
-      /////////new implementation/////////////////
-      this.store.dispatch(Messages.Hub.Actions.requestLatestNumberOfPublicMessagesByChannelIdStarted())
-      this.store.dispatch(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdStarted())
-
-      this.store.select(selectPublicMessagesNumberFromChannelId).pipe(
-       
-        rxjs.switchMap((latestNumberOfPublicMessages)=>
-          this.store.select(totalPublicMessagesCount).pipe(
-            
-            rxjs.map((totalPublicMessagesCount) =>({latestNumberOfPublicMessages, totalPublicMessagesCount}))
+    this.store.select(selectCurrentlyClickedConversation).pipe(
+      rxjs.take(1),
+      rxjs.filter(selectedChannel => selectedChannel !== undefined && this.canLoadMorePublicMessages$.value !== false),
+      tap(selectedChannel => {
+        const startIndex = this.initialPublicMessageStartIndex$.value;
+        const endIndex = startIndex + 10;
+        this.initialPublicMessageStartIndex$.next(endIndex);
+  
+        // Dispatch action to load paginated public messages
+        this.store.dispatch(Messages.Api.Actions.loadPaginatedPublicMessagesStarted({
+          channelId: Number(selectedChannel),
+          startIndex: startIndex,
+          endIndex: endIndex
+        }));
+      }),
+      rxjs.switchMap(() => 
+        this.store.select(totalPublicMessagesCount).pipe(
+          // Wait for the state to update with new messages
+          rxjs.filter(totalPublicMessagesCount => totalPublicMessagesCount > 0),
+        
+        )
+      ),
+      tap(() => {
+        // Dispatch actions after the state has updated
+        this.store.dispatch(Messages.Hub.Actions.requestLatestNumberOfPublicMessagesByChannelIdStarted());
+        this.store.dispatch(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdStarted());
+      }),
+      rxjs.switchMap(() => 
+        this.store.select(selectPublicMessagesNumberFromChannelId).pipe(
+          rxjs.switchMap(latestNumberOfPublicMessages =>
+            this.store.select(totalPublicMessagesCount).pipe(
+              map(totalPublicMessagesCount => ({ latestNumberOfPublicMessages, totalPublicMessagesCount }))
+            )
           )
         )
-      ).subscribe(({latestNumberOfPublicMessages, totalPublicMessagesCount})=>{
-        console.log(latestNumberOfPublicMessages, totalPublicMessagesCount)
-        if(latestNumberOfPublicMessages == totalPublicMessagesCount){
-          this.canLoadMorePublicMessages$.next(false)
-        }
-   
-      })
-      /////////old implementation/////////////////
-
-      //ngRx load paginated public messages to the state
-      this.store.dispatch(Messages.Api.Actions.loadPaginatedPublicMessagesStarted({channelId:selectedChannel, startIndex:startIndex, endIndex:endIndex }))
-      //ngRx select total paginated public messages added to the state (loaded more into the state)
-      this.store.select(totalPublicMessagesCount).subscribe((res)=> console.log())
-
-
-      //everything below this is redundant, I just need a mechanism for scroll and canLoadMoreMessages (can be removed)
-      // this.loadPaginatedPublicMessagesById(+selectedChannel as number, startIndex, endIndex)
-      //   .pipe(
-      //     rxjs.take(1),
-      //     rxjs.map(messages => {
-
-      //       if (messages.length == 0) {
-      //         console.log(`no more messages left to load..`)
-      //         this.canLoadMorePublicMessages$.next(false)
-      //         console.log(`canLoadMorePublicMessages$`, this.canLoadMorePublicMessages$.value)
-      //       }
-
-      //       return messages.map(message => {
-
-      //         return this.extractUserName(message.sentFromUserId).pipe(
-      //           rxjs.map(senderId => ({
-      //             sentFromUserDTO: {
-      //               id: message.sentFromUserId,
-      //               firstName: senderId
-      //             },
-      //             body: message.body
-      //           }))
-      //         )
-      //       })
-      //     }),
-      //     rxjs.switchMap(asyncOperations => {
-      //       return rxjs.forkJoin(asyncOperations)
-      //     }),
-      //     rxjs.takeUntil(this.destroy$)
-      //   ).subscribe(publicMessages => {
-      //     this.receivedPublicMessages$.next([
-      //       ...publicMessages,
-      //       ...this.receivedPublicMessages$.value
-      //     ])
-
-      //     this.virtualScrollViewportPublic$.next(3)
-      //     this.maxScrollValue$.next(endIndex - 1)
-
-      //   })
-    }
-  })
+      )
+    ).subscribe(({ latestNumberOfPublicMessages, totalPublicMessagesCount }) => {
+      console.log(latestNumberOfPublicMessages, totalPublicMessagesCount);
+      if (latestNumberOfPublicMessages === totalPublicMessagesCount) {
+        this.canLoadMorePublicMessages$.next(false);
+      }
+    });
   }
   // load more private messages method()
   loadMorePrivateMessages(): void {

@@ -79,6 +79,7 @@ export const selectPublicMessagesNumberFromChannelId = createSelector(
     selectedChannelState,
     (messageState: MessageState,channelState:ChannelState) =>{
         const currentlyClickedChannel = Number(channelState.currentConversationId)
+        
         return messageState.totalPublicMessagesCountRecord[currentlyClickedChannel]
     }
 )

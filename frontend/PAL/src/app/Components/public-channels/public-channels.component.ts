@@ -173,9 +173,14 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
       .pipe(
        rxjs.filter(loadedMessagesNumber => !!loadedMessagesNumber),
         rxjs.switchMap((publicMessages) => {
-          //console.log(publicMessages)
+         
+          if(publicMessages > 10){
+           this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagStarted({canLoadMore: true}))
+          }else{
+            this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagStarted({canLoadMore: false}))
+          }
           this.messageService.totalPublicChannelMessagesNumber$.next(publicMessages)
-
+          
        
           this.messageService.canLoadMorePublicMessages$.next(publicMessages > 10);
           const startIndex = 0
