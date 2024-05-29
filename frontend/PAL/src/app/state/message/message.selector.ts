@@ -2,6 +2,8 @@ import { createFeatureSelector, createSelector } from "@ngrx/store";
 import { MessageState } from './message.reducer'
 import { selectedUserState } from "../user/user.selector";
 import { UserState } from "../user/user.reducer";
+import { selectedChannelState } from "../channel/channel.selector";
+import { ChannelState } from "../channel/channel.reducer";
 
 
 
@@ -23,7 +25,7 @@ export const selectPaginatedRecordById = (receiverId:number) => createSelector(
     selectedMessageState,
     (messageState: MessageState) =>{
         //console.log(`selector/receiverID:`, receiverId)
-        const messages = messageState.privateMessageRecords[receiverId] || []
+        const messages = messageState.privateMessagesRecord[receiverId] || []
        //console.log(`selector record(private):`,messageState.privateMessageRecords)
        // console.log(`selector messages `, messages)
         return messages
@@ -34,7 +36,7 @@ export const selectPaginatedRecordById = (receiverId:number) => createSelector(
 export const selectPublicRecordById = (channelId: number) => createSelector(
     selectedMessageState,
     (messagesState: MessageState) => {
-        const messages = messagesState.publicMessageRecords[channelId] || []
+        const messages = messagesState.publicMessagesRecord[channelId] || []
        // console.log(`selector record(public)`, messagesState.publicMessageRecords)
         return messages
     }
@@ -71,12 +73,22 @@ export const selectIsTypingStatusIds = createSelector(
     }
 )
 
+//select latest number of message from public channel by channel ID
+export const selectPublicMessagesNumberFromChannelId = createSelector(
+    selectedMessageState,
+    selectedChannelState,
+    (messageState: MessageState,channelState:ChannelState) =>{
+        const currentlyClickedChannel = Number(channelState.currentConversationId)
+        return messageState.totalPublicMessagesCountRecord[currentlyClickedChannel]
+    }
+)
+
 
 /// Helper selectors ///
 export const totalPublicMessagesCount = createSelector(
     selectedMessageState,
     (messageState: MessageState) =>{
-        return messageState.publicMessageCounter
+        return messageState.loadedPublicMessagesCount
     }
 )
 

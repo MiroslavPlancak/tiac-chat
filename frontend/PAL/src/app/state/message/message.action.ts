@@ -6,17 +6,17 @@ import { User } from "../../Models/user.model";
 
 export const MESSAGE_SOURCE = 'Messages'
 
-export namespace Messages{
+export namespace Messages {
 
     export namespace Api {
 
         export const SOURCE = SafeType.Source.from(MESSAGE_SOURCE, 'Api')
 
         export const Actions = createActionGroup({
-            events:{
+            events: {
                 //load paginated private messages
                 LoadPaginatedPrivateMessagesStarted: props<{ senderId: number, receiverId: number, startIndex: number, endIndex: number }>(),
-                LoadPaginatedPrivateMessagesSucceeded: props<{ receiverId: number, privateMessages: any[]}>(),
+                LoadPaginatedPrivateMessagesSucceeded: props<{ receiverId: number, privateMessages: any[] }>(),
                 LoadPaginatedPrivateMessagesFailed: props<{ error: any }>(),
 
                 //clear private messages 
@@ -26,7 +26,7 @@ export namespace Messages{
 
                 //load paginated public messages
                 LoadPaginatedPublicMessagesStarted: props<{ channelId: number, startIndex: number, endIndex: number }>(),
-                LoadPaginatedPublicMessagesSucceeded: props<{ channelId: number, publicMessages: any[]}>(),
+                LoadPaginatedPublicMessagesSucceeded: props<{ channelId: number, publicMessages: any[] }>(),
                 LoadPaginatedPublicMessagesFailed: props<{ error: any }>(),
 
                 //clear paginated public messages
@@ -39,12 +39,12 @@ export namespace Messages{
     }
 
     export namespace Hub {
-        
+
         export const SOURCE = SafeType.Source.from(MESSAGE_SOURCE, 'Hub')
 
         export const Actions = createActionGroup({
 
-            events:{
+            events: {
                 //send private message to the state
                 SendPrivateMessageStarted: props<{ privateMessage: Message, receiverId: number }>(),
                 SendPrivateMessageSucceeded: props<{ privateMessage: Message, receiverId: number }>(),
@@ -52,27 +52,27 @@ export namespace Messages{
 
                 //receive private message
                 ReceivePrivateMessageStarted: props<{ privateMessage: Message, senderId: number }>(),
-                ReceivePrivateMessageSucceeded: props<{ privateMessage: Message, senderId: number  }>(),
+                ReceivePrivateMessageSucceeded: props<{ privateMessage: Message, senderId: number }>(),
                 ReceivePrivateMessageFailed: props<{ error: any }>(),
 
                 //send public message to the state
                 SendPublicMessageStarted: props<{ senderId: number, publicMessage: Message, channelId: number }>(),
-                SendPublicMessageSucceeded: props<{ senderId: number, publicMessage: Message, channelId: number, user: User}>(),
+                SendPublicMessageSucceeded: props<{ senderId: number, publicMessage: Message, channelId: number, user: User }>(),
                 SendPublicMessageFailed: props<{ error: any }>(),
 
                 //receive public message to the state
                 ReceivePublicMessageStarted: props<{ publicMessage: Message, channelId: number }>(),
-                ReceivePublicMessageSucceeded: props<{ publicMessage: Message, channelId: number  }>(),
+                ReceivePublicMessageSucceeded: props<{ publicMessage: Message, channelId: number }>(),
                 ReceivePublicMessageFailed: props<{ error: any }>(),
 
                 //client receives confirmation of private message seen by the receiver
-                ReceivePrivateMessageClickConversationStarted: props <{ receiverId: number ,messageId:number, isSeen:boolean }>(),
-                ReceivePrivateMessageClickConversationSucceeded: props <{ receiverId: number ,messageId:number, isSeen:boolean }>(),
-                ReceivePrivateMessageClickConversationFailed:  props<{ error: any }>(),
+                ReceivePrivateMessageClickConversationStarted: props<{ receiverId: number, messageId: number, isSeen: boolean }>(),
+                ReceivePrivateMessageClickConversationSucceeded: props<{ receiverId: number, messageId: number, isSeen: boolean }>(),
+                ReceivePrivateMessageClickConversationFailed: props<{ error: any }>(),
 
                 //send `is typing...` status 
                 SendIsTypingStatusStarted: props<{ isTyping: boolean, senderId: number, receiverId: number }>(),
-                SendIsTypingStatusSucceeded: props<{ isTyping: boolean, senderId: number, user:User }>(),
+                SendIsTypingStatusSucceeded: props<{ isTyping: boolean, senderId: number, user: User }>(),
                 SendIsTypingStatusFailed: props<{ error: any }>(),
 
                 //receive `is typing...` status
@@ -80,8 +80,18 @@ export namespace Messages{
                 ReceiveIsTypingStatusSucceeded: props<{ isTyping: boolean, senderId: number, typingUsers: number[] }>(),
                 ReceiveIsTypingStatusFailed: props<{ error: any }>(),
 
+                //request latest number of public messages from the server by channelID
+                RequestLatestNumberOfPublicMessagesByChannelIdStarted: emptyProps(),
+                RequestLatestNumberOfPublicMessagesByChannelIdSuccceded: emptyProps(),
+                RequestLatestNumberOfPublicMessagesByChannelIdFailed: props<{ error: any }>(),
+
+                //request latest number of public messages from the server by channelID
+                RecieveLatestNumberOfPublicMessagesByChannelIdStarted: emptyProps(),
+                RecieveLatestNumberOfPublicMessagesByChannelIdSuccceded: props<{ channelId: number, totalPublicMessages: number }>(),
+                RecieveLatestNumberOfPublicMessagesByChannelIdFailed: props<{ error: any }>(),
+
             },
-            source:SOURCE
+            source: SOURCE
         })
     }
 }

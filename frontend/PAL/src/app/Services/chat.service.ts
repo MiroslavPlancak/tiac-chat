@@ -116,13 +116,15 @@ export class ChatService implements OnInit,OnDestroy {
     this.hubConnection?.invoke("GetLatestNumberOfPublicChannelMessages", channelId, currentUserId)
     .catch(err => console.log(err))
   }
+  return rxjs.of(rxjs.EMPTY)
   }
 
   // recieve latest number of public channel messages 
-  public receiveLatestNumberOfPublicChannelMessages = (): rxjs.Observable<number> => {
-    return new rxjs.Observable<number> (observer =>{
-      this.hubConnection?.on("UpdatePublicChannelMessagesNumber", (numberOfPublicChannelMessages)=>{
-        observer.next(numberOfPublicChannelMessages);
+  public receiveLatestNumberOfPublicChannelMessages = (): rxjs.Observable<any> => {
+    return new rxjs.Observable<any> (observer =>{
+      this.hubConnection?.on("UpdatePublicChannelMessagesNumber", (channelId, numberOfPublicMessages)=>{
+        observer.next({channelId, numberOfPublicMessages});
+     
       })
     }).pipe(rxjs.takeUntil(this.destroy$))
   }

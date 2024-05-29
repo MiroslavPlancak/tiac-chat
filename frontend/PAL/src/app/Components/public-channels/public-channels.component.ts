@@ -13,7 +13,7 @@ import { Messages } from '../../state/message/message.action'
 import {  selectCurrentUser } from '../../state/user/user.selector';
 import { Channels } from '../../state/channel/channel.action'
 import { selectAllChannels, selectAllPrivateChannels, selectAllPublicChannels, selectCurrentlyClickedConversation, selectPrivateChannels } from '../../state/channel/channel.selector';
-import { selectPublicRecordById } from '../../state/message/message.selector';
+import { selectPublicMessagesNumberFromChannelId, selectPublicRecordById } from '../../state/message/message.selector';
 
 
 @Component({
@@ -131,6 +131,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
 
     this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: channelId}))
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPublicMessagesStarted({ channelId: channelId}))
+
     this.channelId = channelId
     this.messageService.conversationId$.next(channelId)
     this.messageService.initialPrivateMessageStartIndex$.next(0)
@@ -161,18 +162,24 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     if(intialChanelId !==undefined){
       this.chatService.getLatestNumberOfPublicChannelMessages(intialChanelId, this.currentUserId$.getValue() as number)
     }
+    
+    //select ngRx test slice of the state of publicMessagesCountRecord
+    this.store.dispatch(Messages.Hub.Actions.requestLatestNumberOfPublicMessagesByChannelIdStarted())
+    this.store.dispatch(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdStarted())
+   
 
-    this.chatService.getLatestNumberOfPublicChannelMessages(this.channelId, this.currentUserId$.getValue() as number)
-    this.chatService.receiveLatestNumberOfPublicChannelMessages()
+   
+    this.store.select(selectPublicMessagesNumberFromChannelId)
       .pipe(
-        rxjs.first(),
-        rxjs.switchMap(totalNumberofPublicMessages => {
-          this.messageService.totalPublicChannelMessagesNumber$.next(totalNumberofPublicMessages)
+       rxjs.filter(loadedMessagesNumber => !!loadedMessagesNumber),
+        rxjs.switchMap((publicMessages) => {
+          //console.log(publicMessages)
+          this.messageService.totalPublicChannelMessagesNumber$.next(publicMessages)
 
        
-          this.messageService.canLoadMorePublicMessages$.next(totalNumberofPublicMessages > 10);
+          this.messageService.canLoadMorePublicMessages$.next(publicMessages > 10);
           const startIndex = 0
-          const endIndex = totalNumberofPublicMessages - (totalNumberofPublicMessages - 10);
+          const endIndex = publicMessages - (publicMessages - 10);
           this.messageService.initialPublicMessageStartIndex$.next(endIndex)
           //ngRx
           

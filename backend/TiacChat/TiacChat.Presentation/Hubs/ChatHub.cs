@@ -340,7 +340,7 @@ namespace TiacChat.Presentation.Hubs
                     if (onlineUsers.TryGetValue(currentUserId, out var currentUserConnectionString))
                     {
                         await Clients.Client(currentUserConnectionString)
-                        .SendAsync("UpdatePublicChannelMessagesNumber", numberOfPublicChannelMessages);
+                        .SendAsync("UpdatePublicChannelMessagesNumber", channelId, numberOfPublicChannelMessages);
                     }
 
 

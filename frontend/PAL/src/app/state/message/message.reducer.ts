@@ -2,28 +2,32 @@ import { createReducer, on } from "@ngrx/store";
 import { Messages } from "./message.action"
 
 export interface TypingStatusState{
-    isTyping:boolean
+
     currentlyTypingUsers: number[]
-    typingStatusMap: Map<number,string>
+   
 }
 
 export interface MessageState {
     
-    privateMessageRecords: Record<number, any[]>
-    publicMessageRecords: Record<number,any[]>
-    publicMessageCounter: number,
+    privateMessagesRecord: Record<number, any[]>
+    publicMessagesRecord: Record<number,any[]>
+    totalPublicMessagesCountRecord: Record<number,number>,
+    loadedPublicMessagesCount: number,
     typingStatus:TypingStatusState
 }
 
 export const initialState: MessageState = {
-    privateMessageRecords: {},
-    publicMessageRecords: {},
+    privateMessagesRecord: {},
+    publicMessagesRecord: {},
+    totalPublicMessagesCountRecord: {},
+    loadedPublicMessagesCount: 0,
     typingStatus: {
-        isTyping: false,
+       
         currentlyTypingUsers: [],
-        typingStatusMap: new Map<number, string>()
+       
     },
-    publicMessageCounter: 0
+  
+   
 }
 
 
@@ -36,13 +40,13 @@ export const messageReducer = createReducer(
     //add paginated private messages to the state
     on(Messages.Api.Actions.loadPaginatedPrivateMessagesSucceeded, (state, { receiverId, privateMessages }) => {
 
-        const currentMessages = state.privateMessageRecords[receiverId] || []
+        const currentMessages = state.privateMessagesRecord[receiverId] || []
         const paginatedRecords = [...privateMessages, ...currentMessages]
 
         return {
             ...state,
-            privateMessageRecords: {
-                ...state.privateMessageRecords,
+            privateMessagesRecord: {
+                ...state.privateMessagesRecord,
                 [receiverId]: paginatedRecords
             }
         }
@@ -54,8 +58,8 @@ export const messageReducer = createReducer(
   
         return {
             ...state,
-            privateMessageRecords: {
-                ...state.privateMessageRecords,
+            privateMessagesRecord: {
+                ...state.privateMessagesRecord,
                 [userId]: []
             }
         }
@@ -63,19 +67,19 @@ export const messageReducer = createReducer(
 
     //add paginated public messages to the state
     on(Messages.Api.Actions.loadPaginatedPublicMessagesSucceeded, (state,{channelId,publicMessages})=>{
-        console.log(`reducer/publicMessages:`, publicMessages)
-        const currentMessages = state.publicMessageRecords[channelId] || []
+        // console.log(`reducer/publicMessages:`, publicMessages)
+        const currentMessages = state.publicMessagesRecord[channelId] || []
         const paginatedRecords = [...publicMessages, ...currentMessages]
         const totalPublicMessages = paginatedRecords.length
-        console.log(`reducer:`, paginatedRecords.length)
+        // console.log(`reducer:`, paginatedRecords.length)
         
         return {
             ...state,
-            publicMessageRecords:{
-                ...state.publicMessageRecords,
+            publicMessagesRecord:{
+                ...state.publicMessagesRecord,
                 [channelId]: paginatedRecords
             },
-            publicMessageCounter:totalPublicMessages
+            loadedPublicMessagesCount:totalPublicMessages
         }
     }),
 
@@ -83,8 +87,8 @@ export const messageReducer = createReducer(
     on(Messages.Api.Actions.clearPaginatedPublicMessagesSucceeded, (state,{channelId})=>{
         return {
             ...state,
-            publicMessageRecords: {
-                ...state.publicMessageRecords,
+            publicMessagesRecord: {
+                ...state.publicMessagesRecord,
                 [channelId]:[]
             }
         }
@@ -94,13 +98,13 @@ export const messageReducer = createReducer(
 
     //send private message 
     on(Messages.Hub.Actions.sendPrivateMessageSucceeded, (state,{ privateMessage, receiverId}) =>{
-        console.log(`reducer output:`, privateMessage, receiverId)
-        const currentMessages = state.privateMessageRecords[receiverId] || []
+        //console.log(`reducer output:`, privateMessage, receiverId)
+        const currentMessages = state.privateMessagesRecord[receiverId] || []
         const updatedMessages = [...currentMessages, privateMessage]
         return {
             ...state,
-            privateMessageRecords:{
-                ...state.privateMessageRecords,
+            privateMessagesRecord:{
+                ...state.privateMessagesRecord,
                 [receiverId]:updatedMessages
             }
         }
@@ -108,47 +112,33 @@ export const messageReducer = createReducer(
 
     //receive private message 
     on(Messages.Hub.Actions.receivePrivateMessageSucceeded,(state,{privateMessage, senderId})=>{
-        const currentMessages = state.privateMessageRecords[senderId] || []
+        const currentMessages = state.privateMessagesRecord[senderId] || []
         const updatedMessages = [...currentMessages, privateMessage]
         return {
             ...state,
-            privateMessageRecords:{
-                ...state.privateMessageRecords,
+            privateMessagesRecord:{
+                ...state.privateMessagesRecord,
                 [senderId]:updatedMessages
             }
         }
     }),
 
-    //send public message 
-    // on(Messages.Hub.Actions.sendPublicMessageSucceeded, (state,{senderId, publicMessage, channelId, user})=>{
-    //     const currentMessages = state.publicMessageRecords[channelId] || []
-    //     const transformPrivateMessage = {...publicMessage, sentFromUserDTO: user}
-    //     console.log(`reducer/transformPrivateMessage:`, transformPrivateMessage)        
-    //     const updatedMessages = [...currentMessages,transformPrivateMessage]
-    //     console.log(`reducer/updatedMessages:`, updatedMessages)
-    //     return {
-    //         ...state,
-    //         publicMessageRecords:{
-    //             ...state.publicMessageRecords,
-    //             [channelId]:updatedMessages
-    //         }
-    //     }
-    // }),
+
     //receive public message 
     on(Messages.Hub.Actions.receivePublicMessageSucceeded,(state,{publicMessage, channelId})=>{
-        const currentMessages = state.publicMessageRecords[channelId] || []
+        const currentMessages = state.publicMessagesRecord[channelId] || []
         const updatedMessages = [...currentMessages, publicMessage]
         return {
             ...state,
-            publicMessageRecords:{
-                ...state.publicMessageRecords,
+            publicMessagesRecord:{
+                ...state.publicMessagesRecord,
                 [channelId]:updatedMessages
             }
         }
     }),
     //set private message as `seen` up on receiver's click on private conversation
     on(Messages.Hub.Actions.receivePrivateMessageClickConversationSucceeded,(state, {receiverId,messageId,isSeen})=>{
-        const currentMessages = state.privateMessageRecords[receiverId] || []
+        const currentMessages = state.privateMessagesRecord[receiverId] || []
         //console.log(`reducer/current convo`, currentMessages)
         //console.log(`reducer/messageId`,messageId )
         const updatedMessages = currentMessages.map(message => 
@@ -157,35 +147,17 @@ export const messageReducer = createReducer(
         //console.log(`reducer:`, updatedMessages)
         return {
             ...state,
-            privateMessageRecords: {
-                ...state.privateMessageRecords,
+            privateMessagesRecord: {
+                ...state.privateMessagesRecord,
                 [receiverId]: updatedMessages
             }
         }
     }),
 
-    //set `is typing...` status to the state
-    // on(Messages.Hub.Actions.sendIsTypingStatusSucceeded, (state,{isTyping, senderId, user})=>{
-    //     const senderFirstName = user.firstName
-    //     const typingStatusUpdated = {
-    //         ...state.typingStatus,
-    //             isTyping: isTyping,
-    //             typingStatusMap: new Map(state.typingStatus.typingStatusMap).set(senderId,senderFirstName)
-    //     }
-    //     console.log("Sender ID:", senderId);
-    //     console.log("Is Typing:", isTyping);
-    //     console.log("Sender First Name:", senderFirstName);
-    //     console.log("Updated Typing Status:", typingStatusUpdated);
-    //     return {
-    //         ...state,
-    //         typingStatus:typingStatusUpdated
-            
-    //     }
-    // })
 
     //receive and set `is typing...` status to the state
     on(Messages.Hub.Actions.receiveIsTypingStatusSucceeded, (state, {isTyping, senderId, typingUsers })=>{
-        console.log(`reducer/typingUsers:`, typingUsers)
+        //console.log(`reducer/typingUsers:`, typingUsers)
         return {
             ...state,
             typingStatus:{
@@ -193,7 +165,20 @@ export const messageReducer = createReducer(
                 currentlyTypingUsers:typingUsers
             }
         }
-    })
+    }),
+
+
+    //update the lastest number of public channel messages by channel ID
+    on(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdSuccceded, (state,{ channelId, totalPublicMessages})=>{
+
+        return {
+            ...state,
+            totalPublicMessagesCountRecord:{
+                ...state.totalPublicMessagesCountRecord,
+                [channelId]:totalPublicMessages
+            }
+        }
+    }),
 
 
 )

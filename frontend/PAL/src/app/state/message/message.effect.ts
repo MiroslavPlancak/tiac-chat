@@ -6,6 +6,7 @@ import { MessageService } from "../../Services/message.service";
 import { ChatService } from "../../Services/chat.service";
 import { Store } from "@ngrx/store";
 import { selectCurrentUser } from "../user/user.selector";
+import { selectCurrentlyClickedConversation, selectCurrentlyLoggedUser } from "../channel/channel.selector";
 
 @Injectable()
 
@@ -185,4 +186,34 @@ export class MessageEffects {
             })
         )
     )
+
+    requestLastestNumberOfPublicMessagesByChannelId$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Hub.Actions.requestLatestNumberOfPublicMessagesByChannelIdStarted),
+            rxjs.withLatestFrom(this.store.select(selectCurrentlyClickedConversation), this.store.select(selectCurrentlyLoggedUser)),
+            rxjs.switchMap(([action, channelId, currentUserId]) => {
+                // Mocked response observable; replace with actual API call
+                return this.chatService.getLatestNumberOfPublicChannelMessages(Number(channelId), Number(currentUserId)).pipe(
+                    rxjs.map(() => Messages.Hub.Actions.requestLatestNumberOfPublicMessagesByChannelIdSuccceded()),
+                    rxjs.catchError(error => rxjs.of(Messages.Hub.Actions.requestLatestNumberOfPublicMessagesByChannelIdFailed({ error })))
+                );
+            })
+        )
+    );
+
+    receiveLastestNumberOfPublicMessagesByChannelId$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdStarted),
+            rxjs.switchMap(() => {
+                return this.chatService.receiveLatestNumberOfPublicChannelMessages().pipe(
+                    rxjs.map((response) => Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdSuccceded({ 
+                        channelId: response.channelId, 
+                        totalPublicMessages: response.numberOfPublicMessages
+                     })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdFailed({ error: error })))
+                )
+            })
+        )
+    )
+    
 }
