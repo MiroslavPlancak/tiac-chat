@@ -10,7 +10,7 @@ import { Users } from '../../state/user/user.action'
 import { Messages } from '../../state/message/message.action'
 import { selectUserById,selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
-import { selectIsTypingStatusIds, selectIsTypingStatusMap, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
+import { selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectIsTypingStatusMap, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
 import { selectCurrentlyClickedConversation } from '../../state/channel/channel.selector';
 
 @Component({
@@ -90,7 +90,8 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
       );
     })
   );
-  
+  //ngRx canLoadMorePublicMessages$
+  canLoadMorePublicMessages$ = this.store.select(selectCanLoadMorePublicMessages)
   currentlyTypingUsersNgRx$ =  this.store.select(selectIsTypingStatusIds)
   currentlyTypingStatusMapNgRx$ =  this.store.select(selectIsTypingStatusMap)
   
@@ -286,11 +287,13 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   }
 
   publicAutoScroll(event: any): void {
-    //console.log(`scroll value:`,event)
-    if (event == 0) {
-      this.messageService.loadMorePublicMessages()
+    
+    this.store.select(selectCanLoadMorePublicMessages).pipe(rxjs.take(1)).subscribe((canLoadMore)=>{
+      if (event == 0 && canLoadMore) {
+        this.messageService.loadMorePublicMessages()
+      }
+    })
 
-    }
   }
 
   scrollToEndPrivate(index: number): void {

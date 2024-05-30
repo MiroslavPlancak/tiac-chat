@@ -70,6 +70,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
         rxjs.take(1)
       ).subscribe(userId => {
         if(connectedUser === userId){
+          console.log(`x`,userId)
           this.channelIdSelectedClickHandler(8)
         }
         
@@ -128,14 +129,14 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   }
 
   public channelIdSelectedClickHandler(channelId: number): void {
-
+    console.log(`this runs`,channelId)
     this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: channelId}))
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPublicMessagesStarted({ channelId: channelId}))
 
     this.channelId = channelId
     this.messageService.conversationId$.next(channelId)
     this.messageService.initialPrivateMessageStartIndex$.next(0)
-    this.messageService.canLoadMorePublicMessages$.next(false)
+    //this.messageService.canLoadMorePublicMessages$.next(false)
     
     this.getConcurrentNumberOfPublicChanelMessages(channelId);
 
@@ -158,7 +159,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   }
 
   getConcurrentNumberOfPublicChanelMessages(intialChanelId?: number):void{
-    
+    console.log(`and this runs`,intialChanelId)
     if(intialChanelId !==undefined){
       this.chatService.getLatestNumberOfPublicChannelMessages(intialChanelId, this.currentUserId$.getValue() as number)
     }
@@ -171,9 +172,12 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
    
     this.store.select(selectPublicMessagesNumberFromChannelId)
       .pipe(
+     
+     rxjs.take(2),
        rxjs.filter(loadedMessagesNumber => !!loadedMessagesNumber),
         rxjs.switchMap((publicMessages) => {
-         
+         console.log(`publicMessages`, publicMessages)
+
           if(publicMessages > 10){
            this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagStarted({canLoadMore: true}))
           }else{
@@ -182,7 +186,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
           this.messageService.totalPublicChannelMessagesNumber$.next(publicMessages)
           
        
-          this.messageService.canLoadMorePublicMessages$.next(publicMessages > 10);
+          //this.messageService.canLoadMorePublicMessages$.next(publicMessages > 10);
           const startIndex = 0
           const endIndex = publicMessages - (publicMessages - 10);
           this.messageService.initialPublicMessageStartIndex$.next(endIndex)

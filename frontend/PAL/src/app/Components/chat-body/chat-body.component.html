@@ -41,7 +41,7 @@
 <ng-container *ngIf="!(this.chatService.privateConversationId$ | async)">
     <cdk-virtual-scroll-viewport #virtualScrollViewportPublic itemSize="18" class="chat-body-x" autosize
         (scrolledIndexChange)="publicAutoScroll($event)">
-        <button *ngIf="this.messageService.canLoadMorePublicMessages$ |async" mat-raised-button color="primary"
+        <button *ngIf="this.canLoadMorePublicMessages$ |async" mat-raised-button color="primary"
             (click)="this.messageService.loadMorePublicMessages()">Load More</button>
         <ng-container
             *cdkVirtualFor="let receivedPublicMessage of (this.receivePublicMessagesRecordsNgRx$ | async); let i = index; let last = last; let count = count">

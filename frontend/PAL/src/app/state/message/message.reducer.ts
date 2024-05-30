@@ -70,7 +70,7 @@ export const messageReducer = createReducer(
         const currentMessages = state.publicMessagesRecord[channelId] || []
         const paginatedRecords = [...publicMessages, ...currentMessages]
         const totalPublicMessages = paginatedRecords.length
-        console.log(`reducer/totalPublicMessages:`,totalPublicMessages)
+        // console.log(`reducer/totalPublicMessages:`,totalPublicMessages)
         
         return {
             ...state,
@@ -172,23 +172,26 @@ export const messageReducer = createReducer(
     on(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdSuccceded, (state,{ channelId, totalPublicMessages})=>{
         const totalMessages = totalPublicMessages
         const totalLoadedMessages = state.loadedPublicMessagesCount
-        console.log(`total messages ${totalMessages} / totalLoadedMessages ${totalLoadedMessages}`)
-        
+//        console.log(`total messages ${totalMessages} / totalLoadedMessages ${totalLoadedMessages}`)
+
+        let loadMoreFlag = true
         if(totalMessages === totalLoadedMessages){
-            console.log(`reducer says its okay`)
+             loadMoreFlag = false
         }
+
         return {
             ...state,
             totalPublicMessagesCountRecord:{
                 ...state.totalPublicMessagesCountRecord,
                 [channelId]:totalPublicMessages
-            }
+            },
+            canLoadMorePublicMessagesFlag:loadMoreFlag
         }
     }),
 
   /// FLAG calls /// 
   on(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagSucceeded,(state,{canLoadMore})=>{
-    console.log(`reducer/flag/canloadMore:`, canLoadMore)
+    // console.log(`reducer/flag/canloadMore:`, canLoadMore)
         return {
             ...state,
             canLoadMorePublicMessagesFlag:canLoadMore

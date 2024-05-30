@@ -83,8 +83,13 @@ export const selectPublicMessagesNumberFromChannelId = createSelector(
         return messageState.totalPublicMessagesCountRecord[currentlyClickedChannel]
     }
 )
-
-
+/// FLAG selectors ///
+export const selectCanLoadMorePublicMessages = createSelector(
+    selectedMessageState,
+    (messageState:MessageState) =>{
+        return messageState.canLoadMorePublicMessagesFlag
+    }
+)
 /// Helper selectors ///
 export const totalPublicMessagesCount = createSelector(
     selectedMessageState,

@@ -206,6 +206,7 @@ export class MessageEffects {
             ofType(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdStarted),
             rxjs.switchMap(() => {
                 return this.chatService.receiveLatestNumberOfPublicChannelMessages().pipe(
+                    rxjs.take(1), 
                     rxjs.map((response) => Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdSuccceded({ 
                         channelId: response.channelId, 
                         totalPublicMessages: response.numberOfPublicMessages
@@ -220,8 +221,10 @@ export class MessageEffects {
     setCanLoadMorePublicMessagesFlag$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagStarted),
+            rxjs.take(1),
             rxjs.switchMap((action) =>
                 rxjs.of(action.canLoadMore).pipe(
+                   
                     rxjs.map((response) => Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagSucceeded({ canLoadMore: response })),
                     rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagFailed({ error: error })))
                 )

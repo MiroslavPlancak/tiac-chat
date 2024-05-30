@@ -14,7 +14,7 @@ import { Messages } from '../state/message/message.action';
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
 import { selectCurrentlyClickedConversation } from '../state/channel/channel.selector';
 import { Channels } from '../state/channel/channel.action';
-import { selectIsTypingStatusIds, selectPaginatedRecordById, selectPublicMessagesNumberFromChannelId, totalPublicMessagesCount } from '../state/message/message.selector';
+import { selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectPaginatedRecordById, selectPublicMessagesNumberFromChannelId, totalPublicMessagesCount } from '../state/message/message.selector';
 import { Message } from '../Models/message.model';
 
 @Injectable({
@@ -118,7 +118,8 @@ export class MessageService implements OnInit, OnDestroy {
     return this.http.get<Observable<any>[]>
       (this.apiUrl + `getPaginatedPublicChannelMessages?channelId=${channelId}&startIndex=${startIndex}&endIndex=${endIndex}`)
       .pipe(
-        map(messages => messages.reverse())
+        map(messages => messages.reverse()),
+        // rxjs.tap(()=>console.log(`api happens`))
       )
   }
 
@@ -210,10 +211,16 @@ export class MessageService implements OnInit, OnDestroy {
 
   // load more public messages method()
   loadMorePublicMessages() {
-    this.store.select(selectCurrentlyClickedConversation).pipe(
+    rxjs.combineLatest([
+      this.store.select(selectCurrentlyClickedConversation).pipe(rxjs.take(1)),
+      this.store.select(selectCanLoadMorePublicMessages).pipe(rxjs.take(1))
+    ]).pipe(
       rxjs.take(1),
-      rxjs.filter(selectedChannel => selectedChannel !== undefined && this.canLoadMorePublicMessages$.value !== false),
-      tap(selectedChannel => {
+      rxjs.filter(([selectedChannel, canLoadMorePublicMessages]) => 
+        selectedChannel !== undefined && canLoadMorePublicMessages === true
+      ),
+      rxjs.tap(([selectedChannel]) => {
+        console.log(`selected channel`, selectedChannel);
         const startIndex = this.initialPublicMessageStartIndex$.value;
         const endIndex = startIndex + 10;
         this.initialPublicMessageStartIndex$.next(endIndex);
@@ -228,31 +235,19 @@ export class MessageService implements OnInit, OnDestroy {
       rxjs.switchMap(() => 
         this.store.select(totalPublicMessagesCount).pipe(
           // Wait for the state to update with new messages
-          rxjs.filter(totalPublicMessagesCount => totalPublicMessagesCount > 0),
-        
+          rxjs.filter(totalPublicMessagesCount => totalPublicMessagesCount > 0)
         )
       ),
-      tap(() => {
+      rxjs.tap(() => {
         // Dispatch actions after the state has updated
         this.store.dispatch(Messages.Hub.Actions.requestLatestNumberOfPublicMessagesByChannelIdStarted());
         this.store.dispatch(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdStarted());
       }),
-      rxjs.switchMap(() => 
-        this.store.select(selectPublicMessagesNumberFromChannelId).pipe(
-          rxjs.switchMap(latestNumberOfPublicMessages =>
-            this.store.select(totalPublicMessagesCount).pipe(
-              map(totalPublicMessagesCount => ({ latestNumberOfPublicMessages, totalPublicMessagesCount }))
-            )
-          )
-        )
-      )
-    ).subscribe(({ latestNumberOfPublicMessages, totalPublicMessagesCount }) => {
-      console.log(latestNumberOfPublicMessages, totalPublicMessagesCount);
-      if (latestNumberOfPublicMessages === totalPublicMessagesCount) {
-        this.canLoadMorePublicMessages$.next(false);
-      }
-    });
+      rxjs.takeUntil(this.destroy$)
+    ).subscribe();
   }
+  
+
   // load more private messages method()
   loadMorePrivateMessages(): void {
 
