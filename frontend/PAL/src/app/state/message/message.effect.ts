@@ -26,7 +26,7 @@ export class MessageEffects {
             ofType(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted),
             rxjs.switchMap((action) =>
                 this.messageService.loadPaginatedPrivateMessages(action.senderId, action.receiverId, action.startIndex, action.endIndex).pipe(
-                   rxjs.tap((res)=> console.log(`effect type:`, res)),
+//                   rxjs.tap((res)=> console.log(`effect type:`, res)),
                     rxjs.map((response) => Messages.Api.Actions.loadPaginatedPrivateMessagesSucceeded({ receiverId: action.receiverId, privateMessages: response })),
                     rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.loadPaginatedPrivateMessagesFailed({ error: error })))
                 )
@@ -92,12 +92,12 @@ export class MessageEffects {
     loadPublicMessage$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Hub.Actions.sendPublicMessageStarted),
-            rxjs.tap(action => console.log('Action dispatched:', action)), // Add this line to log the action
+           // rxjs.tap(action => console.log('Action dispatched:', action)), // Add this line to log the action
             rxjs.withLatestFrom(this.store.select(selectCurrentUser)),
             rxjs.switchMap(([actions, user]) => {
-                console.log(`actions:`, actions)
+                //console.log(`actions:`, actions)
                 return this.messageService.sendMessage(actions.senderId, actions.publicMessage, actions.channelId).pipe(
-                    rxjs.tap(response => console.log(`tap/effect response:`, response)), // Add this line to log the response
+                  //  rxjs.tap(response => console.log(`tap/effect response:`, response)), // Add this line to log the response
                     rxjs.map(() => Messages.Hub.Actions.sendPublicMessageSucceeded({
                         senderId: actions.senderId,
                         publicMessage: actions.publicMessage,
@@ -114,9 +114,9 @@ export class MessageEffects {
         this.action$.pipe(
             ofType(Messages.Hub.Actions.receivePrivateMessageStarted),
             rxjs.switchMap((action) =>{
-                console.log(`effect:0`, action.privateMessage)
+             //   console.log(`effect:0`, action.privateMessage)
                 return rxjs.of(action).pipe(
-                    rxjs.tap((res) => console.log(`effect:`, res)),
+                 //   rxjs.tap((res) => console.log(`effect:`, res)),
                     rxjs.map(()=> Messages.Hub.Actions.receivePrivateMessageSucceeded({ privateMessage: action.privateMessage, senderId: action.senderId})),
                     rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.receivePrivateMessageFailed({ error: error })))
                 )
@@ -128,9 +128,9 @@ export class MessageEffects {
         this.action$.pipe(
             ofType(Messages.Hub.Actions.receivePublicMessageStarted),
             rxjs.switchMap((action) =>{
-                console.log(`effect:0`, action.channelId )
+              //  console.log(`effect:0`, action.channelId )
                 return rxjs.of(action).pipe(
-                    rxjs.tap((res) => console.log(`effect:`, res)),
+                 //   rxjs.tap((res) => console.log(`effect:`, res)),
                     rxjs.map(()=> Messages.Hub.Actions.receivePublicMessageSucceeded({ publicMessage: action.publicMessage, channelId: action.channelId})),
                     rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.receivePublicMessageFailed({ error: error })))
                 )

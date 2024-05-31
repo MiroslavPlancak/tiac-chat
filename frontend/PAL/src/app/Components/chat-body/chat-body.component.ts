@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ChatService, PrivateMessage } from '../../Services/chat.service';
 import { MessageService } from '../../Services/message.service';
 import { UserService } from '../../Services/user.service';
@@ -18,7 +18,7 @@ import { selectCurrentlyClickedConversation } from '../../state/channel/channel.
   templateUrl: './chat-body.component.html',
   styleUrl: './chat-body.component.css'
 })
-export class ChatBodyComponent implements OnInit,OnDestroy {
+export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
   
   @ViewChild('chatBodyContainer') chatBodyContainer!: ElementRef<HTMLElement>;
   @ViewChild(CdkVirtualScrollViewport) virtualScrollViewport!: CdkVirtualScrollViewport;
@@ -102,7 +102,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
   scrollIndexPrivate$ = this.messageService.virtualScrollViewportPrivate$
   //ng RX props
   currentUserLogged$ = this.store.select(selectCurrentUser)
-
+  scrollOffset$ = new rxjs.BehaviorSubject<number>(0)
   constructor(
     public chatService: ChatService,
     public messageService: MessageService,
@@ -113,12 +113,28 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
 
    }
+  ngAfterViewInit(): void {
+        // Subscribe to scroll events
+        if (this.virtualScrollViewportPublic) {
+          this.virtualScrollViewportPublic.elementScrolled().pipe(
+            rxjs.takeUntil(this.destroy$)
+          ).subscribe(() => {
+            const scrollOffset = this.virtualScrollViewportPublic.measureScrollOffset();
+            const dataLength = this.virtualScrollViewportPublic.getDataLength()
+           // console.log('Current scroll offset:', scrollOffset, 'getDataLength()', dataLength); 
+            this.scrollOffset$.next(dataLength)
+          });
+        } else {
+          console.error('virtualScrollViewportPublic is not initialized');
+        }
+
+        
+  }
 
 
   ngOnInit(): void {
     //testing 
-
-
+    
    // this.currentlyTypingUsers.subscribe((res)=> console.log(`xx`, res))
    //scroll after sending a private message
    this.messageService.endScrollValue$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
@@ -237,9 +253,14 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
     })
 
     this.messageService.receiveMessage().subscribe((res)=>{
-      console.log(`public message received:`, res)
+      //console.log(`public message received:`, res)
       this.store.dispatch(Messages.Hub.Actions.receivePublicMessageStarted({publicMessage: res.message, channelId: res.channelId}))
+     // console.log(`virtualScrollViewportPublic`, this.virtualScrollViewportPublic.getDataLength())
+      const lastestMessage = this.virtualScrollViewportPublic.getDataLength()
+      this.scrollToEndPublic(lastestMessage)
     })
+
+
     this.messageService.receivePrivateMesages()
     .pipe(
       rxjs.withLatestFrom(this.privateConversationUsers$),
@@ -304,8 +325,12 @@ export class ChatBodyComponent implements OnInit,OnDestroy {
 
   scrollToEndPublic(index: number): void {
     
-    this.virtualScrollViewportPublic.scrollToIndex(index)
-    console.log('Scrolled to index:', index);
+    //this.virtualScrollViewportPublic.scrollToIndex(index)
+    setTimeout(() => {
+      this.virtualScrollViewport.scrollToIndex(index)
+    }, 11);
+    
+    console.log('Scrolled to index:',index);
 
   }
 }

@@ -80,7 +80,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
     this.chatService.privateMessageReceived().pipe(
       rxjs.takeUntil(this.destroy$),
       rxjs.switchMap((receivedPrivateMessage) => {
-        console.log(`received message:`,receivedPrivateMessage)
+//        console.log(`received message:`,receivedPrivateMessage)
         this.store.dispatch(Messages.Hub.Actions.receivePrivateMessageClickConversationStarted({
           receiverId: receivedPrivateMessage.sentToUserId,
            messageId: receivedPrivateMessage.id,

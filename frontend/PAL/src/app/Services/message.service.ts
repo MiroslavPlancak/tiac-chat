@@ -96,7 +96,7 @@ export class MessageService implements OnInit, OnDestroy {
     const fullPath = `getPaginatedPrivateMessages?senderId=${senderId}&receiverId=${receiverId}&startIndex=${startIndex}&endIndex=${endIndex}`;
     return this.http.get<PrivateMessage[]>(this.apiUrl + fullPath).pipe(
       map(messages => messages.reverse()),
-      tap((res)=> console.log(`service output:`,res))
+//      tap((res)=> console.log(`service output:`,res))
     )
   }
 
@@ -220,7 +220,7 @@ export class MessageService implements OnInit, OnDestroy {
         selectedChannel !== undefined && canLoadMorePublicMessages === true
       ),
       rxjs.tap(([selectedChannel]) => {
-        console.log(`selected channel`, selectedChannel);
+        // console.log(`selected channel`, selectedChannel);
         const startIndex = this.initialPublicMessageStartIndex$.value;
         const endIndex = startIndex + 10;
         this.initialPublicMessageStartIndex$.next(endIndex);
@@ -257,10 +257,10 @@ export class MessageService implements OnInit, OnDestroy {
       if (this.canLoadMorePrivateMessages$.value !== false && privateConversationId !== undefined) {
 
         let startIndex = this.initialPrivateMessageStartIndex$.value
-        console.log(`start index from service:`,startIndex)
+//        console.log(`start index from service:`,startIndex)
         let endIndex = startIndex + 10
         this.initialPrivateMessageStartIndex$.next(endIndex)
-        console.log(`end indext from service:`, endIndex)
+     //   console.log(`end indext from service:`, endIndex)
         
         //ngRx
         this.store.dispatch(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted({
@@ -276,7 +276,7 @@ export class MessageService implements OnInit, OnDestroy {
           const totalMessages = messages.length
           this.totalLoadedMessages += totalMessages
           const batches = Math.ceil( this.totalLoadedMessages / 10 )
-          console.log(`TotalMessages: ${this.totalLoadedMessages}, Batches: ${batches}`);
+       //   console.log(`TotalMessages: ${this.totalLoadedMessages}, Batches: ${batches}`);
           if(totalMessages % 10 !== 0){
             this.canLoadMorePrivateMessages$.next(false)
           }else if( totalMessages > endIndex && totalMessages % 10 !== 0 ) {
