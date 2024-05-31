@@ -103,12 +103,19 @@ export const selectRemainingParticipantsOfPrivateChannel = createSelector(
     }
 )
 
+//select currently clicked private conversation ID
+export const selectCurrentlyClickedPrivateConversation = createSelector(
+    selectedChannelState,
+    (channelState:ChannelState) =>{
+        console.log(`selector/clicked private convo:`, channelState.clickedPrivateChannelID)
+       return channelState.clickedPrivateChannelID}
+)
 
 /////// Flag selectors /////////
 
 // select currently clicked conversation
 
-export const selectCurrentlyClickedConversation = createSelector(
+export const selectCurrentlyClickedPublicConversation = createSelector(
     selectedChannelState,
     (channelState:ChannelState) =>
         channelState.currentConversationId

@@ -94,16 +94,18 @@ export class ChatService implements OnInit,OnDestroy {
  
 
   // get latest number of private messages logic
-  public getLatestNumberOfPrivateMessages = (senderId: number, receiverId: number) =>{
+  public getLatestNumberOfPrivateMessages = (senderId: number, receiverId: number): rxjs.Observable<any> =>{
     this.hubConnection?.invoke("GetLatestNumberOfPrivateMessages", senderId, receiverId)
     .catch(err => console.log(err))
+    return rxjs.of(rxjs.EMPTY)
   }
 
   // recieve latest number of private messages logic
-  public receiveLatestNumberOfPrivateMessages = (): rxjs.Observable<number> =>{
-    return new rxjs.Observable<number> (observer => {
-      this.hubConnection?.on("UpdatedPrivateMessagesNumber", (numberOfPrivateMessages)=>{
-        observer.next(numberOfPrivateMessages);
+  public receiveLatestNumberOfPrivateMessages = (): rxjs.Observable<any> =>{
+    return new rxjs.Observable<any> (observer => {
+      this.hubConnection?.on("UpdatedPrivateMessagesNumber", (receiverId, numberOfPrivateMessages)=>{
+        console.log(`chatservice:`, receiverId, numberOfPrivateMessages)
+        observer.next({receiverId,numberOfPrivateMessages});
       })
     }).pipe(rxjs.takeUntil(this.destroy$))
   }

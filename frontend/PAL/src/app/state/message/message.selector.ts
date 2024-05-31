@@ -90,6 +90,14 @@ export const selectCanLoadMorePublicMessages = createSelector(
         return messageState.canLoadMorePublicMessagesFlag
     }
 )
+
+export const selectCanLoadMorePrivateMessages = createSelector(
+    selectedMessageState,
+    (messageState:MessageState) =>{
+        return messageState.canLoadMorePrivateMessagesFlag
+    }
+)
+
 /// Helper selectors ///
 export const totalPublicMessagesCount = createSelector(
     selectedMessageState,
@@ -98,3 +106,9 @@ export const totalPublicMessagesCount = createSelector(
     }
 )
 
+export const totalPrivateMessagesCount = createSelector(
+    selectedMessageState,
+    (messageState: MessageState) =>{
+        return messageState.loadedPrivateMessagesCount
+    }
+)

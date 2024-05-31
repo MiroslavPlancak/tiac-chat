@@ -11,7 +11,7 @@ import { Messages } from '../../state/message/message.action'
 import { selectUserById,selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
 import { selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectIsTypingStatusMap, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
-import { selectCurrentlyClickedConversation } from '../../state/channel/channel.selector';
+import { selectCurrentlyClickedPublicConversation } from '../../state/channel/channel.selector';
 
 @Component({
   selector: 'app-chat-body',
@@ -55,7 +55,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
 
   //new ngrx public messages implementation
  
-  receivePublicMessagesRecordsNgRx$ =  this.store.select(selectCurrentlyClickedConversation).pipe(
+  receivePublicMessagesRecordsNgRx$ =  this.store.select(selectCurrentlyClickedPublicConversation).pipe(
     rxjs.filter(channelId => !!channelId),
     rxjs.switchMap((channelId)=>{
 //      console.log(`channelID emission:`, channelId)

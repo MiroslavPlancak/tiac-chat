@@ -47,7 +47,6 @@ export const channelReducer = createReducer(
 
     //load private channel by channel ID
     on(Channels.Api.Actions.loadPrivateChannelByIdSucceeded, (state, { channelId }) => {
-
         return {
             ...state,
             clickedPrivateChannelID: channelId

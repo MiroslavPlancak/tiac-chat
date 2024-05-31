@@ -12,7 +12,7 @@ import { Store } from '@ngrx/store';
 import { Users } from '../state/user/user.action'
 import { Messages } from '../state/message/message.action';
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
-import { selectCurrentlyClickedConversation } from '../state/channel/channel.selector';
+import { selectCurrentlyClickedPrivateConversation, selectCurrentlyClickedPublicConversation } from '../state/channel/channel.selector';
 import { Channels } from '../state/channel/channel.action';
 import { selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectPaginatedRecordById, selectPublicMessagesNumberFromChannelId, totalPublicMessagesCount } from '../state/message/message.selector';
 import { Message } from '../Models/message.model';
@@ -25,7 +25,7 @@ export class MessageService implements OnInit, OnDestroy {
   private destroy$ = new rxjs.Subject<void>();
   currentUserId$ = this.authService.userId$;
 
-  canLoadMorePrivateMessages$ = new rxjs.BehaviorSubject<boolean>(false);
+  canLoadMorePrivateMessages$ = new rxjs.BehaviorSubject<boolean>(true);
   canLoadMorePublicMessages$ = new rxjs.BehaviorSubject<boolean>(false);
 
   initialPublicMessageStartIndex$ = new rxjs.BehaviorSubject<number>(0);
@@ -212,7 +212,7 @@ export class MessageService implements OnInit, OnDestroy {
   // load more public messages method()
   loadMorePublicMessages() {
     rxjs.combineLatest([
-      this.store.select(selectCurrentlyClickedConversation).pipe(rxjs.take(1)),
+      this.store.select(selectCurrentlyClickedPublicConversation).pipe(rxjs.take(1)),
       this.store.select(selectCanLoadMorePublicMessages).pipe(rxjs.take(1))
     ]).pipe(
       rxjs.take(1),
@@ -250,17 +250,18 @@ export class MessageService implements OnInit, OnDestroy {
 
   // load more private messages method()
   loadMorePrivateMessages(): void {
-
+    
     const [currentUserId, privateConversationId] = [this.currentUserId$.getValue(), this.privateConversationId$.getValue()]
     if (currentUserId !== null && privateConversationId !== undefined) {
+      
 
       if (this.canLoadMorePrivateMessages$.value !== false && privateConversationId !== undefined) {
-
+        
         let startIndex = this.initialPrivateMessageStartIndex$.value
-//        console.log(`start index from service:`,startIndex)
+    
         let endIndex = startIndex + 10
         this.initialPrivateMessageStartIndex$.next(endIndex)
-     //   console.log(`end indext from service:`, endIndex)
+     
         
         //ngRx
         this.store.dispatch(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted({
@@ -325,7 +326,9 @@ export class MessageService implements OnInit, OnDestroy {
 
   // select user for private messaging directly from public chat method()
   public conversationIdSelectedClickHandler(conversationId: number): void {
-
+    //set the clicked private conversation flag in the state
+    this.store.dispatch(Channels.Api.Actions.loadPrivateChannelByIdStarted({ channelId: conversationId}))
+    this.store.select(selectCurrentlyClickedPrivateConversation).pipe(rxjs.take(1)).subscribe((res)=> console.log(`selected private channel:`, res))
     //ngRx clear private messages state
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({ userId: conversationId }))
     
@@ -360,7 +363,7 @@ export class MessageService implements OnInit, OnDestroy {
     if (conversationId !== this.currentUserId$.getValue()) {
       //this was causing the improper loading
       this.initialPublicMessageStartIndex$.next(0)
-      this.canLoadMorePrivateMessages$.next(false)
+      //this.canLoadMorePrivateMessages$.next(false)
       //this was causing the improper loading
 
       this.getConcurrentNumberOfMessages();
@@ -391,19 +394,20 @@ export class MessageService implements OnInit, OnDestroy {
   }
 
   getConcurrentNumberOfMessages(): void {
-
+    console.log(`its here you dumbass`)
     this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId$.getValue())
     this.chatService.receiveLatestNumberOfPrivateMessages()
       .pipe(
         rxjs.first(),
         rxjs.switchMap(totalMessagesNumber => {
-          this.totalPrivateConversationMessagesNumber$.next(totalMessagesNumber);
+          console.log(totalMessagesNumber.numberOfPrivateMessages)
+          this.totalPrivateConversationMessagesNumber$.next(totalMessagesNumber.numberOfPrivateMessages);
 
           //displays the button if there are messages to be loaded/disappears it when there arent.
-          this.canLoadMorePrivateMessages$.next(totalMessagesNumber > 10);
+          this.canLoadMorePrivateMessages$.next(totalMessagesNumber.numberOfPrivateMessages > 10);
 
           const startIndex = 0
-          const endIndex = totalMessagesNumber - (totalMessagesNumber - 10);
+          const endIndex = totalMessagesNumber.numberOfPrivateMessages - (totalMessagesNumber.numberOfPrivateMessages - 10);
           this.initialPrivateMessageStartIndex$.next(endIndex)
 
           //ngRx
@@ -424,23 +428,7 @@ export class MessageService implements OnInit, OnDestroy {
         }),
         rxjs.takeUntil(this.destroy$)
       )
-      .subscribe(res => {
-        //console.log(`old output:`,res.length)
-   
-        // const privateMessages: any = res.map(async (message: any) => {
-        //   const senderId = await this.extractUserName(message.sentFromUserId).toPromise()
-        //   return {
-        //     isSeen: message.isSeen,
-        //     senderId: senderId,
-        //     message: message.body
-        //   }
-        // })
-        // Promise.all(privateMessages).then((messsages: any) => {
-
-        //   this.receivedPrivateMessages$.next(messsages)
-        //   //console.log(this.messageService.receivedPrivateMessages$.value)
-        // })
-      });
+      .subscribe(res => {});
   }
 
   seenMessageStatus(): void {

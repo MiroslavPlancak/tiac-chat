@@ -9,7 +9,7 @@ import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { Messages } from '../../state/message/message.action'
 import { selectCurrentUser } from '../../state/user/user.selector';
-import { selectCurrentlyClickedConversation } from '../../state/channel/channel.selector';
+import { selectCurrentlyClickedPublicConversation } from '../../state/channel/channel.selector';
 
 @Component({
   selector: 'app-chat-commands',
@@ -125,7 +125,7 @@ export class ChatCommandsComponent implements OnInit, OnDestroy {
     })
 
 
-    const selectedChannelNgRx$ = this.store.select(selectCurrentlyClickedConversation)
+    const selectedChannelNgRx$ = this.store.select(selectCurrentlyClickedPublicConversation)
     selectedChannelNgRx$.subscribe((selectedConversation) => {
       if (this.currentUserId$.getValue() && this.newPublicMessage && selectedConversation) {
 

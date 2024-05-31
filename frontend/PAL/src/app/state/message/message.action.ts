@@ -90,6 +90,17 @@ export namespace Messages {
                 RecieveLatestNumberOfPublicMessagesByChannelIdSuccceded: props<{ channelId: number, totalPublicMessages: number }>(),
                 RecieveLatestNumberOfPublicMessagesByChannelIdFailed: props<{ error: any }>(),
 
+                //request latest number of Private messages from the server by channelID
+                RequestLatestNumberOfPrivateMessagesByReceiverIdStarted: emptyProps(),
+                RequestLatestNumberOfPrivateMessagesByReceiverIdSuccceded: emptyProps(),
+                RequestLatestNumberOfPrivateMessagesByReceiverIdFailed: props<{ error: any }>(),
+
+                //request latest number of Private messages from the server by ReceiverId
+                RecieveLatestNumberOfPrivateMessagesByReceiverIdStarted: emptyProps(),
+                RecieveLatestNumberOfPrivateMessagesByReceiverIdSuccceded: props<{ receiverId: number, totalPrivateMessages: number }>(),
+                RecieveLatestNumberOfPrivateMessagesByReceiverIdFailed: props<{ error: any }>(),
+
+
             },
             source: SOURCE
         })

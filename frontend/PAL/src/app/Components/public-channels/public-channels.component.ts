@@ -12,7 +12,7 @@ import { Users } from '../../state/user/user.action'
 import { Messages } from '../../state/message/message.action'
 import {  selectCurrentUser } from '../../state/user/user.selector';
 import { Channels } from '../../state/channel/channel.action'
-import { selectAllChannels, selectAllPrivateChannels, selectAllPublicChannels, selectCurrentlyClickedConversation, selectPrivateChannels } from '../../state/channel/channel.selector';
+import { selectAllChannels, selectAllPrivateChannels, selectAllPublicChannels, selectCurrentlyClickedPublicConversation, selectPrivateChannels } from '../../state/channel/channel.selector';
 import { selectPublicMessagesNumberFromChannelId, selectPublicRecordById } from '../../state/message/message.selector';
 
 
@@ -34,7 +34,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   curentlyClickedPrivateChannel = this.chanelService.curentlyClickedPrivateChannel$
   selectedConversation = this.chanelService.selectedConversation$
   isDirectMessage = this.messageService.isDirectMessage
-  SelectedChannel$ = this.store.select(selectCurrentlyClickedConversation)
+  SelectedChannel$ = this.store.select(selectCurrentlyClickedPublicConversation)
   isDirectMessageOffline = this.messageService.isDirectMessageOffline
 
   // loadedPublicChannels: any[] = [];

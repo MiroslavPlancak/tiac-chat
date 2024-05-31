@@ -6,7 +6,7 @@ import { MessageService } from "../../Services/message.service";
 import { ChatService } from "../../Services/chat.service";
 import { Store } from "@ngrx/store";
 import { selectCurrentUser } from "../user/user.selector";
-import { selectCurrentlyClickedConversation, selectCurrentlyLoggedUser } from "../channel/channel.selector";
+import { selectCurrentlyClickedPrivateConversation, selectCurrentlyClickedPublicConversation, selectCurrentlyLoggedUser } from "../channel/channel.selector";
 
 @Injectable()
 
@@ -52,7 +52,8 @@ export class MessageEffects {
     loadPaginatedPublicMessages$ = createEffect(()=>
         this.action$.pipe(
             ofType(Messages.Api.Actions.loadPaginatedPublicMessagesStarted),
-            rxjs.switchMap((action)=>
+            //changed this to concatMap() from switchMap() for the purposes of waiting messages to properly load
+            rxjs.concatMap((action)=>
                 this.messageService.loadPaginatedPublicMessagesById(action.channelId, action.startIndex, action.endIndex).pipe(
                     rxjs.map((response) => Messages.Api.Actions.loadPaginatedPublicMessagesSucceeded({ channelId: action.channelId, publicMessages:response})),
                     rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.loadPaginatedPublicMessagesFailed({ error: error })))
@@ -190,7 +191,7 @@ export class MessageEffects {
     requestLastestNumberOfPublicMessagesByChannelId$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Hub.Actions.requestLatestNumberOfPublicMessagesByChannelIdStarted),
-            rxjs.withLatestFrom(this.store.select(selectCurrentlyClickedConversation), this.store.select(selectCurrentlyLoggedUser)),
+            rxjs.withLatestFrom(this.store.select(selectCurrentlyClickedPublicConversation), this.store.select(selectCurrentlyLoggedUser)),
             rxjs.switchMap(([action, channelId, currentUserId]) => {
                 // Mocked response observable; replace with actual API call
                 return this.chatService.getLatestNumberOfPublicChannelMessages(Number(channelId), Number(currentUserId)).pipe(
@@ -217,6 +218,34 @@ export class MessageEffects {
         )
     )
     
+    requestLatestNumberOfPrivateMessagesByReceiverId$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Hub.Actions.requestLatestNumberOfPrivateMessagesByReceiverIdStarted),
+            rxjs.withLatestFrom(this.store.select(selectCurrentlyLoggedUser), this.store.select(selectCurrentlyClickedPrivateConversation)),
+            rxjs.switchMap(([action, currentUserId, receiverId]) => {
+                return this.chatService.getLatestNumberOfPrivateMessages(Number(currentUserId), Number(receiverId)).pipe(
+                    rxjs.map(() => Messages.Hub.Actions.requestLatestNumberOfPrivateMessagesByReceiverIdSuccceded()),
+                    rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.requestLatestNumberOfPrivateMessagesByReceiverIdFailed({ error: error })))
+                )
+            })
+        )
+    )
+
+    receiveLatestNumberOfPrivateMessagesByReceiverId$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Hub.Actions.recieveLatestNumberOfPrivateMessagesByReceiverIdStarted),
+            rxjs.switchMap(() => {
+                return this.chatService.receiveLatestNumberOfPrivateMessages().pipe(
+                    rxjs.tap((res) => console.log(`tap:`,res)),
+                    rxjs.map((response) => Messages.Hub.Actions.recieveLatestNumberOfPrivateMessagesByReceiverIdSuccceded({
+                        receiverId: Number(response.receiverId),
+                        totalPrivateMessages: response.numberOfPrivateMessages
+                    })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.recieveLatestNumberOfPrivateMessagesByReceiverIdFailed({ error: error })))
+                )
+            })
+        )
+    )
       /// FLAG calls /// 
     setCanLoadMorePublicMessagesFlag$ = createEffect(() =>
         this.action$.pipe(

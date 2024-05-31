@@ -310,12 +310,12 @@ namespace TiacChat.Presentation.Hubs
 
                     if (onlineUsers.TryGetValue(senderId, out var senderConnectionId))
                     {
-                        await Clients.Client(senderConnectionId).SendAsync("UpdatedPrivateMessagesNumber", latestNumberOfPrivateMessages);
+                        await Clients.Client(senderConnectionId).SendAsync("UpdatedPrivateMessagesNumber",receiverId, latestNumberOfPrivateMessages);
                     }
 
                     if (onlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
                     {
-                        await Clients.Client(receiverConnectionId).SendAsync("UpdatePrivateMessagesNumber", latestNumberOfPrivateMessages);
+                        await Clients.Client(receiverConnectionId).SendAsync("UpdatePrivateMessagesNumber", receiverId, latestNumberOfPrivateMessages);
                     }
                 }
 
