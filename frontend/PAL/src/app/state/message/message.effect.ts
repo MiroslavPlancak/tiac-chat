@@ -24,12 +24,13 @@ export class MessageEffects {
     loadPaginatedPrivateMessages$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted),
-            rxjs.switchMap((action) =>
-                this.messageService.loadPaginatedPrivateMessages(action.senderId, action.receiverId, action.startIndex, action.endIndex).pipe(
-//                   rxjs.tap((res)=> console.log(`effect type:`, res)),
+            rxjs.switchMap((action) =>{
+                console.log(`effect night`,action.senderId, action.receiverId, action.startIndex, action.endIndex)
+             return   this.messageService.loadPaginatedPrivateMessages(action.senderId, action.receiverId, action.startIndex, action.endIndex).pipe(
+                  rxjs.tap((res)=> console.log(`effect type:`, res)),
                     rxjs.map((response) => Messages.Api.Actions.loadPaginatedPrivateMessagesSucceeded({ receiverId: action.receiverId, privateMessages: response })),
                     rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.loadPaginatedPrivateMessagesFailed({ error: error })))
-                )
+                )}
             )
         )
     )

@@ -49,6 +49,7 @@ export const messageReducer = createReducer(
         const currentMessages = state.privateMessagesRecord[receiverId] || []
         const paginatedRecords = [...privateMessages, ...currentMessages]
         const loadedPrivateMessagesLength = paginatedRecords.length
+        console.log(`reducer night:`, paginatedRecords)
         return {
             ...state,
             privateMessagesRecord: {
