@@ -3,7 +3,7 @@
     
     <cdk-virtual-scroll-viewport #virtualScrollViewport itemSize="18" class="chat-body-x" autosize
         (scrolledIndexChange)="privateAutoScroll($event)">
-        <button *ngIf="this.messageService.canLoadMorePrivateMessages$.value" mat-raised-button color="primary"
+        <button *ngIf="this.canLoadMorePrivateMessages$ | async" mat-raised-button color="primary"
             (click)="this.messageService.loadMorePrivateMessages()">Load More</button>
             
         <ng-container

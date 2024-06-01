@@ -14,7 +14,7 @@ import { Messages } from '../state/message/message.action';
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
 import { selectCurrentlyClickedPrivateConversation, selectCurrentlyClickedPublicConversation } from '../state/channel/channel.selector';
 import { Channels } from '../state/channel/channel.action';
-import { selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectPaginatedRecordById, selectPublicMessagesNumberFromChannelId, totalPublicMessagesCount } from '../state/message/message.selector';
+import { selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectPaginatedRecordById, selectPrivateMessagesNumberFromReceiverId, selectPublicMessagesNumberFromChannelId, totalPublicMessagesCount } from '../state/message/message.selector';
 import { Message } from '../Models/message.model';
 
 @Injectable({
@@ -395,19 +395,30 @@ export class MessageService implements OnInit, OnDestroy {
 
   getConcurrentNumberOfMessages(): void {
     console.log(`its here you dumbass`)
-    this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId$.getValue())
-    this.chatService.receiveLatestNumberOfPrivateMessages()
+
+    //ngRx foothold
+    this.store.dispatch(Messages.Hub.Actions.requestLatestNumberOfPrivateMessagesByReceiverIdStarted())
+    this.store.dispatch(Messages.Hub.Actions.recieveLatestNumberOfPrivateMessagesByReceiverIdStarted())
+
+   // this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId$.getValue())
+   this.store.select(selectPrivateMessagesNumberFromReceiverId)
       .pipe(
-        rxjs.first(),
-        rxjs.switchMap(totalMessagesNumber => {
-          console.log(totalMessagesNumber.numberOfPrivateMessages)
-          this.totalPrivateConversationMessagesNumber$.next(totalMessagesNumber.numberOfPrivateMessages);
+        rxjs.take(2),
+        rxjs.filter(loadedMessagesNumber => !!loadedMessagesNumber),
+        rxjs.switchMap(privateMessagesNumber => {
+          console.log(privateMessagesNumber)
+          if(privateMessagesNumber > 10){
+            this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagStarted({canLoadMore: true}))
+           }else{
+             this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagStarted({canLoadMore: false}))
+           }
+          this.totalPrivateConversationMessagesNumber$.next(privateMessagesNumber);
 
           //displays the button if there are messages to be loaded/disappears it when there arent.
-          this.canLoadMorePrivateMessages$.next(totalMessagesNumber.numberOfPrivateMessages > 10);
+          this.canLoadMorePrivateMessages$.next(privateMessagesNumber > 10);
 
           const startIndex = 0
-          const endIndex = totalMessagesNumber.numberOfPrivateMessages - (totalMessagesNumber.numberOfPrivateMessages - 10);
+          const endIndex = privateMessagesNumber - (privateMessagesNumber - 10);
           this.initialPrivateMessageStartIndex$.next(endIndex)
 
           //ngRx

@@ -234,9 +234,11 @@ export class MessageEffects {
     receiveLatestNumberOfPrivateMessagesByReceiverId$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Hub.Actions.recieveLatestNumberOfPrivateMessagesByReceiverIdStarted),
+            rxjs.take(1), 
             rxjs.switchMap(() => {
                 return this.chatService.receiveLatestNumberOfPrivateMessages().pipe(
                     rxjs.tap((res) => console.log(`tap:`,res)),
+                   
                     rxjs.map((response) => Messages.Hub.Actions.recieveLatestNumberOfPrivateMessagesByReceiverIdSuccceded({
                         receiverId: Number(response.receiverId),
                         totalPrivateMessages: response.numberOfPrivateMessages
@@ -256,6 +258,20 @@ export class MessageEffects {
                    
                     rxjs.map((response) => Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagSucceeded({ canLoadMore: response })),
                     rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagFailed({ error: error })))
+                )
+            )
+        )
+    )
+
+    setCanLoadMorePrivateMessagesFlag$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagStarted),
+            rxjs.take(1),
+            rxjs.switchMap((action) =>
+                rxjs.of(action.canLoadMore).pipe(
+                   
+                    rxjs.map((response) => Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagSucceeded({ canLoadMore: response })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagFailed({ error: error })))
                 )
             )
         )

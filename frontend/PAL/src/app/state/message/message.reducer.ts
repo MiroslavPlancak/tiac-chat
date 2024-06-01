@@ -224,5 +224,13 @@ export const messageReducer = createReducer(
             ...state,
             canLoadMorePublicMessagesFlag: canLoadMore
         }
+    }),
+
+    on(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagSucceeded, (state, { canLoadMore }) => {
+        // console.log(`reducer/flag/canloadMore:`, canLoadMore)
+        return {
+            ...state,
+            canLoadMorePrivateMessagesFlag: canLoadMore
+        }
     })
 )

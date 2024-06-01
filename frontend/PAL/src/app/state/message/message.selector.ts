@@ -73,7 +73,7 @@ export const selectIsTypingStatusIds = createSelector(
     }
 )
 
-//select latest number of message from public channel by channel ID
+//select latest number of public message by  channel ID
 export const selectPublicMessagesNumberFromChannelId = createSelector(
     selectedMessageState,
     selectedChannelState,
@@ -83,6 +83,18 @@ export const selectPublicMessagesNumberFromChannelId = createSelector(
         return messageState.totalPublicMessagesCountRecord[currentlyClickedChannel]
     }
 )
+
+//select latest number of private messages by receiver ID
+export const selectPrivateMessagesNumberFromReceiverId = createSelector(
+    selectedMessageState,
+    selectedChannelState,
+    (messageState: MessageState,channelState:ChannelState) =>{
+        const currentlyClickedChannel = Number(channelState.clickedPrivateChannelID)
+        
+        return messageState.totalPrivateMessagesCountRecord[currentlyClickedChannel]
+    }
+)
+
 /// FLAG selectors ///
 export const selectCanLoadMorePublicMessages = createSelector(
     selectedMessageState,

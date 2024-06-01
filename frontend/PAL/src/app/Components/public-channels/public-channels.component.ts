@@ -160,6 +160,8 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
 
   getConcurrentNumberOfPublicChanelMessages(intialChanelId?: number):void{
     // console.log(`and this runs`,intialChanelId)
+
+    /// need to investigate this and probably remove it
     if(intialChanelId !==undefined){
       this.chatService.getLatestNumberOfPublicChannelMessages(intialChanelId, this.currentUserId$.getValue() as number)
     }

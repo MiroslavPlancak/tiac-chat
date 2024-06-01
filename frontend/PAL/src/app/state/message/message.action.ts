@@ -110,14 +110,19 @@ export namespace Messages {
 
         export const SOURCE = SafeType.Source.from(MESSAGE_SOURCE, 'Flag')
 
-            export const Actions = createActionGroup({
-                events:{
-                    //set can load more public messages flag
-                    SetCanLoadMorePublicMessagesFlagStarted: props<{ canLoadMore: boolean }>(),
-                    SetCanLoadMorePublicMessagesFlagSucceeded:props<{ canLoadMore: boolean }>(),
-                    SetCanLoadMorePublicMessagesFlagFailed:props<{ error: any }>(),
-                },
-                source:SOURCE
-            })
+        export const Actions = createActionGroup({
+            events: {
+                //set can load more public messages flag
+                SetCanLoadMorePublicMessagesFlagStarted: props<{ canLoadMore: boolean }>(),
+                SetCanLoadMorePublicMessagesFlagSucceeded: props<{ canLoadMore: boolean }>(),
+                SetCanLoadMorePublicMessagesFlagFailed: props<{ error: any }>(),
+
+                //set can load more public messages flag
+                SetCanLoadMorePrivateMessagesFlagStarted: props<{ canLoadMore: boolean }>(),
+                SetCanLoadMorePrivateMessagesFlagSucceeded: props<{ canLoadMore: boolean }>(),
+                SetCanLoadMorePrivateMessagesFlagFailed: props<{ error: any }>(),
+            },
+            source: SOURCE
+        })
     }
 }
