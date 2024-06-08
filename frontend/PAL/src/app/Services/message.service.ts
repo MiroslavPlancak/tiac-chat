@@ -14,7 +14,7 @@ import { Messages } from '../state/message/message.action';
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
 import { selectCurrentlyClickedPrivateConversation, selectCurrentlyClickedPublicConversation, selectCurrentlyLoggedUser } from '../state/channel/channel.selector';
 import { Channels } from '../state/channel/channel.action';
-import { selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectPaginatedRecordById, selectPrivateMessagesNumberFromReceiverId, selectPublicMessagesNumberFromChannelId, totalPrivateMessagesCount, totalPublicMessagesCount } from '../state/message/message.selector';
+import { privateMessagesStartEndIndex, selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectPaginatedRecordById, selectPrivateMessagesNumberFromReceiverId, selectPublicMessagesNumberFromChannelId, totalPrivateMessagesCount, totalPublicMessagesCount } from '../state/message/message.selector';
 import { Message } from '../Models/message.model';
 
 @Injectable({
@@ -250,38 +250,55 @@ export class MessageService implements OnInit, OnDestroy {
 
   // load more private messages method()
   loadMorePrivateMessages(): void {
+    console.log(`load more...`)
     rxjs.combineLatest([
-      this.store.select(selectCurrentlyClickedPrivateConversation),
-      this.store.select(selectCanLoadMorePrivateMessages),
-      this.store.select(selectCurrentlyLoggedUser)
+      this.store.select(selectCurrentlyClickedPrivateConversation).pipe(rxjs.take(1)),
+      this.store.select(selectCanLoadMorePrivateMessages).pipe(rxjs.take(1)),
+      this.store.select(selectCurrentlyLoggedUser).pipe(rxjs.take(1)),
+      this.store.select(privateMessagesStartEndIndex).pipe(rxjs.take(1))
     ]).pipe(
       //optional
       
       rxjs.filter(([selectedPrivateConversation, canLoadMorePrivateMessages, selectCurrentlyLoggedUser ])=>{
-        console.log(selectedPrivateConversation , canLoadMorePrivateMessages ,selectCurrentlyLoggedUser)
+       // console.log(selectedPrivateConversation , canLoadMorePrivateMessages ,selectCurrentlyLoggedUser)
        return selectedPrivateConversation !== undefined  && canLoadMorePrivateMessages == true && selectCurrentlyLoggedUser !==undefined
       }),
-      rxjs.tap(([selectedPrivateConversation, canLoadMorePrivateMessages, selectCurrentlyLoggedUser])=>{
+      rxjs.tap(([selectedPrivateConversation, canLoadMorePrivateMessages, selectCurrentlyLoggedUser, pagination])=>{
         //old
-        let startIndex = this.initialPrivateMessageStartIndex$.value
+        let startIndex = pagination.endIndex
         console.log(`night startIndex:`, startIndex)
         let endIndex = startIndex + 10
         console.log(`night endIndex:`, endIndex)
-        this.initialPrivateMessageStartIndex$.next(endIndex)
-        console.log(`selectCurrentlyLoggedUser`,selectCurrentlyLoggedUser)
-        console.log(`selectedPrivateConversation`, selectedPrivateConversation)
+        
+        this.store.dispatch(Messages.Flag.Actions.setStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
+        //this.initialPrivateMessageStartIndex$.next(endIndex)
+        // console.log(`selectCurrentlyLoggedUser`,selectCurrentlyLoggedUser)
+        // console.log(`selectedPrivateConversation`, selectedPrivateConversation)
         this.store.dispatch(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted({
           senderId:Number(selectCurrentlyLoggedUser),
           receiverId:Number(selectedPrivateConversation),
           startIndex:startIndex,
           endIndex:endIndex
         }))
+        return endIndex
         }),
-        rxjs.switchMap(()=>
-          this.store.select(totalPrivateMessagesCount).pipe(
-            rxjs.filter(totalPrivateMessagesCount => totalPrivateMessagesCount > 0)
+        rxjs.switchMap(([selectedPrivateConversation, canLoadMorePrivateMessages, selectCurrentlyLoggedUser, pagination])=>
+          {
+           
+            const endIndex = pagination.endIndex
+            return this.store.select(totalPrivateMessagesCount).pipe(
+            rxjs.take(2),
+            rxjs.filter(totalPrivateMessagesCount => totalPrivateMessagesCount > 0),
+            rxjs.tap((totalPrivateMessagesCount)=>{
+              console.log(`debug/totalPrivateMessagesCount:`, totalPrivateMessagesCount)
+              console.log(endIndex)
+              if(totalPrivateMessagesCount < Number(endIndex)){
+                console.log(`this runs`)
+                this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagStarted({ canLoadMore: false }))
+              }
+            })
           )
-        ),
+        }),
         rxjs.tap(() => {
           this.store.dispatch(Messages.Hub.Actions.requestLatestNumberOfPrivateMessagesByReceiverIdStarted())
           this.store.dispatch(Messages.Hub.Actions.recieveLatestNumberOfPrivateMessagesByReceiverIdStarted())
@@ -369,7 +386,7 @@ export class MessageService implements OnInit, OnDestroy {
   public conversationIdSelectedClickHandler(conversationId: number): void {
     //set the clicked private conversation flag in the state
     this.store.dispatch(Channels.Api.Actions.loadPrivateChannelByIdStarted({ channelId: conversationId}))
-    this.store.select(selectCurrentlyClickedPrivateConversation).pipe(rxjs.take(1)).subscribe((res)=> console.log(`selected private channel:`, res))
+    this.store.select(selectCurrentlyClickedPrivateConversation).pipe(rxjs.take(1)).subscribe()
     //ngRx clear private messages state
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({ userId: conversationId }))
     
@@ -437,6 +454,8 @@ export class MessageService implements OnInit, OnDestroy {
   getConcurrentNumberOfMessages(): void {
     console.log(`initial loading of private messages`)
 
+    //reset the start/end indexes in the state
+    this.store.dispatch(Messages.Flag.Actions.resetStartEndIndexFlagStarted())
     //ngRx foothold
     this.store.dispatch(Messages.Hub.Actions.requestLatestNumberOfPrivateMessagesByReceiverIdStarted())
     this.store.dispatch(Messages.Hub.Actions.recieveLatestNumberOfPrivateMessagesByReceiverIdStarted())
@@ -444,10 +463,10 @@ export class MessageService implements OnInit, OnDestroy {
    // this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId$.getValue())
    this.store.select(selectPrivateMessagesNumberFromReceiverId)
       .pipe(
-        rxjs.take(2),
+      rxjs.take(2),
         rxjs.filter(loadedMessagesNumber => !!loadedMessagesNumber),
         rxjs.switchMap(privateMessagesNumber => {
-          console.log(privateMessagesNumber)
+//          console.log(`debug/privateMessagesNumber`,privateMessagesNumber)
           if(privateMessagesNumber > 10){
             this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagStarted({canLoadMore: true}))
            }else{
@@ -457,12 +476,13 @@ export class MessageService implements OnInit, OnDestroy {
 
           //displays the button if there are messages to be loaded/disappears it when there arent.
           this.canLoadMorePrivateMessages$.next(privateMessagesNumber > 10);
-
+          
           const startIndex = 0
           const endIndex = privateMessagesNumber - (privateMessagesNumber - 10);
-          
-          this.initialPrivateMessageStartIndex$.next(endIndex)
-          console.log(`initialPrivatemessageStartIndex$ night:`, this.initialPrivateMessageStartIndex$.getValue())
+          // console.log(`Initial start index:`, startIndex , `Initial end index:`, endIndex)
+          this.store.dispatch(Messages.Flag.Actions.setStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
+          // this.initialPrivateMessageStartIndex$.next(endIndex)
+          // console.log(`initialPrivatemessageStartIndex$ night:`, this.initialPrivateMessageStartIndex$.getValue())
           //ngRx
           this.store.dispatch(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted({
             senderId: this.currentUserId$.getValue() as number,

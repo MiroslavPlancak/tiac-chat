@@ -104,7 +104,7 @@ export class ChatService implements OnInit,OnDestroy {
   public receiveLatestNumberOfPrivateMessages = (): rxjs.Observable<any> =>{
     return new rxjs.Observable<any> (observer => {
       this.hubConnection?.on("UpdatedPrivateMessagesNumber", (receiverId, numberOfPrivateMessages)=>{
-        console.log(`chatservice:`, receiverId, numberOfPrivateMessages)
+//        console.log(`chatservice:`, receiverId, numberOfPrivateMessages)
         observer.next({receiverId,numberOfPrivateMessages});
       })
     }).pipe(rxjs.takeUntil(this.destroy$))

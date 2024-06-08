@@ -25,9 +25,9 @@ export class MessageEffects {
         this.action$.pipe(
             ofType(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted),
             rxjs.switchMap((action) =>{
-                console.log(`effect night`,action.senderId, action.receiverId, action.startIndex, action.endIndex)
+//                console.log(`effect night`,action.senderId, action.receiverId, action.startIndex, action.endIndex)
              return   this.messageService.loadPaginatedPrivateMessages(action.senderId, action.receiverId, action.startIndex, action.endIndex).pipe(
-                  rxjs.tap((res)=> console.log(`effect type:`, res)),
+                //   rxjs.tap((res)=> console.log(`effect type:`, res)),
                     rxjs.map((response) => Messages.Api.Actions.loadPaginatedPrivateMessagesSucceeded({ receiverId: action.receiverId, privateMessages: response })),
                     rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.loadPaginatedPrivateMessagesFailed({ error: error })))
                 )}
@@ -218,13 +218,15 @@ export class MessageEffects {
             })
         )
     )
-    
+    //uncomment take(1) for better performance (needs further testing)
     requestLatestNumberOfPrivateMessagesByReceiverId$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Hub.Actions.requestLatestNumberOfPrivateMessagesByReceiverIdStarted),
             rxjs.withLatestFrom(this.store.select(selectCurrentlyLoggedUser), this.store.select(selectCurrentlyClickedPrivateConversation)),
+           // rxjs.take(1),
             rxjs.switchMap(([action, currentUserId, receiverId]) => {
                 return this.chatService.getLatestNumberOfPrivateMessages(Number(currentUserId), Number(receiverId)).pipe(
+                   //rxjs.take(1),
                     rxjs.map(() => Messages.Hub.Actions.requestLatestNumberOfPrivateMessagesByReceiverIdSuccceded()),
                     rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.requestLatestNumberOfPrivateMessagesByReceiverIdFailed({ error: error })))
                 )
@@ -238,7 +240,8 @@ export class MessageEffects {
             rxjs.take(1), 
             rxjs.switchMap(() => {
                 return this.chatService.receiveLatestNumberOfPrivateMessages().pipe(
-                    rxjs.tap((res) => console.log(`tap:`,res)),
+                    // rxjs.take(1),
+                    // rxjs.tap((res) => console.log(`tap:`,res)),
                    
                     rxjs.map((response) => Messages.Hub.Actions.recieveLatestNumberOfPrivateMessagesByReceiverIdSuccceded({
                         receiverId: Number(response.receiverId),
@@ -267,7 +270,7 @@ export class MessageEffects {
     setCanLoadMorePrivateMessagesFlag$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagStarted),
-            rxjs.take(1),
+            //rxjs.take(1),
             rxjs.switchMap((action) =>
                 rxjs.of(action.canLoadMore).pipe(
                    
@@ -275,6 +278,31 @@ export class MessageEffects {
                     rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagFailed({ error: error })))
                 )
             )
+        )
+    )
+
+    setStartEndIndexFlag$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Flag.Actions.setStartEndIndexFlagStarted),
+            rxjs.switchMap((actions) => {
+                return rxjs.of(actions).pipe(
+                    rxjs.map(() => Messages.Flag.Actions.setStartEndIndexFlagSucceeded({ startIndex: actions.startIndex, endIndex: actions.endIndex })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setStartEndIndexFlagFailed({ error: error })))
+                )
+            })
+        )
+    )
+
+    resetStartEndIndexFlag$ = createEffect(()=>
+        this.action$.pipe(
+            ofType(Messages.Flag.Actions.resetStartEndIndexFlagStarted),
+            rxjs.switchMap((actions) => {
+                return rxjs.of(actions).pipe(
+                    // rxjs.tap(()=>console.log('does this happen?')),
+                    rxjs.map(()=> Messages.Flag.Actions.resetStartEndIndexFlagSucceeded()),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.resetStartEndIndexFlagFailed({ error: error})))
+                )
+            })
         )
     )
 }

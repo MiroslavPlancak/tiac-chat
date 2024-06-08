@@ -17,7 +17,11 @@ export interface MessageState {
     loadedPrivateMessagesCount: number,
     canLoadMorePrivateMessagesFlag: boolean,
     canLoadMorePublicMessagesFlag: boolean,
-    typingStatus: TypingStatusState
+    typingStatus: TypingStatusState,
+    privateMessagePagination:{
+        startIndex:number,
+        endIndex:number
+    }
 }
 
 export const initialState: MessageState = {
@@ -29,6 +33,12 @@ export const initialState: MessageState = {
     loadedPrivateMessagesCount: 0,
     canLoadMorePublicMessagesFlag: false,
     canLoadMorePrivateMessagesFlag: false,
+
+    privateMessagePagination:{
+        startIndex:0,
+        endIndex:0
+    },
+
     typingStatus: {
         currentlyTypingUsers: [],
     },
@@ -49,14 +59,25 @@ export const messageReducer = createReducer(
         const currentMessages = state.privateMessagesRecord[receiverId] || []
         const paginatedRecords = [...privateMessages, ...currentMessages]
         const loadedPrivateMessagesLength = paginatedRecords.length
-        console.log(`reducer night:`, paginatedRecords)
+        const totalPrivateMessagesLength = state.totalPrivateMessagesCountRecord[receiverId]
+        
+//        console.log(`currently loaded:`, loadedPrivateMessagesLength, `vs total:`, totalPrivateMessagesLength)
+        let stopLoadingPrivateMessages = false;
+        if(loadedPrivateMessagesLength <= totalPrivateMessagesLength ){
+            stopLoadingPrivateMessages = true
+        }
+        if(loadedPrivateMessagesLength === totalPrivateMessagesLength){
+            stopLoadingPrivateMessages = false
+        }
+        console.log(`reducer :`, paginatedRecords)
         return {
             ...state,
             privateMessagesRecord: {
                 ...state.privateMessagesRecord,
                 [receiverId]: paginatedRecords
             },
-            loadedPrivateMessagesCount: loadedPrivateMessagesLength
+            loadedPrivateMessagesCount: loadedPrivateMessagesLength,
+            canLoadMorePrivateMessagesFlag: stopLoadingPrivateMessages
         }
 
     }),
@@ -88,7 +109,8 @@ export const messageReducer = createReducer(
                 ...state.publicMessagesRecord,
                 [channelId]: paginatedRecords
             },
-            loadedPublicMessagesCount: loadedPublicMessagesLength
+            loadedPublicMessagesCount: loadedPublicMessagesLength,
+ 
         }
     }),
 
@@ -214,7 +236,7 @@ export const messageReducer = createReducer(
                 ...state.totalPrivateMessagesCountRecord,
                 [receiverId]: totalPrivateMessages
             },
-            canLoadMorePrivateMessagesFlag: loadMoreFlag
+           // canLoadMorePrivateMessagesFlag: loadMoreFlag
         }
     }),
 
@@ -228,10 +250,30 @@ export const messageReducer = createReducer(
     }),
 
     on(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagSucceeded, (state, { canLoadMore }) => {
-        // console.log(`reducer/flag/canloadMore:`, canLoadMore)
+        //  console.log(`reducer/flag/canloadMore:`, canLoadMore)
         return {
             ...state,
             canLoadMorePrivateMessagesFlag: canLoadMore
+        }
+    }),
+
+    on(Messages.Flag.Actions.setStartEndIndexFlagSucceeded, (state, {startIndex, endIndex})=>{
+        return {
+            ...state,
+            privateMessagePagination:{
+                startIndex,
+                endIndex
+            }
+        }
+    }),
+
+    on(Messages.Flag.Actions.resetStartEndIndexFlagSucceeded, (state,{})=>{
+        return {
+            ...state,
+            privateMessagePagination:{
+                startIndex: 0,
+                endIndex:0
+            }
         }
     })
 )

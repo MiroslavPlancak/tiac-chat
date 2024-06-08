@@ -124,3 +124,12 @@ export const totalPrivateMessagesCount = createSelector(
         return messageState.loadedPrivateMessagesCount
     }
 )
+
+export const privateMessagesStartEndIndex = createSelector(
+    selectedMessageState, 
+    (messageState: MessageState) =>{
+        console.log(`SELECTOR/privateMessagesStartEndIndex`, messageState.privateMessagePagination)
+        return messageState.privateMessagePagination
+    }
+)
+

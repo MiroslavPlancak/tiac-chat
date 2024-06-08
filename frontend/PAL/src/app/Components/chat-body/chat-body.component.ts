@@ -93,7 +93,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
   //ngRx canLoadMorePublicMessages$
   canLoadMorePublicMessages$ = this.store.select(selectCanLoadMorePublicMessages)
    //ngRx canLoadMorePrivateMessages$
-  canLoadMorePrivateMessages$ = this.store.select(selectCanLoadMorePrivateMessages)
+  canLoadMorePrivateMessages$ = this.store.select(selectCanLoadMorePrivateMessages).pipe(rxjs.tap((res) => {}))
 
   currentlyTypingUsersNgRx$ =  this.store.select(selectIsTypingStatusIds)
   currentlyTypingStatusMapNgRx$ =  this.store.select(selectIsTypingStatusMap)

@@ -121,6 +121,16 @@ export namespace Messages {
                 SetCanLoadMorePrivateMessagesFlagStarted: props<{ canLoadMore: boolean }>(),
                 SetCanLoadMorePrivateMessagesFlagSucceeded: props<{ canLoadMore: boolean }>(),
                 SetCanLoadMorePrivateMessagesFlagFailed: props<{ error: any }>(),
+
+                //Set starting and ending index flags
+                SetStartEndIndexFlagStarted: props<{startIndex: number, endIndex: number}>(),
+                SetStartEndIndexFlagSucceeded: props<{startIndex: number, endIndex: number}>(),
+                SetStartEndIndexFlagFailed: props<{ error: any }>(),
+
+                //Reset starting and ending index flags
+                ResetStartEndIndexFlagStarted: emptyProps(),
+                ResetStartEndIndexFlagSucceeded: emptyProps(),
+                ResetStartEndIndexFlagFailed: props<{ error: any }>(),
             },
             source: SOURCE
         })
