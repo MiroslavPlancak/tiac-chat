@@ -12,8 +12,8 @@ import { Users } from '../../state/user/user.action'
 import { Messages } from '../../state/message/message.action'
 import {  selectCurrentUser } from '../../state/user/user.selector';
 import { Channels } from '../../state/channel/channel.action'
-import { selectAllChannels, selectAllPrivateChannels, selectAllPublicChannels, selectCurrentlyClickedPublicConversation, selectPrivateChannels } from '../../state/channel/channel.selector';
-import { selectPublicMessagesNumberFromChannelId, selectPublicRecordById } from '../../state/message/message.selector';
+import { selectAllChannels, selectAllPrivateChannels, selectAllPublicChannels, selectCurrentlyClickedPrivateConversation, selectCurrentlyClickedPublicConversation, selectPrivateChannels } from '../../state/channel/channel.selector';
+import { privateMessagesStartEndIndex, selectPublicMessagesNumberFromChannelId, selectPublicRecordById } from '../../state/message/message.selector';
 
 
 @Component({
@@ -131,7 +131,19 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   public channelIdSelectedClickHandler(channelId: number): void {
     // console.log(`this runs`,channelId)
     this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: channelId}))
+  
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPublicMessagesStarted({ channelId: channelId}))
+    
+    //test
+    this.store.dispatch(Messages.Flag.Actions.resetStartEndIndexFlagStarted())
+    this.store.select(privateMessagesStartEndIndex).pipe(rxjs.take(1)).subscribe((res)=>console.log(`start/end indexes of private convo are:`, res))
+    this.store.select(selectCurrentlyClickedPrivateConversation).pipe(
+    
+      rxjs.switchMap((privateConvo)=>{
+        this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({userId: Number(privateConvo)}))
+        return rxjs.of(privateConvo)
+      })
+    ).subscribe((res)=> console.log(`the last clicked private convo was:`,res) )
 
     this.channelId = channelId
     this.messageService.conversationId$.next(channelId)

@@ -24,10 +24,12 @@ export class MessageEffects {
     loadPaginatedPrivateMessages$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted),
-            rxjs.switchMap((action) =>{
-//                console.log(`effect night`,action.senderId, action.receiverId, action.startIndex, action.endIndex)
+         
+            rxjs.concatMap((action) =>{
+          console.log(`effect pre-RESULT`,action)
              return   this.messageService.loadPaginatedPrivateMessages(action.senderId, action.receiverId, action.startIndex, action.endIndex).pipe(
-                //   rxjs.tap((res)=> console.log(`effect type:`, res)),
+              
+                  rxjs.tap((res)=> console.log(`effect RESULT:`, res)),
                     rxjs.map((response) => Messages.Api.Actions.loadPaginatedPrivateMessagesSucceeded({ receiverId: action.receiverId, privateMessages: response })),
                     rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.loadPaginatedPrivateMessagesFailed({ error: error })))
                 )}
@@ -286,6 +288,7 @@ export class MessageEffects {
             ofType(Messages.Flag.Actions.setStartEndIndexFlagStarted),
             rxjs.switchMap((actions) => {
                 return rxjs.of(actions).pipe(
+                    // rxjs.tap((res)=>console.log(`effect test:`, res)),
                     rxjs.map(() => Messages.Flag.Actions.setStartEndIndexFlagSucceeded({ startIndex: actions.startIndex, endIndex: actions.endIndex })),
                     rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setStartEndIndexFlagFailed({ error: error })))
                 )

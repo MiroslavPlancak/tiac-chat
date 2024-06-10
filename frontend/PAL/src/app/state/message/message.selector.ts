@@ -26,7 +26,7 @@ export const selectPaginatedRecordById = (receiverId:number) => createSelector(
     (messageState: MessageState) =>{
         //console.log(`selector/receiverID:`, receiverId)
         const messages = messageState.privateMessagesRecord[receiverId] || []
-       //console.log(`selector record(private):`,messageState.privateMessageRecords)
+      // console.log(`selector record(private):`,messageState.privateMessagesRecord[receiverId])
        // console.log(`selector messages `, messages)
         return messages
     }
@@ -90,7 +90,7 @@ export const selectPrivateMessagesNumberFromReceiverId = createSelector(
     selectedChannelState,
     (messageState: MessageState,channelState:ChannelState) =>{
         const currentlyClickedChannel = Number(channelState.clickedPrivateChannelID)
-        
+
         return messageState.totalPrivateMessagesCountRecord[currentlyClickedChannel]
     }
 )

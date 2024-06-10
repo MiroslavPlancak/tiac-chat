@@ -12,9 +12,9 @@ import * as rxjs from 'rxjs';
 
 })
 export class ChatHeaderComponent {
-  curentlyClickedPrivateChannel$ = this.channelService.curentlyClickedPrivateChannel$.subscribe((clickedChannel)=> {
-      this.store.dispatch(Channels.Api.Actions.loadPrivateChannelByIdStarted({ channelId: clickedChannel}))
-  })
+  // curentlyClickedPrivateChannel$ = this.channelService.curentlyClickedPrivateChannel$.subscribe((clickedChannel)=> {
+  //     this.store.dispatch(Channels.Api.Actions.loadPrivateChannelByIdStarted({ channelId: clickedChannel}))
+  // })
  selectedPrivateChannel$ = this.store.select(selectPrivateChannelById).pipe(
    rxjs.map(privateChannel => privateChannel.length > 0)
  )
