@@ -29,7 +29,7 @@ export class MessageEffects {
           console.log(`effect pre-RESULT`,action)
              return   this.messageService.loadPaginatedPrivateMessages(action.senderId, action.receiverId, action.startIndex, action.endIndex).pipe(
               
-                  rxjs.tap((res)=> console.log(`effect RESULT:`, res)),
+                   rxjs.tap((res)=> console.log(`effect:`, res)),
                     rxjs.map((response) => Messages.Api.Actions.loadPaginatedPrivateMessagesSucceeded({ receiverId: action.receiverId, privateMessages: response })),
                     rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.loadPaginatedPrivateMessagesFailed({ error: error })))
                 )}
@@ -84,7 +84,7 @@ export class MessageEffects {
     loadPrivateMessage$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Hub.Actions.sendPrivateMessageStarted),
-            rxjs.switchMap((actions) => {
+            rxjs.concatMap((actions) => {
                 return this.messageService.sendPrivateMessage(actions.privateMessage.sentToUser, actions.privateMessage.body).pipe(
                     rxjs.map(() => Messages.Hub.Actions.sendPrivateMessageSucceeded({ privateMessage: actions.privateMessage, receiverId: actions.receiverId })),
                     rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.sendPrivateMessageFailed({ error: error })))
@@ -120,7 +120,7 @@ export class MessageEffects {
             rxjs.switchMap((action) =>{
              //   console.log(`effect:0`, action.privateMessage)
                 return rxjs.of(action).pipe(
-                 //   rxjs.tap((res) => console.log(`effect:`, res)),
+                 // rxjs.tap((res) => console.log(`receive private message started / effect:`, res)),
                     rxjs.map(()=> Messages.Hub.Actions.receivePrivateMessageSucceeded({ privateMessage: action.privateMessage, senderId: action.senderId})),
                     rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.receivePrivateMessageFailed({ error: error })))
                 )

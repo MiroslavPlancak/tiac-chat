@@ -268,9 +268,9 @@ export class MessageService implements OnInit, OnDestroy {
         //old
         //here is the problem
         let startIndex = pagination.endIndex
-        console.log(`night startIndex:`, startIndex)
+        // console.log(`night startIndex:`, startIndex)
         let endIndex = startIndex + 10
-        console.log(`night endIndex:`, endIndex)
+        // console.log(`night endIndex:`, endIndex)
         
         this.store.dispatch(Messages.Flag.Actions.setStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
         //this.initialPrivateMessageStartIndex$.next(endIndex)
@@ -293,7 +293,7 @@ export class MessageService implements OnInit, OnDestroy {
             rxjs.filter(totalPrivateMessagesCount => totalPrivateMessagesCount > 0),
             rxjs.tap((totalPrivateMessagesCount)=>{
               console.log(`debug/totalPrivateMessagesCount:`, totalPrivateMessagesCount)
-              console.log(endIndex)
+              // console.log(endIndex)
               if(totalPrivateMessagesCount < Number(endIndex)){
                 console.log(`this runs`)
                 this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagStarted({ canLoadMore: false }))
@@ -313,7 +313,7 @@ export class MessageService implements OnInit, OnDestroy {
 
   // select user for private messaging directly from public chat method()
   public conversationIdSelectedClickHandler(conversationId: number): void {
-    console.log(`click`)
+//    console.log(`click`)
     //reset the start/end indexes in the state
     this.store.dispatch(Messages.Flag.Actions.resetStartEndIndexFlagStarted())
     
@@ -387,7 +387,7 @@ export class MessageService implements OnInit, OnDestroy {
   }
 
   getConcurrentNumberOfMessages(): void {
-    console.log(`initial loading of private messages`)
+   // console.log(`initial loading of private messages`)
 
 
     //ngRx foothold
@@ -398,10 +398,11 @@ export class MessageService implements OnInit, OnDestroy {
    // this.chatService.getLatestNumberOfPrivateMessages(this.currentUserId$.getValue() as number, this.conversationId$.getValue())
    this.store.select(selectPrivateMessagesNumberFromReceiverId)
       .pipe(
-      rxjs.take(2),
         rxjs.filter(loadedMessagesNumber => !!loadedMessagesNumber),
+      rxjs.take(1),
+        
         rxjs.switchMap(privateMessagesNumber => {
-          console.log(`debug/privateMessagesNumber`,privateMessagesNumber)
+         // console.log(`debug/privateMessagesNumber`,privateMessagesNumber)
           if(privateMessagesNumber > 10){
             this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePrivateMessagesFlagStarted({canLoadMore: true}))
            }else{
@@ -414,19 +415,20 @@ export class MessageService implements OnInit, OnDestroy {
           
           const startIndex = 0
           const endIndex = privateMessagesNumber - (privateMessagesNumber - 10);
-         console.log(`Initial start index:`, startIndex , `Initial end index:`, endIndex, `Initial senderId`, this.currentUserId$.getValue(), `Initial receiverId`, this.conversationId$.getValue())
+       //  console.log(`Initial start index:`, startIndex , `Initial end index:`, endIndex, `Initial senderId`, this.currentUserId$.getValue(), `Initial receiverId`, this.conversationId$.getValue())
           this.store.dispatch(Messages.Flag.Actions.setStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
           
           // this.initialPrivateMessageStartIndex$.next(endIndex)
           // console.log(`initialPrivatemessageStartIndex$ night:`, this.initialPrivateMessageStartIndex$.getValue())
           //ngRx
+
           this.store.dispatch(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted({
             senderId: this.currentUserId$.getValue() as number,
             receiverId: this.conversationId$.getValue(),
             startIndex: startIndex,
             endIndex: endIndex
           }))
-          
+          console.log(`this runs`)
           return this.store.select(selectPaginatedRecordById(this.conversationId$.getValue())).pipe(rxjs.take(1))
 
           // return this.loadPaginatedPrivateMessages(

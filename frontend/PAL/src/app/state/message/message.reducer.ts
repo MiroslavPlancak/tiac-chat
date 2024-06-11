@@ -55,7 +55,7 @@ export const messageReducer = createReducer(
 
     //add paginated private messages to the state
     on(Messages.Api.Actions.loadPaginatedPrivateMessagesSucceeded, (state, { receiverId, privateMessages }) => {
-        
+        console.log(`reducer/loadPaginatedPrivatemessagesSucceeded:`, privateMessages)
         const currentMessages = state.privateMessagesRecord[receiverId] || []
         const paginatedRecords = [...privateMessages, ...currentMessages]
         const loadedPrivateMessagesLength = paginatedRecords.length
@@ -135,6 +135,7 @@ export const messageReducer = createReducer(
         //console.log(`reducer output:`, privateMessage, receiverId)
         const currentMessages = state.privateMessagesRecord[receiverId] || []
         const updatedMessages = [...currentMessages, privateMessage]
+        console.log(`updatedMessages/SendPrivateMessagesSucceeded`, updatedMessages)
         return {
             ...state,
             privateMessagesRecord: {
@@ -148,6 +149,7 @@ export const messageReducer = createReducer(
     on(Messages.Hub.Actions.receivePrivateMessageSucceeded, (state, { privateMessage, senderId }) => {
         const currentMessages = state.privateMessagesRecord[senderId] || []
         const updatedMessages = [...currentMessages, privateMessage]
+        console.log(`updatedMessages/ReceivePrivateMessageSucceeded`, updatedMessages)
         return {
             ...state,
             privateMessagesRecord: {
@@ -260,7 +262,7 @@ export const messageReducer = createReducer(
     }),
 
     on(Messages.Flag.Actions.setStartEndIndexFlagSucceeded, (state, {startIndex, endIndex})=>{
-        console.log(`reducer:`, startIndex, endIndex)
+        // console.log(`reducer:`, startIndex, endIndex)
         return {
             ...state,
             privateMessagePagination:{

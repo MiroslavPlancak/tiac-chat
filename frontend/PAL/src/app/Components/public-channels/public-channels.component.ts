@@ -136,14 +136,14 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     
     //test
     this.store.dispatch(Messages.Flag.Actions.resetStartEndIndexFlagStarted())
-    this.store.select(privateMessagesStartEndIndex).pipe(rxjs.take(1)).subscribe((res)=>console.log(`start/end indexes of private convo are:`, res))
+    this.store.select(privateMessagesStartEndIndex).pipe(rxjs.take(1)).subscribe((res)=>{})
     this.store.select(selectCurrentlyClickedPrivateConversation).pipe(
     
       rxjs.switchMap((privateConvo)=>{
         this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({userId: Number(privateConvo)}))
         return rxjs.of(privateConvo)
       })
-    ).subscribe((res)=> console.log(`the last clicked private convo was:`,res) )
+    ).subscribe((res)=>{} )
 
     this.channelId = channelId
     this.messageService.conversationId$.next(channelId)
