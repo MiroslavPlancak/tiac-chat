@@ -19,6 +19,7 @@ export interface MessageState {
     canLoadMorePublicMessagesFlag: boolean,
     typingStatus: TypingStatusState,
     initialPrivateAutoScrollFlag: boolean,
+    initialPublicAutoScrollFlag: boolean,
     privateMessagePagination:{
         startIndex:number,
         endIndex:number
@@ -35,6 +36,7 @@ export const initialState: MessageState = {
     canLoadMorePublicMessagesFlag: false,
     canLoadMorePrivateMessagesFlag: false,
     initialPrivateAutoScrollFlag: false,
+    initialPublicAutoScrollFlag: false,
     privateMessagePagination:{
         startIndex:0,
         endIndex:0
@@ -100,11 +102,11 @@ export const messageReducer = createReducer(
 
     //add paginated public messages to the state
     on(Messages.Api.Actions.loadPaginatedPublicMessagesSucceeded, (state, { channelId, publicMessages }) => {
-        // console.log(`reducer/publicMessages:`, publicMessages)
+        console.log(`reducer/publicMessages:`, publicMessages)
         const currentMessages = state.publicMessagesRecord[channelId] || []
         const paginatedRecords = [...publicMessages, ...currentMessages]
         const loadedPublicMessagesLength = paginatedRecords.length
-        // console.log(`reducer/totalPublicMessages:`,totalPublicMessages)
+         console.log(`reducer/totalPublicMessages:`,loadedPublicMessagesLength)
 
         return {
             ...state,
@@ -288,5 +290,12 @@ export const messageReducer = createReducer(
             ...state,
             initialPrivateAutoScrollFlag: autoScrollValue
         }
-    })
+    }),
+
+    on(Messages.Flag.Actions.setPublicInitialLoadingAutoScrollValueSucceeded, (state,{autoScrollValue})=>{
+        return {
+            ...state,
+            initialPublicAutoScrollFlag: autoScrollValue
+        }
+    }),
 )

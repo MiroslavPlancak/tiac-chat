@@ -315,9 +315,23 @@ export class MessageEffects {
             rxjs.switchMap((actions) =>{
                 return rxjs.of(actions).pipe(
                     rxjs.take(1),
-                    rxjs.tap((res) => console.log(`effect XX:`, res.autoScrollValue)),
+                    // rxjs.tap((res) => console.log(`effect XX:`, res.autoScrollValue)),
                     rxjs.map(() => Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueSucceeded({ autoScrollValue: actions.autoScrollValue})),
                     rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueFailed({ error: error })))
+                )
+            })
+        )
+    )
+
+    setPublicInitialLoadingAutoScrollValue$ = createEffect(()=>
+        this.action$.pipe(
+            ofType(Messages.Flag.Actions.setPublicInitialLoadingAutoScrollValueStarted),
+            rxjs.switchMap((actions) =>{
+                return rxjs.of(actions).pipe(
+                    rxjs.take(1),
+                    // rxjs.tap((res) => console.log(`effect XX:`, res.autoScrollValue)),
+                    rxjs.map(() => Messages.Flag.Actions.setPublicInitialLoadingAutoScrollValueSucceeded({ autoScrollValue: actions.autoScrollValue})),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setPublicInitialLoadingAutoScrollValueFailed({ error: error })))
                 )
             })
         )

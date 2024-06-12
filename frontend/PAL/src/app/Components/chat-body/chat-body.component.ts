@@ -10,7 +10,7 @@ import { Users } from '../../state/user/user.action'
 import { Messages } from '../../state/message/message.action'
 import { selectUserById, selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
-import { selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectInitialPrivateAutoScrollFlag, selectIsTypingStatusIds, selectIsTypingStatusMap, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
+import { selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectInitialPrivateAutoScrollFlag, selectInitialPublicAutoScrollFlag, selectIsTypingStatusIds, selectIsTypingStatusMap, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
 import { selectCurrentlyClickedPublicConversation } from '../../state/channel/channel.selector';
 
 @Component({
@@ -310,6 +310,7 @@ export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
       rxjs.takeWhile(([canLoadMore])=> canLoadMore)
     ).subscribe(([canLoadMore, initialLoadingFlag]) => {
       this.store.dispatch(Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueStarted({ autoScrollValue: true }))
+     
       if (event == 0 && canLoadMore && initialLoadingFlag) {
 
         this.messageService.loadMorePrivateMessages()
@@ -319,9 +320,18 @@ export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   publicAutoScroll(event: any): void {
-
-    this.store.select(selectCanLoadMorePublicMessages).pipe(rxjs.take(1)).subscribe((canLoadMore) => {
-      if (event == 0 && canLoadMore) {
+    rxjs.combineLatest([
+      this.store.select(selectCanLoadMorePublicMessages).pipe(rxjs.take(1)),
+      this.store.select(selectInitialPublicAutoScrollFlag).pipe(rxjs.take(1))
+    ]).pipe(
+      rxjs.takeWhile(([canLoadMore]) => canLoadMore)
+    )
+    .subscribe(([canLoadMore, initialLoadingFlag]) => {
+      console.log(`initial loading flag:`, initialLoadingFlag)
+      this.store.dispatch(Messages.Flag.Actions.setPublicInitialLoadingAutoScrollValueStarted({ autoScrollValue: true }))
+      
+      if (event == 0 && canLoadMore && initialLoadingFlag) {
+        console.log(`this runs`)
         this.messageService.loadMorePublicMessages()
       }
     })

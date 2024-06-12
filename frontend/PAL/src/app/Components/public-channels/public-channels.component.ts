@@ -71,6 +71,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
       ).subscribe(userId => {
         if(connectedUser === userId){
           // console.log(`x`,userId)
+          
           this.channelIdSelectedClickHandler(8)
         }
         
@@ -119,8 +120,9 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     //     }
     //   })
 
-      // Enable the load more button on the initial loading.
-      this.getConcurrentNumberOfPublicChanelMessages(8)
+      // Enable the load more button on the initial loading. 
+      //############## this was causing improper loading ###########////
+    //  this.getConcurrentNumberOfPublicChanelMessages(8)
   }
 
   ngOnDestroy(): void {
@@ -133,17 +135,9 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: channelId}))
   
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPublicMessagesStarted({ channelId: channelId}))
-    
-    //test
-    this.store.dispatch(Messages.Flag.Actions.resetStartEndIndexFlagStarted())
-    this.store.select(privateMessagesStartEndIndex).pipe(rxjs.take(1)).subscribe((res)=>{})
-    this.store.select(selectCurrentlyClickedPrivateConversation).pipe(
-    
-      rxjs.switchMap((privateConvo)=>{
-        this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({userId: Number(privateConvo)}))
-        return rxjs.of(privateConvo)
-      })
-    ).subscribe((res)=>{} )
+
+    this.store.dispatch(Messages.Flag.Actions.setPublicInitialLoadingAutoScrollValueStarted({ autoScrollValue: false }))
+
 
     this.channelId = channelId
     this.messageService.conversationId$.next(channelId)
