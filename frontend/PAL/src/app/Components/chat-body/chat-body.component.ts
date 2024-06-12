@@ -8,9 +8,9 @@ import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { Store } from '@ngrx/store';
 import { Users } from '../../state/user/user.action'
 import { Messages } from '../../state/message/message.action'
-import { selectUserById,selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
+import { selectUserById, selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
-import { selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectIsTypingStatusMap, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
+import { selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectInitialPrivateAutoScrollFlag, selectIsTypingStatusIds, selectIsTypingStatusMap, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
 import { selectCurrentlyClickedPublicConversation } from '../../state/channel/channel.selector';
 
 @Component({
@@ -18,8 +18,8 @@ import { selectCurrentlyClickedPublicConversation } from '../../state/channel/ch
   templateUrl: './chat-body.component.html',
   styleUrl: './chat-body.component.css'
 })
-export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
-  
+export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
+
   @ViewChild('chatBodyContainer') chatBodyContainer!: ElementRef<HTMLElement>;
   @ViewChild(CdkVirtualScrollViewport) virtualScrollViewport!: CdkVirtualScrollViewport;
   @ViewChild(CdkVirtualScrollViewport) virtualScrollViewportPublic!: CdkVirtualScrollViewport;
@@ -54,11 +54,11 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
   // )
 
   //new ngrx public messages implementation
- 
-  receivePublicMessagesRecordsNgRx$ =  this.store.select(selectCurrentlyClickedPublicConversation).pipe(
+
+  receivePublicMessagesRecordsNgRx$ = this.store.select(selectCurrentlyClickedPublicConversation).pipe(
     rxjs.filter(channelId => !!channelId),
-    rxjs.switchMap((channelId)=>{
-//      console.log(`channelID emission:`, channelId)
+    rxjs.switchMap((channelId) => {
+      //      console.log(`channelID emission:`, channelId)
       return this.store.select(selectPublicRecordById(Number(channelId)))
     })
   )
@@ -92,14 +92,14 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
   );
   //ngRx canLoadMorePublicMessages$
   canLoadMorePublicMessages$ = this.store.select(selectCanLoadMorePublicMessages)
-   //ngRx canLoadMorePrivateMessages$
-  canLoadMorePrivateMessages$ = this.store.select(selectCanLoadMorePrivateMessages).pipe(rxjs.tap((res) => {}))
+  //ngRx canLoadMorePrivateMessages$
+  canLoadMorePrivateMessages$ = this.store.select(selectCanLoadMorePrivateMessages).pipe(rxjs.tap((res) => { }))
 
-  currentlyTypingUsersNgRx$ =  this.store.select(selectIsTypingStatusIds)
-  currentlyTypingStatusMapNgRx$ =  this.store.select(selectIsTypingStatusMap)
-  
+  currentlyTypingUsersNgRx$ = this.store.select(selectIsTypingStatusIds)
+  currentlyTypingStatusMapNgRx$ = this.store.select(selectIsTypingStatusMap)
+
   privateConversationUsers$!: rxjs.Observable<User[]>;
-  
+
   //scroll properties
   scrollIndexPublic$ = this.messageService.virtualScrollViewportPublic$
   scrollIndexPrivate$ = this.messageService.virtualScrollViewportPrivate$
@@ -110,54 +110,54 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
     public chatService: ChatService,
     public messageService: MessageService,
     public userService: UserService,
-    private authService:AuthService,
+    private authService: AuthService,
     private store: Store
   ) {
 
 
-   }
+  }
   ngAfterViewInit(): void {
-        // Subscribe to scroll events
-        if (this.virtualScrollViewportPublic) {
-          this.virtualScrollViewportPublic.elementScrolled().pipe(
-            rxjs.takeUntil(this.destroy$)
-          ).subscribe(() => {
-            const scrollOffset = this.virtualScrollViewportPublic.measureScrollOffset();
-            const dataLength = this.virtualScrollViewportPublic.getDataLength()
-           // console.log('Current scroll offset:', scrollOffset, 'getDataLength()', dataLength); 
-            this.scrollOffset$.next(dataLength)
-          });
-        } else {
-          console.error('virtualScrollViewportPublic is not initialized');
-        }
+    // Subscribe to scroll events
+    if (this.virtualScrollViewportPublic) {
+      this.virtualScrollViewportPublic.elementScrolled().pipe(
+        rxjs.takeUntil(this.destroy$)
+      ).subscribe(() => {
+        const scrollOffset = this.virtualScrollViewportPublic.measureScrollOffset();
+        const dataLength = this.virtualScrollViewportPublic.getDataLength()
+        // console.log('Current scroll offset:', scrollOffset, 'getDataLength()', dataLength); 
+        this.scrollOffset$.next(dataLength)
+      });
+    } else {
+      console.error('virtualScrollViewportPublic is not initialized');
+    }
 
-        
+
   }
 
 
   ngOnInit(): void {
     //testing 
-    
-   // this.currentlyTypingUsers.subscribe((res)=> console.log(`xx`, res))
-   //scroll after sending a private message
-   this.messageService.endScrollValue$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
-    if(res !== 0)
-    this.scrollToEndPrivate(res+1)
-   })
+
+    // this.currentlyTypingUsers.subscribe((res)=> console.log(`xx`, res))
+    //scroll after sending a private message
+    this.messageService.endScrollValue$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
+      if (res !== 0)
+        this.scrollToEndPrivate(res + 1)
+    })
 
     //scroll after sending a public message
     this.messageService.endScrollValue$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
-     // console.log(`endScrollValue$ from chatbody onInit-`,res)
+      // console.log(`endScrollValue$ from chatbody onInit-`,res)
       if (res !== 0)
         setTimeout(() => {
           this.scrollToEndPublic(res)
         }, 11);
-        
+
     })
 
 
-   //scroll after loading more public messages
-   //enclosing if might create a problem, need to investigate it further.
+    //scroll after loading more public messages
+    //enclosing if might create a problem, need to investigate it further.
     if (this.scrollIndexPublic$.value !== 3) {
       this.scrollIndexPublic$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
 
@@ -168,7 +168,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
       })
     }
 
-   //scroll after loading more private messages
+    //scroll after loading more private messages
     if (this.scrollIndexPrivate$.value !== 3) {
       this.scrollIndexPrivate$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
 
@@ -181,12 +181,12 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
 
     //ngRx is typing logic initiator
     this.store.dispatch(Messages.Hub.Actions.receiveIsTypingStatusStarted())
-   
-   
+
+
     //is typing logic
     // this.chatService.receiveTypingStatus()
     //   .pipe(
-        
+
     //     rxjs.takeUntil(this.destroy$),
 
     //   )
@@ -199,7 +199,7 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
     //     //this.typingStatusMap.clear();
 
     //     // get user details for each senderId
-       
+
 
     //     //investigate what happens with senderId through the flow
     //     res.currentlyTypingList.forEach((senderId: number) => {
@@ -215,15 +215,15 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
     //         rxjs.switchMap((user) => {
     //           if (user) {
     //             const firstName = user.firstName;
-                
- 
+
+
     //            // console.log(`receive:this runs`)
-              
+
     //             const currentMap = this.typingStatusMap.set(senderId,firstName)
-              
+
     //             this.chatService.typingStatusMap$.next(currentMap)
     //            // console.log(`receive:this runs + typingStatusMap$.value`, this.chatService.typingStatusMap$.getValue())
-  
+
     //           } else {
     //             console.error(`User with senderId ${senderId} not found.`);
     //           }
@@ -235,65 +235,65 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
 
     //   })
 
-      this.privateConversationUsers$ = rxjs.combineLatest([this.chatService.privateConversationId$, this.authService.userId$, this.store.select(selectAllUsers)]).pipe(
-        rxjs.filter(([privateConversationId, userId]) => {
-          return privateConversationId != undefined && userId != undefined
-        }),
-        rxjs.map(([privateConversationId, userId, allUsers]) => {
-          return allUsers.filter(user => [privateConversationId, userId].includes(user.id))
-        })
-      )
-  
-      this.privateConversationUsers$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
-  
+    this.privateConversationUsers$ = rxjs.combineLatest([this.chatService.privateConversationId$, this.authService.userId$, this.store.select(selectAllUsers)]).pipe(
+      rxjs.filter(([privateConversationId, userId]) => {
+        return privateConversationId != undefined && userId != undefined
+      }),
+      rxjs.map(([privateConversationId, userId, allUsers]) => {
+        return allUsers.filter(user => [privateConversationId, userId].includes(user.id))
       })
+    )
 
+    this.privateConversationUsers$.pipe(rxjs.takeUntil(this.destroy$)).subscribe(res => {
 
-      //receive private messages ###problem with the multicasting of private messages is here
-    this.messageService.receivePrivateMesages().subscribe((res)=> {
-      console.log(`private message received:`, res.savedMessage)
-      this.store.dispatch(Messages.Hub.Actions.receivePrivateMessageStarted({privateMessage: res.savedMessage, senderId: res.senderId}))
     })
 
-    this.messageService.receiveMessage().subscribe((res)=>{
+
+    //receive private messages ###problem with the multicasting of private messages is here
+    this.messageService.receivePrivateMesages().subscribe((res) => {
+      console.log(`private message received:`, res.savedMessage)
+      this.store.dispatch(Messages.Hub.Actions.receivePrivateMessageStarted({ privateMessage: res.savedMessage, senderId: res.senderId }))
+    })
+
+    this.messageService.receiveMessage().subscribe((res) => {
       //console.log(`public message received:`, res)
-      this.store.dispatch(Messages.Hub.Actions.receivePublicMessageStarted({publicMessage: res.message, channelId: res.channelId}))
-     // console.log(`virtualScrollViewportPublic`, this.virtualScrollViewportPublic.getDataLength())
+      this.store.dispatch(Messages.Hub.Actions.receivePublicMessageStarted({ publicMessage: res.message, channelId: res.channelId }))
+      // console.log(`virtualScrollViewportPublic`, this.virtualScrollViewportPublic.getDataLength())
       const lastestMessage = this.virtualScrollViewportPublic.getDataLength()
       this.scrollToEndPublic(lastestMessage)
     })
 
 
     this.messageService.receivePrivateMesages()
-    .pipe(
-      rxjs.withLatestFrom(this.privateConversationUsers$),
-      rxjs.takeUntil(this.destroy$)
-    )
-    .subscribe(([loadedPrivateMessages, users]) => {
-      const sender = users.find(user => user.id === +loadedPrivateMessages.senderId)
-      
+      .pipe(
+        rxjs.withLatestFrom(this.privateConversationUsers$),
+        rxjs.takeUntil(this.destroy$)
+      )
+      .subscribe(([loadedPrivateMessages, users]) => {
+        const sender = users.find(user => user.id === +loadedPrivateMessages.senderId)
 
-      if (sender !== undefined) {
-        const newPrivateMessage: PrivateMessage = {
-          isSeen: loadedPrivateMessages.isSeen,
-          message: loadedPrivateMessages.message,
-          senderId: sender?.firstName ?? '1'
+
+        if (sender !== undefined) {
+          const newPrivateMessage: PrivateMessage = {
+            isSeen: loadedPrivateMessages.isSeen,
+            message: loadedPrivateMessages.message,
+            senderId: sender?.firstName ?? '1'
+          }
+
+          //pop the first private message out of the BS[]
+          if (this.messageService.receivedPrivateMessages$.value.length >= this.messageService.initialPrivateMessageStartIndex$.value) {
+            this.messageService.receivedPrivateMessages$.value.shift()
+          }
+          //push the next one in
+          this.messageService.receivedPrivateMessages$.next([...this.receivedPrivateMessages$.value, newPrivateMessage])
+
         }
+        //set virtualScrollViewport to message service
 
-        //pop the first private message out of the BS[]
-        if (this.messageService.receivedPrivateMessages$.value.length >= this.messageService.initialPrivateMessageStartIndex$.value) {
-          this.messageService.receivedPrivateMessages$.value.shift()
-        }
-        //push the next one in
-        this.messageService.receivedPrivateMessages$.next([...this.receivedPrivateMessages$.value, newPrivateMessage])
-      
-      }
-          //set virtualScrollViewport to message service
-    
-      this.messageService.setVirtualScrollViewport(this.virtualScrollViewport);
-      this.messageService.scrollToEndPrivate(this.messageService.endScrollValue$.value)
+        this.messageService.setVirtualScrollViewport(this.virtualScrollViewport);
+        this.messageService.scrollToEndPrivate(this.messageService.endScrollValue$.value)
 
-    })
+      })
 
   }
 
@@ -303,17 +303,24 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
   }
 
   privateAutoScroll(event: any): void {
+    rxjs.combineLatest([
+      this.store.select(selectCanLoadMorePrivateMessages).pipe(rxjs.take(1)),
+      this.store.select(selectInitialPrivateAutoScrollFlag).pipe(rxjs.take(1))
+    ]).pipe(
+      rxjs.takeWhile(([canLoadMore])=> canLoadMore)
+    ).subscribe(([canLoadMore, initialLoadingFlag]) => {
+      this.store.dispatch(Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueStarted({ autoScrollValue: true }))
+      if (event == 0 && canLoadMore && initialLoadingFlag) {
 
-    this.store.select(selectCanLoadMorePrivateMessages).pipe(rxjs.take(1)).subscribe((canLoadMore)=>{
-      if (event == 0 && canLoadMore) {
         this.messageService.loadMorePrivateMessages()
+
       }
     })
   }
 
   publicAutoScroll(event: any): void {
-    
-    this.store.select(selectCanLoadMorePublicMessages).pipe(rxjs.take(1)).subscribe((canLoadMore)=>{
+
+    this.store.select(selectCanLoadMorePublicMessages).pipe(rxjs.take(1)).subscribe((canLoadMore) => {
       if (event == 0 && canLoadMore) {
         this.messageService.loadMorePublicMessages()
       }
@@ -322,19 +329,19 @@ export class ChatBodyComponent implements OnInit,OnDestroy,AfterViewInit {
   }
 
   scrollToEndPrivate(index: number): void {
-   
+
     this.virtualScrollViewport.scrollToIndex(index)
-  
+
   }
 
   scrollToEndPublic(index: number): void {
-    
+
     //this.virtualScrollViewportPublic.scrollToIndex(index)
     setTimeout(() => {
       this.virtualScrollViewport.scrollToIndex(index)
     }, 11);
-    
-    console.log('Scrolled to index:',index);
+
+    console.log('Scrolled to index:', index);
 
   }
 }

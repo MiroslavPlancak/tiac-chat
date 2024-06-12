@@ -106,7 +106,16 @@ export const selectCanLoadMorePublicMessages = createSelector(
 export const selectCanLoadMorePrivateMessages = createSelector(
     selectedMessageState,
     (messageState:MessageState) =>{
+        console.log(`can load more private messages flag:`, messageState.canLoadMorePrivateMessagesFlag)
         return messageState.canLoadMorePrivateMessagesFlag
+    }
+)
+
+export const selectInitialPrivateAutoScrollFlag = createSelector(
+    selectedMessageState,
+    (messageState: MessageState) => {
+        console.log(`flag state: `,messageState.initialPrivateAutoScrollFlag)
+        return messageState.initialPrivateAutoScrollFlag
     }
 )
 

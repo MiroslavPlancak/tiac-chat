@@ -323,6 +323,8 @@ export class MessageService implements OnInit, OnDestroy {
     //this.store.select(selectCurrentlyClickedPrivateConversation).pipe(rxjs.take(2)).subscribe()
     //ngRx clear private messages state
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({ userId: conversationId }))
+
+    this.store.dispatch(Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueStarted({autoScrollValue: false}))
     
     // reset the private message counter and clear the map (un-read messages counter logic)
     this.privateMessageCounter$.next([])

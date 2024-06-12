@@ -18,6 +18,7 @@ export interface MessageState {
     canLoadMorePrivateMessagesFlag: boolean,
     canLoadMorePublicMessagesFlag: boolean,
     typingStatus: TypingStatusState,
+    initialPrivateAutoScrollFlag: boolean,
     privateMessagePagination:{
         startIndex:number,
         endIndex:number
@@ -33,7 +34,7 @@ export const initialState: MessageState = {
     loadedPrivateMessagesCount: 0,
     canLoadMorePublicMessagesFlag: false,
     canLoadMorePrivateMessagesFlag: false,
-
+    initialPrivateAutoScrollFlag: false,
     privateMessagePagination:{
         startIndex:0,
         endIndex:0
@@ -279,6 +280,13 @@ export const messageReducer = createReducer(
                 startIndex: 0,
                 endIndex:0
             }
+        }
+    }),
+
+    on(Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueSucceeded, (state,{autoScrollValue})=>{
+        return {
+            ...state,
+            initialPrivateAutoScrollFlag: autoScrollValue
         }
     })
 )

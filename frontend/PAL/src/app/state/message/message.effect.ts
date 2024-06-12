@@ -308,4 +308,18 @@ export class MessageEffects {
             })
         )
     )
+
+    setPrivateInitialLoadingAutoScrollValue$ = createEffect(()=>
+        this.action$.pipe(
+            ofType(Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueStarted),
+            rxjs.switchMap((actions) =>{
+                return rxjs.of(actions).pipe(
+                    rxjs.take(1),
+                    rxjs.tap((res) => console.log(`effect XX:`, res.autoScrollValue)),
+                    rxjs.map(() => Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueSucceeded({ autoScrollValue: actions.autoScrollValue})),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueFailed({ error: error })))
+                )
+            })
+        )
+    )
 }

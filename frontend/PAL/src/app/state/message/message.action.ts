@@ -131,6 +131,12 @@ export namespace Messages {
                 ResetStartEndIndexFlagStarted: emptyProps(),
                 ResetStartEndIndexFlagSucceeded: emptyProps(),
                 ResetStartEndIndexFlagFailed: props<{ error: any }>(),
+
+                //Set initial loadingAutoScroll value
+                SetPrivateInitialLoadingAutoScrollValueStarted: props<{autoScrollValue: boolean}>(),
+                SetPrivateInitialLoadingAutoScrollValueSucceeded:props<{autoScrollValue: boolean}>(),
+                SetPrivateInitialLoadingAutoScrollValueFailed:props<{ error: any }>(),
+
             },
             source: SOURCE
         })
