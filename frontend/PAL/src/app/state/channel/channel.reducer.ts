@@ -133,6 +133,7 @@ export const channelReducer = createReducer(
 
     // set currently clicked conversation flag
     on(Channels.Flag.Actions.loadCurrentlyClickedConversationSucceeded, (state, {conversationId})=>{
+        console.log(`channel reducer fires:`, conversationId)
         return {
             ...state,
             currentConversationId: conversationId

@@ -211,35 +211,40 @@ export class MessageService implements OnInit, OnDestroy {
 
   // load more public messages method()
   loadMorePublicMessages() {
+    console.log(`load more...`)
     rxjs.combineLatest([
       this.store.select(selectCurrentlyClickedPublicConversation).pipe(rxjs.take(1)),
       this.store.select(selectCanLoadMorePublicMessages).pipe(rxjs.take(1)),
       this.store.select(publicMessagesStartEndIndex).pipe(rxjs.take(1))
     ]).pipe(
-      rxjs.take(1),
       rxjs.filter(([selectedChannel, canLoadMorePublicMessages]) => 
         selectedChannel !== undefined && canLoadMorePublicMessages === true
       ),
       rxjs.tap(([selectedChannel, canLoadMore, pagination]) => {
-        // console.log(`selected channel`, selectedChannel);
-        const startIndex = pagination.endIndex
+        const startIndex = pagination.endIndex;
         const endIndex = startIndex + 10;
         this.initialPublicMessageStartIndex$.next(endIndex);
-        
-        this.store.dispatch(Messages.Flag.Actions.setPublicStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
-        // Dispatch action to load paginated public messages
+  
+        this.store.dispatch(Messages.Flag.Actions.setPublicStartEndIndexFlagStarted({ startIndex, endIndex }));
         this.store.dispatch(Messages.Api.Actions.loadPaginatedPublicMessagesStarted({
           channelId: Number(selectedChannel),
-          startIndex: startIndex,
-          endIndex: endIndex
+          startIndex,
+          endIndex
         }));
       }),
-      rxjs.switchMap(() => 
-        this.store.select(totalPublicMessagesCount).pipe(
-          // Wait for the state to update with new messages
-          rxjs.filter(totalPublicMessagesCount => totalPublicMessagesCount > 0)
-        )
-      ),
+      rxjs.switchMap(([currentlySelectedConvo, canLoadMore, pagination]) => {
+        const endIndex = pagination.endIndex;
+  
+        return this.store.select(totalPublicMessagesCount).pipe(
+          rxjs.take(2),
+          rxjs.filter(totalPublicMessagesCount => totalPublicMessagesCount > 0),
+          rxjs.tap((totalPublicMessagesCount) => {
+            if (totalPublicMessagesCount < Number(endIndex)) {
+              this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagStarted({ canLoadMore: false }));
+            }
+          })
+        );
+      }),
       rxjs.tap(() => {
         // Dispatch actions after the state has updated
         this.store.dispatch(Messages.Hub.Actions.requestLatestNumberOfPublicMessagesByChannelIdStarted());
@@ -248,6 +253,7 @@ export class MessageService implements OnInit, OnDestroy {
       rxjs.takeUntil(this.destroy$)
     ).subscribe();
   }
+  
   
 
   // load more private messages method()

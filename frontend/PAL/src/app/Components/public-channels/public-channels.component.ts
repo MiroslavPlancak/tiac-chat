@@ -131,7 +131,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
   }
 
   public channelIdSelectedClickHandler(channelId: number): void {
-    // console.log(`this runs`,channelId)
+   //console.log(`this runs`,channelId)
     this.store.dispatch(Channels.Flag.Actions.loadCurrentlyClickedConversationStarted({ conversationId: channelId}))
   
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPublicMessagesStarted({ channelId: channelId}))
@@ -177,15 +177,15 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     this.store.dispatch(Messages.Hub.Actions.requestLatestNumberOfPublicMessagesByChannelIdStarted())
     this.store.dispatch(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdStarted())
    
-
+    
    
     this.store.select(selectPublicMessagesNumberFromChannelId)
       .pipe(
-     
-     rxjs.take(2),
-       rxjs.filter(loadedMessagesNumber => !!loadedMessagesNumber),
+      rxjs.filter(loadedMessagesNumber => !!loadedMessagesNumber),
+     rxjs.take(1),
+       
         rxjs.switchMap((publicMessages) => {
-        //  console.log(`publicMessages`, publicMessages)
+          console.log(`publicMessages number`, publicMessages)
 
           if(publicMessages > 10){
            this.store.dispatch(Messages.Flag.Actions.setCanLoadMorePublicMessagesFlagStarted({canLoadMore: true}))

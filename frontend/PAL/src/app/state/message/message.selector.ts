@@ -79,7 +79,7 @@ export const selectPublicMessagesNumberFromChannelId = createSelector(
     selectedChannelState,
     (messageState: MessageState,channelState:ChannelState) =>{
         const currentlyClickedChannel = Number(channelState.currentConversationId)
-        
+        console.log(`selector number of public messages:`,messageState.totalPublicMessagesCountRecord[currentlyClickedChannel])
         return messageState.totalPublicMessagesCountRecord[currentlyClickedChannel]
     }
 )
@@ -122,7 +122,7 @@ export const selectInitialPrivateAutoScrollFlag = createSelector(
 export const selectInitialPublicAutoScrollFlag = createSelector(
     selectedMessageState,
     (messageState: MessageState) => {
-        console.log(`flag state: `,messageState.initialPublicAutoScrollFlag)
+        // console.log(`flag state: `,messageState.initialPublicAutoScrollFlag)
         return messageState.initialPublicAutoScrollFlag
     }
 )

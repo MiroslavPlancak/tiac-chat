@@ -327,7 +327,7 @@ export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
       rxjs.takeWhile(([canLoadMore]) => canLoadMore)
     )
     .subscribe(([canLoadMore, initialLoadingFlag]) => {
-      console.log(`initial loading flag:`, initialLoadingFlag)
+      // console.log(`initial loading flag:`, initialLoadingFlag)
       this.store.dispatch(Messages.Flag.Actions.setPublicInitialLoadingAutoScrollValueStarted({ autoScrollValue: true }))
       
       if (event == 0 && canLoadMore && initialLoadingFlag) {

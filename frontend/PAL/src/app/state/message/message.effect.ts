@@ -98,7 +98,7 @@ export class MessageEffects {
             ofType(Messages.Hub.Actions.sendPublicMessageStarted),
            // rxjs.tap(action => console.log('Action dispatched:', action)), // Add this line to log the action
             rxjs.withLatestFrom(this.store.select(selectCurrentUser)),
-            rxjs.switchMap(([actions, user]) => {
+            rxjs.concatMap(([actions, user]) => {
                 //console.log(`actions:`, actions)
                 return this.messageService.sendMessage(actions.senderId, actions.publicMessage, actions.channelId).pipe(
                   //  rxjs.tap(response => console.log(`tap/effect response:`, response)), // Add this line to log the response

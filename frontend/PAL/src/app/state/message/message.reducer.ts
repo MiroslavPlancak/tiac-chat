@@ -113,8 +113,15 @@ export const messageReducer = createReducer(
         const currentMessages = state.publicMessagesRecord[channelId] || []
         const paginatedRecords = [...publicMessages, ...currentMessages]
         const loadedPublicMessagesLength = paginatedRecords.length
-         console.log(`reducer/totalPublicMessages:`,loadedPublicMessagesLength)
-
+        const totalPublicMessagesLength = state.totalPublicMessagesCountRecord[channelId]
+        //  console.log(`reducer/totalPublicMessages:`,loadedPublicMessagesLength)
+        let stopLoadingPublicMessages = false;
+        if(loadedPublicMessagesLength <= totalPublicMessagesLength){
+            stopLoadingPublicMessages = true
+        }
+        if(loadedPublicMessagesLength === totalPublicMessagesLength){
+            stopLoadingPublicMessages = false
+        }
         return {
             ...state,
             publicMessagesRecord: {
@@ -122,6 +129,7 @@ export const messageReducer = createReducer(
                 [channelId]: paginatedRecords
             },
             loadedPublicMessagesCount: loadedPublicMessagesLength,
+            canLoadMorePublicMessagesFlag: stopLoadingPublicMessages
  
         }
     }),
