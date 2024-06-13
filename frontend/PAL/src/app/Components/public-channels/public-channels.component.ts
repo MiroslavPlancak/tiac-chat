@@ -138,6 +138,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
 
     this.store.dispatch(Messages.Flag.Actions.setPublicInitialLoadingAutoScrollValueStarted({ autoScrollValue: false }))
 
+    this.store.dispatch(Messages.Flag.Actions.resetPublicStartEndIndexFlagStarted())
 
     this.channelId = channelId
     this.messageService.conversationId$.next(channelId)
@@ -199,7 +200,9 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
           const endIndex = publicMessages - (publicMessages - 10);
           this.messageService.initialPublicMessageStartIndex$.next(endIndex)
           //ngRx
-          
+          this.store.dispatch(Messages.Flag.Actions.setPublicStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
+
+
           this.store.dispatch(Messages.Api.Actions.loadPaginatedPublicMessagesStarted({channelId: this.channelId, startIndex: startIndex, endIndex:endIndex}))
           //return this.store.select(selectPublicRecordById(this.channelId))
           return rxjs.of(rxjs.EMPTY)

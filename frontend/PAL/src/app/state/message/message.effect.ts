@@ -283,27 +283,53 @@ export class MessageEffects {
         )
     )
 
-    setStartEndIndexFlag$ = createEffect(() =>
+    setPrivateStartEndIndexFlag$ = createEffect(() =>
         this.action$.pipe(
-            ofType(Messages.Flag.Actions.setStartEndIndexFlagStarted),
+            ofType(Messages.Flag.Actions.setPrivateStartEndIndexFlagStarted),
             rxjs.switchMap((actions) => {
                 return rxjs.of(actions).pipe(
                     // rxjs.tap((res)=>console.log(`effect test:`, res)),
-                    rxjs.map(() => Messages.Flag.Actions.setStartEndIndexFlagSucceeded({ startIndex: actions.startIndex, endIndex: actions.endIndex })),
-                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setStartEndIndexFlagFailed({ error: error })))
+                    rxjs.map(() => Messages.Flag.Actions.setPrivateStartEndIndexFlagSucceeded({ startIndex: actions.startIndex, endIndex: actions.endIndex })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setPrivateStartEndIndexFlagFailed({ error: error })))
                 )
             })
         )
     )
 
-    resetStartEndIndexFlag$ = createEffect(()=>
+    resetPrivateStartEndIndexFlag$ = createEffect(()=>
         this.action$.pipe(
-            ofType(Messages.Flag.Actions.resetStartEndIndexFlagStarted),
+            ofType(Messages.Flag.Actions.resetPrivateStartEndIndexFlagStarted),
             rxjs.switchMap((actions) => {
                 return rxjs.of(actions).pipe(
                     // rxjs.tap(()=>console.log('does this happen?')),
-                    rxjs.map(()=> Messages.Flag.Actions.resetStartEndIndexFlagSucceeded()),
-                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.resetStartEndIndexFlagFailed({ error: error})))
+                    rxjs.map(()=> Messages.Flag.Actions.resetPrivateStartEndIndexFlagSucceeded()),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.resetPrivateStartEndIndexFlagFailed({ error: error})))
+                )
+            })
+        )
+    )
+
+    setPublicStartEndIndexFlag$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Flag.Actions.setPublicStartEndIndexFlagStarted),
+            rxjs.switchMap((actions) => {
+                return rxjs.of(actions).pipe(
+                    // rxjs.tap((res)=>console.log(`effect test:`, res)),
+                    rxjs.map(() => Messages.Flag.Actions.setPublicStartEndIndexFlagSucceeded({ startIndex: actions.startIndex, endIndex: actions.endIndex })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setPublicStartEndIndexFlagFailed({ error: error })))
+                )
+            })
+        )
+    )
+
+    resetPublicStartEndIndexFlag$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Flag.Actions.resetPublicStartEndIndexFlagStarted),
+            rxjs.switchMap((actions) => {
+                return rxjs.of(actions).pipe(
+                    // rxjs.tap(()=>console.log('does this happen?')),
+                    rxjs.map(() => Messages.Flag.Actions.resetPublicStartEndIndexFlagSucceeded()),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.resetPublicStartEndIndexFlagFailed({ error: error })))
                 )
             })
         )

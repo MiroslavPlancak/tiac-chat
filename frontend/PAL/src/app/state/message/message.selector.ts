@@ -148,4 +148,10 @@ export const privateMessagesStartEndIndex = createSelector(
         return messageState.privateMessagePagination
     }
 )
-
+export const publicMessagesStartEndIndex = createSelector(
+    selectedMessageState, 
+    (messageState: MessageState) =>{
+        // console.log(`SELECTOR/privateMessagesStartEndIndex`, messageState.privateMessagePagination)
+        return messageState.publicMessagePagination
+    }
+)

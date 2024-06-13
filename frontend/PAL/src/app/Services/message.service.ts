@@ -14,7 +14,7 @@ import { Messages } from '../state/message/message.action';
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
 import { selectCurrentlyClickedPrivateConversation, selectCurrentlyClickedPublicConversation, selectCurrentlyLoggedUser } from '../state/channel/channel.selector';
 import { Channels } from '../state/channel/channel.action';
-import { privateMessagesStartEndIndex, selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectPaginatedRecordById, selectPrivateMessagesNumberFromReceiverId, selectPublicMessagesNumberFromChannelId, totalPrivateMessagesCount, totalPublicMessagesCount } from '../state/message/message.selector';
+import { privateMessagesStartEndIndex, publicMessagesStartEndIndex, selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectPaginatedRecordById, selectPrivateMessagesNumberFromReceiverId, selectPublicMessagesNumberFromChannelId, totalPrivateMessagesCount, totalPublicMessagesCount } from '../state/message/message.selector';
 import { Message } from '../Models/message.model';
 
 @Injectable({
@@ -213,18 +213,20 @@ export class MessageService implements OnInit, OnDestroy {
   loadMorePublicMessages() {
     rxjs.combineLatest([
       this.store.select(selectCurrentlyClickedPublicConversation).pipe(rxjs.take(1)),
-      this.store.select(selectCanLoadMorePublicMessages).pipe(rxjs.take(1))
+      this.store.select(selectCanLoadMorePublicMessages).pipe(rxjs.take(1)),
+      this.store.select(publicMessagesStartEndIndex).pipe(rxjs.take(1))
     ]).pipe(
       rxjs.take(1),
       rxjs.filter(([selectedChannel, canLoadMorePublicMessages]) => 
         selectedChannel !== undefined && canLoadMorePublicMessages === true
       ),
-      rxjs.tap(([selectedChannel]) => {
+      rxjs.tap(([selectedChannel, canLoadMore, pagination]) => {
         // console.log(`selected channel`, selectedChannel);
-        const startIndex = this.initialPublicMessageStartIndex$.value;
+        const startIndex = pagination.endIndex
         const endIndex = startIndex + 10;
         this.initialPublicMessageStartIndex$.next(endIndex);
-  
+        
+        this.store.dispatch(Messages.Flag.Actions.setPublicStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
         // Dispatch action to load paginated public messages
         this.store.dispatch(Messages.Api.Actions.loadPaginatedPublicMessagesStarted({
           channelId: Number(selectedChannel),
@@ -272,7 +274,7 @@ export class MessageService implements OnInit, OnDestroy {
         let endIndex = startIndex + 10
         // console.log(`night endIndex:`, endIndex)
         
-        this.store.dispatch(Messages.Flag.Actions.setStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
+        this.store.dispatch(Messages.Flag.Actions.setPrivateStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
         //this.initialPrivateMessageStartIndex$.next(endIndex)
         // console.log(`selectCurrentlyLoggedUser`,selectCurrentlyLoggedUser)
         // console.log(`selectedPrivateConversation`, selectedPrivateConversation)
@@ -315,7 +317,7 @@ export class MessageService implements OnInit, OnDestroy {
   public conversationIdSelectedClickHandler(conversationId: number): void {
 //    console.log(`click`)
     //reset the start/end indexes in the state
-    this.store.dispatch(Messages.Flag.Actions.resetStartEndIndexFlagStarted())
+    this.store.dispatch(Messages.Flag.Actions.resetPrivateStartEndIndexFlagStarted())
     
     //set the clicked private conversation flag in the state
     this.store.dispatch(Channels.Api.Actions.loadPrivateChannelByIdStarted({ channelId: conversationId}))
@@ -418,7 +420,7 @@ export class MessageService implements OnInit, OnDestroy {
           const startIndex = 0
           const endIndex = privateMessagesNumber - (privateMessagesNumber - 10);
        //  console.log(`Initial start index:`, startIndex , `Initial end index:`, endIndex, `Initial senderId`, this.currentUserId$.getValue(), `Initial receiverId`, this.conversationId$.getValue())
-          this.store.dispatch(Messages.Flag.Actions.setStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
+          this.store.dispatch(Messages.Flag.Actions.setPrivateStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
           
           // this.initialPrivateMessageStartIndex$.next(endIndex)
           // console.log(`initialPrivatemessageStartIndex$ night:`, this.initialPrivateMessageStartIndex$.getValue())

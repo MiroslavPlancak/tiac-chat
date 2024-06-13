@@ -23,6 +23,10 @@ export interface MessageState {
     privateMessagePagination:{
         startIndex:number,
         endIndex:number
+    },
+    publicMessagePagination:{
+        startIndex:number,
+        endIndex: number
     }
 }
 
@@ -41,7 +45,10 @@ export const initialState: MessageState = {
         startIndex:0,
         endIndex:0
     },
-
+    publicMessagePagination:{
+        startIndex:0,
+        endIndex: 0
+    },
     typingStatus: {
         currentlyTypingUsers: [],
     },
@@ -264,7 +271,7 @@ export const messageReducer = createReducer(
         }
     }),
 
-    on(Messages.Flag.Actions.setStartEndIndexFlagSucceeded, (state, {startIndex, endIndex})=>{
+    on(Messages.Flag.Actions.setPrivateStartEndIndexFlagSucceeded, (state, {startIndex, endIndex})=>{
         // console.log(`reducer:`, startIndex, endIndex)
         return {
             ...state,
@@ -275,10 +282,31 @@ export const messageReducer = createReducer(
         }
     }),
 
-    on(Messages.Flag.Actions.resetStartEndIndexFlagSucceeded, (state,{})=>{
+    on(Messages.Flag.Actions.resetPrivateStartEndIndexFlagSucceeded, (state,{})=>{
         return {
             ...state,
             privateMessagePagination:{
+                startIndex: 0,
+                endIndex:0
+            }
+        }
+    }),
+
+    on(Messages.Flag.Actions.setPublicStartEndIndexFlagSucceeded, (state, {startIndex, endIndex})=>{
+        // console.log(`reducer:`, startIndex, endIndex)
+        return {
+            ...state,
+            publicMessagePagination:{
+                startIndex,
+                endIndex
+            }
+        }
+    }),
+
+    on(Messages.Flag.Actions.resetPublicStartEndIndexFlagSucceeded, (state,{})=>{
+        return {
+            ...state,
+            publicMessagePagination:{
                 startIndex: 0,
                 endIndex:0
             }

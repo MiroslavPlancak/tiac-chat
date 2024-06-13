@@ -122,15 +122,25 @@ export namespace Messages {
                 SetCanLoadMorePrivateMessagesFlagSucceeded: props<{ canLoadMore: boolean }>(),
                 SetCanLoadMorePrivateMessagesFlagFailed: props<{ error: any }>(),
 
-                //Set starting and ending index flags
-                SetStartEndIndexFlagStarted: props<{startIndex: number, endIndex: number}>(),
-                SetStartEndIndexFlagSucceeded: props<{startIndex: number, endIndex: number}>(),
-                SetStartEndIndexFlagFailed: props<{ error: any }>(),
+                //Set private starting and ending index flags
+                SetPrivateStartEndIndexFlagStarted: props<{startIndex: number, endIndex: number}>(),
+                SetPrivateStartEndIndexFlagSucceeded: props<{startIndex: number, endIndex: number}>(),
+                SetPrivateStartEndIndexFlagFailed: props<{ error: any }>(),
 
-                //Reset starting and ending index flags
-                ResetStartEndIndexFlagStarted: emptyProps(),
-                ResetStartEndIndexFlagSucceeded: emptyProps(),
-                ResetStartEndIndexFlagFailed: props<{ error: any }>(),
+                //Reset private starting and ending index flags
+                ResetPrivateStartEndIndexFlagStarted: emptyProps(),
+                ResetPrivateStartEndIndexFlagSucceeded: emptyProps(),
+                ResetPrivateStartEndIndexFlagFailed: props<{ error: any }>(),
+
+                //Set public starting and ending index flags
+                SetPublicStartEndIndexFlagStarted: props<{ startIndex: number, endIndex: number }>(),
+                SetPublicStartEndIndexFlagSucceeded: props<{ startIndex: number, endIndex: number }>(),
+                SetPublicStartEndIndexFlagFailed: props<{ error: any }>(),
+
+                //Reset public starting and ending index flags
+                ResetPublicStartEndIndexFlagStarted: emptyProps(),
+                ResetPublicStartEndIndexFlagSucceeded: emptyProps(),
+                ResetPublicStartEndIndexFlagFailed: props<{ error: any }>(),
 
                 //Set initial private loadingAutoScroll value
                 SetPrivateInitialLoadingAutoScrollValueStarted: props<{autoScrollValue: boolean}>(),
