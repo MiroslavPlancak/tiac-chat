@@ -9,6 +9,8 @@ import { Store } from '@ngrx/store';
 import { Messages } from '../../state/message/message.action'
 import { selectAllUsers, selectConnectedUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
+import { selectCurrentlyClickedPrivateConversation } from '../../state/channel/channel.selector';
+import { selectNotificationBySenderId } from '../../state/message/message.selector';
 
 @Component({
   selector: 'app-online-users',
@@ -26,6 +28,17 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
   isDirectMessage = this.messageService.isDirectMessage
   privateConversationId$ = this.chatService.privateConversationId$;
   privateNotification = this.chatService.privateNotification;
+  //ng rx
+  privateNotification$ =
+    this.store.select(selectCurrentlyClickedPrivateConversation).pipe(
+      rxjs.switchMap((selectedConversation) =>{
+
+       const selectedConvNumber = Number(selectedConversation)
+      return this.store.select(selectNotificationBySenderId(selectedConvNumber)).pipe(rxjs.take(1), rxjs.tap((res) => console.log(`tapi:`, res)))
+      })
+    )
+  
+  //ng rx
   conversationId: number = 0
   initialPublicMessageStartIndex$ = this.messageService.initialPublicMessageStartIndex$
   canLoadMorePrivateMessages$ = this.messageService.canLoadMorePrivateMessages$
@@ -125,6 +138,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
     this.messageService.receivePrivateMesages().pipe(
       rxjs.takeUntil(this.destroy$),
       rxjs.switchMap(privateMessage => {
+        
         if (this.privateConversationId$.value) {
           // the problem is here: namely when different convo is selected privateconversationId$ is different and this loads the correct messages
 

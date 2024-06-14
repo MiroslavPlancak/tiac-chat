@@ -333,6 +333,9 @@ export class MessageService implements OnInit, OnDestroy {
     this.store.dispatch(Messages.Api.Actions.clearPaginatedPrivateMessagesStarted({ userId: conversationId }))
 
     this.store.dispatch(Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueStarted({autoScrollValue: false}))
+
+    //clear notification from the state
+    this.store.dispatch(Messages.Flag.Actions.resetNotificationMessageStarted({ senderId: conversationId}))
     
     // reset the private message counter and clear the map (un-read messages counter logic)
     this.privateMessageCounter$.next([])
@@ -438,7 +441,7 @@ export class MessageService implements OnInit, OnDestroy {
             startIndex: startIndex,
             endIndex: endIndex
           }))
-          console.log(`this runs`)
+//          console.log(`this runs`)
           return this.store.select(selectPaginatedRecordById(this.conversationId$.getValue())).pipe(rxjs.take(1))
 
           // return this.loadPaginatedPrivateMessages(

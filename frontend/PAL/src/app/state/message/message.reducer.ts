@@ -27,7 +27,8 @@ export interface MessageState {
     publicMessagePagination:{
         startIndex:number,
         endIndex: number
-    }
+    }, 
+    notificationMessagesRecord: Record<number, number>
 }
 
 export const initialState: MessageState = {
@@ -52,7 +53,7 @@ export const initialState: MessageState = {
     typingStatus: {
         currentlyTypingUsers: [],
     },
-
+    notificationMessagesRecord:{}
 
 }
 
@@ -65,7 +66,7 @@ export const messageReducer = createReducer(
 
     //add paginated private messages to the state
     on(Messages.Api.Actions.loadPaginatedPrivateMessagesSucceeded, (state, { receiverId, privateMessages }) => {
-        console.log(`reducer/loadPaginatedPrivatemessagesSucceeded:`, privateMessages)
+        // console.log(`reducer/loadPaginatedPrivatemessagesSucceeded:`, privateMessages)
         const currentMessages = state.privateMessagesRecord[receiverId] || []
         const paginatedRecords = [...privateMessages, ...currentMessages]
         const loadedPrivateMessagesLength = paginatedRecords.length
@@ -79,7 +80,7 @@ export const messageReducer = createReducer(
         if(loadedPrivateMessagesLength === totalPrivateMessagesLength){
             stopLoadingPrivateMessages = false
         }
-        console.log(`reducer :`, paginatedRecords)
+        // console.log(`reducer :`, paginatedRecords)
         return {
             ...state,
             privateMessagesRecord: {
@@ -167,7 +168,7 @@ export const messageReducer = createReducer(
     on(Messages.Hub.Actions.receivePrivateMessageSucceeded, (state, { privateMessage, senderId }) => {
         const currentMessages = state.privateMessagesRecord[senderId] || []
         const updatedMessages = [...currentMessages, privateMessage]
-        console.log(`updatedMessages/ReceivePrivateMessageSucceeded`, updatedMessages)
+        // console.log(`updatedMessages/ReceivePrivateMessageSucceeded`, updatedMessages)
         return {
             ...state,
             privateMessagesRecord: {
@@ -335,4 +336,26 @@ export const messageReducer = createReducer(
             initialPublicAutoScrollFlag: autoScrollValue
         }
     }),
+
+    on(Messages.Flag.Actions.setNotificationMessageSucceeded, (state,{ senderId })=>{
+        const currentCount = state.notificationMessagesRecord[senderId] || 0
+        const updatedCount = currentCount + 1
+        return {
+            ...state,
+            notificationMessagesRecord:{
+                ...state.notificationMessagesRecord,
+                [senderId]:updatedCount
+            }
+        }
+    }),
+
+    on(Messages.Flag.Actions.resetNotificationMessageSucceeded, (state,{ senderId })=>{
+        return {
+            ...state,
+            notificationMessagesRecord:{
+                ...state.notificationMessagesRecord,
+                [senderId]: 0
+            }
+        }
+    })
 )

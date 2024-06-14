@@ -152,6 +152,17 @@ export namespace Messages {
                 SetPublicInitialLoadingAutoScrollValueSucceeded: props<{ autoScrollValue: boolean }>(),
                 SetPublicInitialLoadingAutoScrollValueFailed: props<{ error: any }>(),
 
+                //Set notification message 
+                SetNotificationMessageStarted: props<{ senderId: number }>(),
+                SetNotificationMessageSucceeded: props<{ senderId: number }>(),
+                SetNotificationMessageFailed: props<{ error: any }>(),
+
+                //Reset notification message 
+                ResetNotificationMessageStarted: props<{ senderId: number }>(),
+                ResetNotificationMessageSucceeded: props<{ senderId: number }>(),
+                ResetNotificationMessageFailed: props<{ error: any }>(),
+                
+
             },
             source: SOURCE
         })

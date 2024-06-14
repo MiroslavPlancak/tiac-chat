@@ -155,3 +155,13 @@ export const publicMessagesStartEndIndex = createSelector(
         return messageState.publicMessagePagination
     }
 )
+
+export const selectNotificationBySenderId = (senderId: number) => createSelector(
+    selectedChannelState,
+    selectedMessageState,
+    (channelState: ChannelState, messageState: MessageState) =>{
+        const senderId = Number(channelState.clickedPrivateChannelID)
+        console.log(`selector output:`, messageState.notificationMessagesRecord)
+        return messageState.notificationMessagesRecord
+    }
+)

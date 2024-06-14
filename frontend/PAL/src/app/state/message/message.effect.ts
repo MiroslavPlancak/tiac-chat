@@ -26,10 +26,10 @@ export class MessageEffects {
             ofType(Messages.Api.Actions.loadPaginatedPrivateMessagesStarted),
          
             rxjs.concatMap((action) =>{
-          console.log(`effect pre-RESULT`,action)
+//          console.log(`effect pre-RESULT`,action)
              return   this.messageService.loadPaginatedPrivateMessages(action.senderId, action.receiverId, action.startIndex, action.endIndex).pipe(
               
-                   rxjs.tap((res)=> console.log(`effect:`, res)),
+                //    rxjs.tap((res)=> console.log(`effect:`, res)),
                     rxjs.map((response) => Messages.Api.Actions.loadPaginatedPrivateMessagesSucceeded({ receiverId: action.receiverId, privateMessages: response })),
                     rxjs.catchError((error) => rxjs.of(Messages.Api.Actions.loadPaginatedPrivateMessagesFailed({ error: error })))
                 )}
@@ -358,6 +358,30 @@ export class MessageEffects {
                     // rxjs.tap((res) => console.log(`effect XX:`, res.autoScrollValue)),
                     rxjs.map(() => Messages.Flag.Actions.setPublicInitialLoadingAutoScrollValueSucceeded({ autoScrollValue: actions.autoScrollValue})),
                     rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setPublicInitialLoadingAutoScrollValueFailed({ error: error })))
+                )
+            })
+        )
+    )
+
+    setNotificationMessage$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Flag.Actions.setNotificationMessageStarted),
+            rxjs.switchMap((actions) => {
+                return rxjs.of(actions).pipe(
+                    rxjs.map(() => Messages.Flag.Actions.setNotificationMessageSucceeded({ senderId: actions.senderId })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setNotificationMessageFailed({ error: error })))
+                )
+            })
+        )
+    )
+
+    resetNotificationMessage$ = createEffect(() =>
+        this.action$.pipe(
+            ofType(Messages.Flag.Actions.resetNotificationMessageStarted),
+            rxjs.switchMap((actions) => {
+                return rxjs.of(actions).pipe(
+                    rxjs.map(() => Messages.Flag.Actions.resetNotificationMessageSucceeded({ senderId: actions.senderId })),
+                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.resetNotificationMessageFailed({ error: error })))
                 )
             })
         )

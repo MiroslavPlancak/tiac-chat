@@ -10,7 +10,7 @@ import { Users } from '../../state/user/user.action'
 import { Messages } from '../../state/message/message.action'
 import { selectUserById, selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
-import { selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectInitialPrivateAutoScrollFlag, selectInitialPublicAutoScrollFlag, selectIsTypingStatusIds, selectIsTypingStatusMap, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
+import { selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectInitialPrivateAutoScrollFlag, selectInitialPublicAutoScrollFlag, selectIsTypingStatusIds, selectIsTypingStatusMap, selectNotificationBySenderId, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
 import { selectCurrentlyClickedPublicConversation, selectCurrentlyLoggedUser } from '../../state/channel/channel.selector';
 
 @Component({
@@ -251,8 +251,10 @@ export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
 
     //receive private messages ###problem with the multicasting of private messages is here
     this.messageService.receivePrivateMesages().subscribe((res) => {
-      console.log(`private message received:`, res.savedMessage)
+      // console.log(`private message received:`, res.savedMessage)
       this.store.dispatch(Messages.Hub.Actions.receivePrivateMessageStarted({ privateMessage: res.savedMessage, senderId: res.senderId }))
+      this.store.dispatch(Messages.Flag.Actions.setNotificationMessageStarted({ senderId: res.senderId}))
+      this.store.select(selectNotificationBySenderId(res.senderId)).pipe(rxjs.take(1)).subscribe()
     })
 
 //unsure as to why this works, but it does.
