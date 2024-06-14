@@ -180,6 +180,7 @@ export const messageReducer = createReducer(
 
     //receive public message 
     on(Messages.Hub.Actions.receivePublicMessageSucceeded, (state, { publicMessage, channelId }) => {
+        console.log(`reducer output:`, publicMessage)
         const currentMessages = state.publicMessagesRecord[channelId] || []
         const updatedMessages = [...currentMessages, publicMessage]
         return {

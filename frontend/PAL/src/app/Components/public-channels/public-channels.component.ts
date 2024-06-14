@@ -72,7 +72,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
         if(connectedUser === userId){
           // console.log(`x`,userId)
           
-          this.channelIdSelectedClickHandler(8)
+          //this.channelIdSelectedClickHandler(8)
         }
         
       });   
@@ -178,13 +178,16 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
     this.store.dispatch(Messages.Hub.Actions.recieveLatestNumberOfPublicMessagesByChannelIdStarted())
    
     
+   rxjs.combineLatest([
+    this.store.select(selectPublicMessagesNumberFromChannelId),
+    this.store.select(selectCurrentlyClickedPublicConversation).pipe(rxjs.take(1))
+   ])
    
-    this.store.select(selectPublicMessagesNumberFromChannelId)
       .pipe(
-      rxjs.filter(loadedMessagesNumber => !!loadedMessagesNumber),
+      rxjs.filter(([loadedMessagesNumber,selectedChannel] )=> !!loadedMessagesNumber && !!selectedChannel),
      rxjs.take(1),
        
-        rxjs.switchMap((publicMessages) => {
+        rxjs.switchMap(([publicMessages, selectedChannel]) => {
           console.log(`publicMessages number`, publicMessages)
 
           if(publicMessages > 10){
@@ -203,7 +206,7 @@ export class PublicChannelsComponent implements OnInit,OnDestroy {
           this.store.dispatch(Messages.Flag.Actions.setPublicStartEndIndexFlagStarted({ startIndex: startIndex, endIndex: endIndex}))
 
 
-          this.store.dispatch(Messages.Api.Actions.loadPaginatedPublicMessagesStarted({channelId: this.channelId, startIndex: startIndex, endIndex:endIndex}))
+          this.store.dispatch(Messages.Api.Actions.loadPaginatedPublicMessagesStarted({channelId: Number(selectedChannel), startIndex: startIndex, endIndex:endIndex}))
           //return this.store.select(selectPublicRecordById(this.channelId))
           return rxjs.of(rxjs.EMPTY)
          

@@ -11,7 +11,7 @@ import { Messages } from '../../state/message/message.action'
 import { selectUserById, selectCurrentUser, selectAllUsers } from '../../state/user/user.selector';
 import { User } from '../../Models/user.model';
 import { selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectInitialPrivateAutoScrollFlag, selectInitialPublicAutoScrollFlag, selectIsTypingStatusIds, selectIsTypingStatusMap, selectPaginatedRecordById, selectPublicRecordById } from '../../state/message/message.selector';
-import { selectCurrentlyClickedPublicConversation } from '../../state/channel/channel.selector';
+import { selectCurrentlyClickedPublicConversation, selectCurrentlyLoggedUser } from '../../state/channel/channel.selector';
 
 @Component({
   selector: 'app-chat-body',
@@ -255,13 +255,32 @@ export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
       this.store.dispatch(Messages.Hub.Actions.receivePrivateMessageStarted({ privateMessage: res.savedMessage, senderId: res.senderId }))
     })
 
-    this.messageService.receiveMessage().subscribe((res) => {
-      //console.log(`public message received:`, res)
-      this.store.dispatch(Messages.Hub.Actions.receivePublicMessageStarted({ publicMessage: res.message, channelId: res.channelId }))
-      // console.log(`virtualScrollViewportPublic`, this.virtualScrollViewportPublic.getDataLength())
-      const lastestMessage = this.virtualScrollViewportPublic.getDataLength()
-      this.scrollToEndPublic(lastestMessage)
-    })
+//unsure as to why this works, but it does.
+    this.messageService.receiveMessage().pipe(
+      rxjs.switchMap((res) =>
+        rxjs.combineLatest([
+          this.store.select(selectCurrentlyLoggedUser),
+          rxjs.of(res)
+        ])
+      ),
+
+      rxjs.tap(([currentlyLoggedUser, res]) => {
+        console.log(`public message received:`, res);
+    
+        // Dispatch the action to receive the public message
+        this.store.dispatch(Messages.Hub.Actions.receivePublicMessageStarted({
+          publicMessage: res.message,
+          channelId: res.channelId
+        }));
+    
+        // Get the latest message length and scroll to the end
+        const latestMessage = this.virtualScrollViewportPublic.getDataLength();
+        this.scrollToEndPublic(latestMessage);
+      }),
+      rxjs.takeUntil(this.destroy$) // Ensure clean-up
+    ).subscribe();
+    
+    
 
 
     this.messageService.receivePrivateMesages()
