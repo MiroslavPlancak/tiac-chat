@@ -14,7 +14,7 @@ import { Messages } from '../state/message/message.action';
 import { selectUserById, selectConnectedUsers } from '../state/user/user.selector';
 import { selectCurrentlyClickedPrivateConversation, selectCurrentlyClickedPublicConversation, selectCurrentlyLoggedUser } from '../state/channel/channel.selector';
 import { Channels } from '../state/channel/channel.action';
-import { privateMessagesStartEndIndex, publicMessagesStartEndIndex, selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectPaginatedRecordById, selectPrivateMessagesNumberFromReceiverId, selectPublicMessagesNumberFromChannelId, totalPrivateMessagesCount, totalPublicMessagesCount } from '../state/message/message.selector';
+import { privateMessagesStartEndIndex, publicMessagesStartEndIndex, selectCanLoadMorePrivateMessages, selectCanLoadMorePublicMessages, selectIsTypingStatusIds, selectNotificationBySenderId, selectPaginatedRecordById, selectPrivateMessagesNumberFromReceiverId, selectPublicMessagesNumberFromChannelId, totalPrivateMessagesCount, totalPublicMessagesCount } from '../state/message/message.selector';
 import { Message } from '../Models/message.model';
 
 @Injectable({
@@ -58,7 +58,19 @@ export class MessageService implements OnInit, OnDestroy {
   privateMessageCounter$ = new rxjs.BehaviorSubject<PrivateMessage[]>(this.initialPrivateMessages);
   privateMessageMap$ = new rxjs.BehaviorSubject<Map<number,number>>(new Map<number,number>)
   privateMessageMap = new Map<number, number>()
+  //ng rx
+  //need to place this logic into the selector with the same output
+  privateNotification$ =
+    this.store.select(selectCurrentlyClickedPrivateConversation).pipe(
+    
+      rxjs.switchMap((selectedConversation) =>{
 
+       const selectedConvNumber = Number(selectedConversation)
+      return this.store.select(selectNotificationBySenderId(selectedConvNumber))
+      })
+    )
+  
+  //ng rx
    totalLoadedMessages:number = 0;
 
   private apiUrl = "http://localhost:5008/api/messages/";
@@ -321,7 +333,9 @@ export class MessageService implements OnInit, OnDestroy {
 
   // select user for private messaging directly from public chat method()
   public conversationIdSelectedClickHandler(conversationId: number): void {
-//    console.log(`click`)
+ console.log(`click`)
+    //clear notification from the state
+    this.store.dispatch(Messages.Flag.Actions.resetNotificationMessageStarted({ senderId: conversationId}))
     //reset the start/end indexes in the state
     this.store.dispatch(Messages.Flag.Actions.resetPrivateStartEndIndexFlagStarted())
     
@@ -334,8 +348,7 @@ export class MessageService implements OnInit, OnDestroy {
 
     this.store.dispatch(Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueStarted({autoScrollValue: false}))
 
-    //clear notification from the state
-    this.store.dispatch(Messages.Flag.Actions.resetNotificationMessageStarted({ senderId: conversationId}))
+
     
     // reset the private message counter and clear the map (un-read messages counter logic)
     this.privateMessageCounter$.next([])

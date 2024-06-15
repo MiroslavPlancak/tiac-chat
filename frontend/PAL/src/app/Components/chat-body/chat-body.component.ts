@@ -253,8 +253,8 @@ export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
     this.messageService.receivePrivateMesages().subscribe((res) => {
       // console.log(`private message received:`, res.savedMessage)
       this.store.dispatch(Messages.Hub.Actions.receivePrivateMessageStarted({ privateMessage: res.savedMessage, senderId: res.senderId }))
-      this.store.dispatch(Messages.Flag.Actions.setNotificationMessageStarted({ senderId: res.senderId}))
-      this.store.select(selectNotificationBySenderId(res.senderId)).pipe(rxjs.take(1)).subscribe()
+      // this.store.dispatch(Messages.Flag.Actions.setNotificationMessageStarted({ senderId: res.senderId}))
+    //  this.store.select(selectNotificationBySenderId(res.senderId)).pipe(rxjs.take(1)).subscribe()
     })
 
 //unsure as to why this works, but it does.
@@ -322,7 +322,7 @@ export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
     this.destroy$.next()
     this.destroy$.complete()
   }
-
+// none of these selectors should affect the state of selectCurrentlyClickedPrivateConversation selector || selectNotificationBySenderId()
   privateAutoScroll(event: any): void {
     rxjs.combineLatest([
       this.store.select(selectCanLoadMorePrivateMessages).pipe(rxjs.take(1)),
@@ -331,9 +331,9 @@ export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
       rxjs.takeWhile(([canLoadMore])=> canLoadMore)
     ).subscribe(([canLoadMore, initialLoadingFlag]) => {
       this.store.dispatch(Messages.Flag.Actions.setPrivateInitialLoadingAutoScrollValueStarted({ autoScrollValue: true }))
-     
+      console.log(`this runsXXX`)
       if (event == 0 && canLoadMore && initialLoadingFlag) {
-
+        
         this.messageService.loadMorePrivateMessages()
 
       }

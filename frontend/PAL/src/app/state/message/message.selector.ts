@@ -160,7 +160,25 @@ export const selectNotificationBySenderId = (senderId: number) => createSelector
     selectedChannelState,
     selectedMessageState,
     (channelState: ChannelState, messageState: MessageState) =>{
-        const senderId = Number(channelState.clickedPrivateChannelID)
+        const selectedSenderId = Number(channelState.clickedPrivateChannelID)
+        if(selectedSenderId === senderId){
+            console.log(`selector: they match`)
+            return messageState.notificationMessagesRecord
+        }
+        console.log(`selector output:`, messageState.notificationMessagesRecord)
+        return messageState.notificationMessagesRecord
+    }
+)
+
+export const selectNotificationBySenderId2 = (senderId: number) => createSelector(
+    selectedChannelState,
+    selectedMessageState,
+    (channelState: ChannelState, messageState: MessageState) =>{
+        const selectedSenderId = Number(channelState.clickedPrivateChannelID)
+        if(selectedSenderId === senderId){
+            console.log(`selector: they match`)
+            return messageState.notificationMessagesRecord
+        }
         console.log(`selector output:`, messageState.notificationMessagesRecord)
         return messageState.notificationMessagesRecord
     }

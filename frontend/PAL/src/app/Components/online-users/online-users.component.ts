@@ -28,17 +28,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
   isDirectMessage = this.messageService.isDirectMessage
   privateConversationId$ = this.chatService.privateConversationId$;
   privateNotification = this.chatService.privateNotification;
-  //ng rx
-  privateNotification$ =
-    this.store.select(selectCurrentlyClickedPrivateConversation).pipe(
-      rxjs.switchMap((selectedConversation) =>{
 
-       const selectedConvNumber = Number(selectedConversation)
-      return this.store.select(selectNotificationBySenderId(selectedConvNumber)).pipe(rxjs.take(1), rxjs.tap((res) => console.log(`tapi:`, res)))
-      })
-    )
-  
-  //ng rx
   conversationId: number = 0
   initialPublicMessageStartIndex$ = this.messageService.initialPublicMessageStartIndex$
   canLoadMorePrivateMessages$ = this.messageService.canLoadMorePrivateMessages$
@@ -138,7 +128,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
     this.messageService.receivePrivateMesages().pipe(
       rxjs.takeUntil(this.destroy$),
       rxjs.switchMap(privateMessage => {
-        
+        this.store.dispatch(Messages.Flag.Actions.setNotificationMessageStarted({ senderId: privateMessage.senderId}))
         if (this.privateConversationId$.value) {
           // the problem is here: namely when different convo is selected privateconversationId$ is different and this loads the correct messages
 

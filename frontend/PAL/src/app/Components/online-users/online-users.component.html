@@ -1,5 +1,5 @@
 <div class="online-users-possition">
-    
+    <!-- {{ privateNotification$ | async}} -->
     <input matInput class="search-box-online" placeholder="Search online Users"  (input)="filterOnlineUsers($event)">
     <mat-icon color="primary" style="font-size: 24px; vertical-align: middle;">search</mat-icon>
     <mat-list>
@@ -12,8 +12,11 @@
                 <span *ngIf="(privateConversationId$ | async) === user.id">
                     <mat-icon  style="font-size: 24px; vertical-align: middle;">record_voice_over</mat-icon></span> {{ user.firstName }}
                 {{ user.lastName }} 
-                <mat-icon *ngIf="privateNotification[user.id]" style="font-size: 24px; vertical-align: middle;" color="primary">message</mat-icon>
-                <span *ngIf="(privateMessageMap$ | async)!.get(user.id) !== undefined">{{(privateMessageMap$ | async)!.get(user.id)}}</span>
+                <ng-container *ngIf="this.messageService.privateNotification$ | async as notifications">
+                    <mat-icon *ngIf="notifications[user.id]" style="font-size: 24px; vertical-align: middle;" color="primary">message</mat-icon>
+                    <span *ngIf="notifications[user.id]">{{ notifications[user.id] }}</span>
+                  </ng-container>
+                <!-- <span *ngIf="(privateMessageMap$ | async)!.get(user.id) !== 0">{{(privateMessageMap$ | async)!.get(user.id)}}</span> -->
             </div>
         </mat-list-item>
     </mat-list>
