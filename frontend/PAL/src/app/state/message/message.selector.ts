@@ -2,7 +2,7 @@ import { createFeatureSelector, createSelector } from "@ngrx/store";
 import { MessageState } from './message.reducer'
 import { selectedUserState } from "../user/user.selector";
 import { UserState } from "../user/user.reducer";
-import { selectedChannelState } from "../channel/channel.selector";
+import { selectCurrentlyClickedPrivateConversation, selectedChannelState } from "../channel/channel.selector";
 import { ChannelState } from "../channel/channel.reducer";
 
 
@@ -159,13 +159,19 @@ export const publicMessagesStartEndIndex = createSelector(
 export const selectNotificationBySenderId = (senderId: number) => createSelector(
     selectedChannelState,
     selectedMessageState,
+    
     (channelState: ChannelState, messageState: MessageState) =>{
         const selectedSenderId = Number(channelState.clickedPrivateChannelID)
+        console.log(`selector notificationRecord:`, messageState.notificationMessagesRecord)
         if(selectedSenderId === senderId){
-            console.log(`selector: they match`)
-            return messageState.notificationMessagesRecord
+            //big problem with this, multiple outputs, this should be uncommented and re-factored somehow.
+            // console.log(`selector: they match`)
+            return {
+                ...messageState.notificationMessagesRecord,
+                [senderId]:0
+            }
         }
-        console.log(`selector output:`, messageState.notificationMessagesRecord)
+        //console.log(`selector notificationRecord:`, messageState.notificationMessagesRecord)
         return messageState.notificationMessagesRecord
     }
 )

@@ -366,11 +366,16 @@ export class MessageEffects {
     setNotificationMessage$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Flag.Actions.setNotificationMessageStarted),
-            rxjs.switchMap((actions) => {
-                return rxjs.of(actions).pipe(
-                    rxjs.map(() => Messages.Flag.Actions.setNotificationMessageSucceeded({ senderId: actions.senderId })),
-                    rxjs.catchError((error) => rxjs.of(Messages.Flag.Actions.setNotificationMessageFailed({ error: error })))
-                )
+            rxjs.withLatestFrom(this.store.select(selectCurrentlyClickedPrivateConversation)),
+            rxjs.switchMap(([action,currentConversation]) => {
+                if(action.senderId === Number(currentConversation)){
+                    return rxjs.EMPTY
+                }else{
+                    return rxjs.of(action).pipe(
+                        rxjs.map(()=> Messages.Flag.Actions.setNotificationMessageSucceeded({senderId: action.senderId})),
+                        rxjs.catchError((error)=> rxjs.of(Messages.Flag.Actions.setNotificationMessageFailed({ error: error })))
+                    )
+                }
             })
         )
     )

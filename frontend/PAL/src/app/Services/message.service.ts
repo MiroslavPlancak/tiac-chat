@@ -64,10 +64,11 @@ export class MessageService implements OnInit, OnDestroy {
     this.store.select(selectCurrentlyClickedPrivateConversation).pipe(
     
       rxjs.switchMap((selectedConversation) =>{
-
+       
        const selectedConvNumber = Number(selectedConversation)
       return this.store.select(selectNotificationBySenderId(selectedConvNumber))
       })
+      
     )
   
   //ng rx
