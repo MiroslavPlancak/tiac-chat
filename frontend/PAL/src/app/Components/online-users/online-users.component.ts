@@ -127,8 +127,13 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
 
     this.messageService.receivePrivateMesages().pipe(
       rxjs.takeUntil(this.destroy$),
-      rxjs.switchMap(privateMessage => {
-        this.store.dispatch(Messages.Flag.Actions.setNotificationMessageStarted({ senderId: privateMessage.senderId}))
+      rxjs.withLatestFrom(this.store.select(selectCurrentlyClickedPrivateConversation)),
+      rxjs.switchMap(([privateMessage,currentConversationId]) => {
+        console.log(`privatemessage.senderId`, privateMessage.senderId, `currentConversationId`, currentConversationId)
+        if(privateMessage.senderId != currentConversationId){
+          this.store.dispatch(Messages.Flag.Actions.setNotificationMessageStarted({ senderId: privateMessage.senderId}))
+        }
+       
         if (this.privateConversationId$.value) {
           // the problem is here: namely when different convo is selected privateconversationId$ is different and this loads the correct messages
 
