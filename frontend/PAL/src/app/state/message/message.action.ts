@@ -153,8 +153,8 @@ export namespace Messages {
                 SetPublicInitialLoadingAutoScrollValueFailed: props<{ error: any }>(),
 
                 //Set notification message 
-                SetNotificationMessageStarted: props<{ senderId: number }>(),
-                SetNotificationMessageSucceeded: props<{ senderId: number }>(),
+                SetNotificationMessageStarted: props<{ senderId: number, selectedPrivateChannel: number | undefined }>(),
+                SetNotificationMessageSucceeded: props<{ senderId: number, selectedPrivateChannel: number | undefined}>(),
                 SetNotificationMessageFailed: props<{ error: any }>(),
 
                 //Reset notification message 

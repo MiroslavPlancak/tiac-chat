@@ -129,9 +129,12 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
       rxjs.takeUntil(this.destroy$),
       rxjs.withLatestFrom(this.store.select(selectCurrentlyClickedPrivateConversation)),
       rxjs.switchMap(([privateMessage,currentConversationId]) => {
-        console.log(`privatemessage.senderId`, privateMessage.senderId, `currentConversationId`, currentConversationId)
+       
         if(privateMessage.senderId != currentConversationId){
-          this.store.dispatch(Messages.Flag.Actions.setNotificationMessageStarted({ senderId: privateMessage.senderId}))
+          this.store.dispatch(Messages.Flag.Actions.setNotificationMessageStarted({
+             senderId: privateMessage.senderId, 
+             selectedPrivateChannel: Number(currentConversationId)}
+            ))
         }
        
         if (this.privateConversationId$.value) {

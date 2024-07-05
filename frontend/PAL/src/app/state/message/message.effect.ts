@@ -372,7 +372,7 @@ export class MessageEffects {
                     return rxjs.EMPTY
                 }else{
                     return rxjs.of(action).pipe(
-                        rxjs.map(()=> Messages.Flag.Actions.setNotificationMessageSucceeded({senderId: action.senderId})),
+                        rxjs.map(()=> Messages.Flag.Actions.setNotificationMessageSucceeded({senderId: action.senderId, selectedPrivateChannel: action.selectedPrivateChannel})),
                         rxjs.catchError((error)=> rxjs.of(Messages.Flag.Actions.setNotificationMessageFailed({ error: error })))
                     )
                 }

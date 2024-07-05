@@ -59,17 +59,11 @@ export class MessageService implements OnInit, OnDestroy {
   privateMessageMap$ = new rxjs.BehaviorSubject<Map<number,number>>(new Map<number,number>)
   privateMessageMap = new Map<number, number>()
   //ng rx
-  //need to place this logic into the selector with the same output
-  privateNotification$ =
-    this.store.select(selectCurrentlyClickedPrivateConversation).pipe(
-    
-      rxjs.switchMap((selectedConversation) =>{
-       
-       const selectedConvNumber = Number(selectedConversation)
-      return this.store.select(selectNotificationBySenderId(selectedConvNumber))
-      })
+  //need to relocate this logic into the selector with the same output
+  hasNotification$ =this.store.select(selectNotificationBySenderId)
       
-    )
+      
+   
   
   //ng rx
    totalLoadedMessages:number = 0;

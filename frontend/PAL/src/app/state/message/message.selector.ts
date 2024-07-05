@@ -156,22 +156,22 @@ export const publicMessagesStartEndIndex = createSelector(
     }
 )
 
-export const selectNotificationBySenderId = (senderId: number) => createSelector(
+export const selectNotificationBySenderId =  createSelector(
     selectedChannelState,
     selectedMessageState,
-    
-    (channelState: ChannelState, messageState: MessageState) =>{
+    selectCurrentlyClickedPrivateConversation,
+    (channelState: ChannelState, messageState: MessageState, currentConversation: number| undefined) =>{
         const selectedSenderId = Number(channelState.clickedPrivateChannelID)
         console.log(`selector notificationRecord:`, messageState.notificationMessagesRecord)
-        if(selectedSenderId === senderId){
+        if(selectedSenderId === currentConversation){
             //big problem with this, multiple outputs, this should be uncommented and re-factored somehow.
             // console.log(`selector: they match`)
             return {
                 ...messageState.notificationMessagesRecord,
-                [senderId]:0
+                [currentConversation]:0
             }
         }
-        //console.log(`selector notificationRecord:`, messageState.notificationMessagesRecord)
+       
         return messageState.notificationMessagesRecord
     }
 )

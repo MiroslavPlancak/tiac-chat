@@ -12,7 +12,7 @@
                 <span *ngIf="(privateConversationId$ | async) === user.id">
                     <mat-icon  style="font-size: 24px; vertical-align: middle;">record_voice_over</mat-icon></span> {{ user.firstName }}
                 {{ user.lastName }} 
-                <ng-container *ngIf="this.messageService.privateNotification$ | async as notifications">
+                <ng-container *ngIf="this.messageService.hasNotification$ | async as notifications">
                     <mat-icon *ngIf="notifications[user.id]" style="font-size: 24px; vertical-align: middle;" color="primary">message</mat-icon>
                     <span *ngIf="notifications[user.id]">{{ notifications[user.id] }}</span>
                   </ng-container>
