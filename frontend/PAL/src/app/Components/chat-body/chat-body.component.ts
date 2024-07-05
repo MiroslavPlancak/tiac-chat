@@ -63,33 +63,7 @@ export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
     })
   )
   //new ngrx private messages implementation
-  receivePrivateMessagesRecordsNgRx$ = this.chatService.privateConversationId$.pipe(
-    rxjs.switchMap((privateConvo) => {
-      return this.store.select(selectPaginatedRecordById(Number(privateConvo))).pipe(
-        // Ensure it starts with an empty array and emits it in case of no output
-        rxjs.startWith([]),
-        rxjs.switchMap((privateMessages) => {
-          if (privateMessages.length === 0) {
-            // If there are no messages, return an empty array wrapped in an observable
-            return rxjs.of([]);
-          } else {
-            const userNameObservables = privateMessages.map((message) =>
-              this.messageService.extractUserName(message.sentFromUserId)
-            );
-            return rxjs.forkJoin(userNameObservables).pipe(
-              rxjs.map((userNames) =>
-                privateMessages.map((message, index) => ({
-                  isSeen: message.isSeen,
-                  senderId: userNames[index],
-                  message: message.body,
-                }))
-              )
-            );
-          }
-        })
-      );
-    })
-  );
+  receivedPrivateMessagesRecord$ = this.store.select(selectPaginatedRecordById)
   //ngRx canLoadMorePublicMessages$
   canLoadMorePublicMessages$ = this.store.select(selectCanLoadMorePublicMessages)
   //ngRx canLoadMorePrivateMessages$

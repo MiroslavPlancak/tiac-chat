@@ -450,7 +450,7 @@ export class MessageService implements OnInit, OnDestroy {
             endIndex: endIndex
           }))
 //          console.log(`this runs`)
-          return this.store.select(selectPaginatedRecordById(this.conversationId$.getValue())).pipe(rxjs.take(1))
+          return this.store.select(selectPaginatedRecordById).pipe(rxjs.take(1))
 
           // return this.loadPaginatedPrivateMessages(
           //   this.currentUserId$.getValue() as number,

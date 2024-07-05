@@ -21,14 +21,31 @@ export const selectedMessageState = createFeatureSelector<MessageState>("message
 // )
 
 //select paginated private messages by record id
-export const selectPaginatedRecordById = (receiverId:number) => createSelector(
+export const selectPaginatedRecordById = createSelector(
     selectedMessageState,
-    (messageState: MessageState) =>{
+    selectedUserState,
+    selectCurrentlyClickedPrivateConversation,
+    (messageState: MessageState, userState: UserState, currentPrivateConvoSelected: number | undefined) =>{
         //console.log(`selector/receiverID:`, receiverId)
-        const messages = messageState.privateMessagesRecord[receiverId] || []
-      // console.log(`selector record(private):`,messageState.privateMessagesRecord[receiverId])
-       // console.log(`selector messages `, messages)
-        return messages
+        const currentPrivateConvoSelectedNum = Number(currentPrivateConvoSelected)
+        const messages = messageState.privateMessagesRecord[currentPrivateConvoSelectedNum] || []
+
+        console.log(`selector extracted user:`, messages)
+            // Create a map of user IDs to their first names
+        const userIdToNameMap = userState.allUsers.reduce((map, user) => {
+            map[user.id] = user.firstName;
+            return map;
+        }, {} as { [key: number]: string });
+    
+        // Add senderName to each message
+        const messagesWithSenderName = messages.map(message => ({
+            ...message,
+            senderName: userIdToNameMap[message.sentFromUserId] || 'Unknown'
+        }));
+    
+        return messagesWithSenderName;
+        
+     
     }
 )
 
