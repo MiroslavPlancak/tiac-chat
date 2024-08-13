@@ -30,7 +30,7 @@ export const selectPaginatedRecordById = createSelector(
         const currentPrivateConvoSelectedNum = Number(currentPrivateConvoSelected)
         const messages = messageState.privateMessagesRecord[currentPrivateConvoSelectedNum] || []
 
-        console.log(`selector extracted user:`, messages)
+        // console.log(`selector extracted user:`, messages)
             // Create a map of user IDs to their first names
         const userIdToNameMap = userState.allUsers.reduce((map, user) => {
             map[user.id] = user.firstName;
@@ -179,7 +179,7 @@ export const selectNotificationBySenderId =  createSelector(
     selectCurrentlyClickedPrivateConversation,
     (channelState: ChannelState, messageState: MessageState, currentConversation: number| undefined) =>{
         const selectedSenderId = Number(channelState.clickedPrivateChannelID)
-        console.log(`selector notificationRecord:`, messageState.notificationMessagesRecord)
+//        console.log(`selector notificationRecord:`, messageState.notificationMessagesRecord)
         if(selectedSenderId === currentConversation){
             //big problem with this, multiple outputs, this should be uncommented and re-factored somehow.
             // console.log(`selector: they match`)

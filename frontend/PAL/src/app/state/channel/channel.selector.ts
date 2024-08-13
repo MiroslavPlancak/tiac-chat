@@ -98,7 +98,7 @@ export const selectRemainingParticipantsOfPrivateChannel = createSelector(
     (channelState:ChannelState, userState: UserState) =>{
         const extractCurrentParticipantIds = channelState.privateChannelParticipants.map(participant => participant.user_Id)
         const remainingParticipantsUserObjects = userState.allUsers.filter(user => !extractCurrentParticipantIds.includes(user.id))
-        console.log(`remaining users selector`,remainingParticipantsUserObjects)
+        // console.log(`remaining users selector`,remainingParticipantsUserObjects)
         return remainingParticipantsUserObjects
     }
 )
@@ -107,7 +107,7 @@ export const selectRemainingParticipantsOfPrivateChannel = createSelector(
 export const selectCurrentlyClickedPrivateConversation = createSelector(
     selectedChannelState,
     (channelState:ChannelState) =>{
-         console.log(`selector/clicked private convo:`, channelState.clickedPrivateChannelID)
+        //  console.log(`selector/clicked private convo:`, channelState.clickedPrivateChannelID)
        return channelState.clickedPrivateChannelID}
 )
 

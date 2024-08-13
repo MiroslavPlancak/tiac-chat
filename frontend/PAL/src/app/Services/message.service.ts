@@ -328,7 +328,7 @@ export class MessageService implements OnInit, OnDestroy {
 
   // select user for private messaging directly from public chat method()
   public conversationIdSelectedClickHandler(conversationId: number): void {
- console.log(`click`)
+//  console.log(`click`)
     //clear notification from the state
     this.store.dispatch(Messages.Flag.Actions.resetNotificationMessageStarted({ senderId: conversationId}))
     //reset the start/end indexes in the state

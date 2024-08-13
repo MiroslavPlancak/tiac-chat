@@ -350,7 +350,7 @@ export const messageReducer = createReducer(
     }),
     //need to reset to undefined
     on(Messages.Flag.Actions.resetNotificationMessageSucceeded, (state,{ senderId })=>{
-        console.log(`reducer fires/senderId`, senderId)
+        // console.log(`reducer fires/senderId`, senderId)
         return {
             ...state,
             notificationMessagesRecord:{
