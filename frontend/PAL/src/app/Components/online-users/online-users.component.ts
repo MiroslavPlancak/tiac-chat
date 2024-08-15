@@ -137,7 +137,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
             ))
         }
        
-        if (this.privateConversationId$.value) {
+        if (currentConversationId) {
           // the problem is here: namely when different convo is selected privateconversationId$ is different and this loads the correct messages
 
           return this.messageService.loadPrivateMessages(this.currentUserId$.getValue() as number, this.privateConversationId$.value as number).pipe(
@@ -146,6 +146,7 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
             rxjs.tap(filteredUnSeenMessages => {
 
               filteredUnSeenMessages.forEach((unSeenMessage: any) => {
+                
                 this.chatService.notifyReceiverOfPrivateMessage(unSeenMessage);
               });
             }),

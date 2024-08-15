@@ -68,7 +68,10 @@ export class ChatService implements OnInit,OnDestroy {
       this.hubConnection?.on("PrivateMessageReceived", (privateMessage)=>{
         observer.next(privateMessage)
       })
-    }).pipe(rxjs.takeUntil(this.destroy$))
+    }).pipe(
+      rxjs.tap((res)=> console.log('ChatService \ privateMessageReceived:', res)),
+      rxjs.takeUntil(this.destroy$)
+    )
   }
 
 

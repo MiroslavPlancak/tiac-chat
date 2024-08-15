@@ -227,8 +227,7 @@ export class ChatBodyComponent implements OnInit, OnDestroy, AfterViewInit {
     this.messageService.receivePrivateMesages().subscribe((res) => {
       // console.log(`private message received:`, res.savedMessage)
       this.store.dispatch(Messages.Hub.Actions.receivePrivateMessageStarted({ privateMessage: res.savedMessage, senderId: res.senderId }))
-      // this.store.dispatch(Messages.Flag.Actions.setNotificationMessageStarted({ senderId: res.senderId}))
-    //  this.store.select(selectNotificationBySenderId(res.senderId)).pipe(rxjs.take(1)).subscribe()
+
     })
 
 //unsure as to why this works, but it does.

@@ -191,7 +191,7 @@ export class MessageService implements OnInit, OnDestroy {
     message: string) => {
    return rxjs.of( this.connectionService.hubConnection?.invoke("SendPrivateMessage", recipientId, message))
    .pipe(
- 
+    
     rxjs.catchError(err => {
       console.log(err);
       return (err);
@@ -203,7 +203,7 @@ export class MessageService implements OnInit, OnDestroy {
   public receivePrivateMesages = (): rxjs.Observable<any> => {
     return new rxjs.Observable<any>(observer => {
       this.connectionService.hubConnection?.on("ReceivePrivateMessages", (senderId, message, messageId, isSeen, savedMessage) => {
-        //console.log(`savedPrivateMessage#1:`, savedMessage)
+        //console.log(`Service\ receivePrivateMessages():`, savedMessage)
         //observer.next({ senderId, message, isSeen });
        
         observer.next({savedMessage,senderId});

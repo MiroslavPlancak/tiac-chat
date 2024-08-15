@@ -154,7 +154,7 @@ export const messageReducer = createReducer(
         //console.log(`reducer output:`, privateMessage, receiverId)
         const currentMessages = state.privateMessagesRecord[receiverId] || []
         const updatedMessages = [...currentMessages, privateMessage]
-        console.log(`updatedMessages/SendPrivateMessagesSucceeded`, updatedMessages)
+       console.log(`updatedMessages/SendPrivateMessagesSucceeded`, updatedMessages)
         return {
             ...state,
             privateMessagesRecord: {

@@ -25,12 +25,12 @@ export const selectPaginatedRecordById = createSelector(
     selectedMessageState,
     selectedUserState,
     selectCurrentlyClickedPrivateConversation,
-    (messageState: MessageState, userState: UserState, currentPrivateConvoSelected: number | undefined) =>{
+    ( messageState: MessageState, userState: UserState, currentPrivateConvoSelected: number | undefined) =>{
         //console.log(`selector/receiverID:`, receiverId)
         const currentPrivateConvoSelectedNum = Number(currentPrivateConvoSelected)
         const messages = messageState.privateMessagesRecord[currentPrivateConvoSelectedNum] || []
 
-        // console.log(`selector extracted user:`, messages)
+         //console.log(`selector messages:`, messages)
             // Create a map of user IDs to their first names
         const userIdToNameMap = userState.allUsers.reduce((map, user) => {
             map[user.id] = user.firstName;
@@ -42,7 +42,8 @@ export const selectPaginatedRecordById = createSelector(
             ...message,
             senderName: userIdToNameMap[message.sentFromUserId] || 'Unknown'
         }));
-    
+        console.log(`messageSelector/ selectePaginatedRecordById/ messagesWithSenderName:`, messagesWithSenderName)
+        // if(channelState.clickedPrivateChannelID )
         return messagesWithSenderName;
         
      
