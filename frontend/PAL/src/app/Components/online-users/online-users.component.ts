@@ -136,50 +136,11 @@ export class OnlineUsersComponent implements OnInit, OnDestroy {
              selectedPrivateChannel: Number(currentConversationId)}
             ))
         }
+        return rxjs.of(rxjs.EMPTY)
        
-        if (currentConversationId) {
-          // the problem is here: namely when different convo is selected privateconversationId$ is different and this loads the correct messages
-
-          return this.messageService.loadPrivateMessages(this.currentUserId$.getValue() as number, this.privateConversationId$.value as number).pipe(
-            rxjs.first(),
-            rxjs.map(allMessages => allMessages.filter((message: { isSeen: boolean; }) => !message.isSeen)),
-            rxjs.tap(filteredUnSeenMessages => {
-
-              filteredUnSeenMessages.forEach((unSeenMessage: any) => {
-                
-                this.chatService.notifyReceiverOfPrivateMessage(unSeenMessage);
-              });
-            }),
-            rxjs.switchMap(() => rxjs.of(privateMessage))
-          );
-        } else {
-          return rxjs.of(privateMessage); // or another observable if necessary
-        }
       }),
-      rxjs.tap(privateMessage => {
-
-        if (+privateMessage.senderId as number !== this.privateConversationId$.value) {
-          this.privateNotification[+privateMessage.senderId] = true;
-        }
-      }),
-      rxjs.switchMap((privateMessage) => {
-        if (+privateMessage.senderId as number !== this.privateConversationId$.value) {
-          this.countPrivateMessages(privateMessage)
-          const privateMessage$ = rxjs.from(this.privateMessagesCounter$.getValue())
-
-          return privateMessage$.pipe(
-            rxjs.groupBy(message => message.senderId),
-            rxjs.mergeMap(group => group.pipe(rxjs.toArray()))
-          )
-        }
-        return rxjs.EMPTY;
-      })
-    ).subscribe((splitArray) => {
-      splitArray.forEach(element => {
-        this.privateMessageMap.set(+element.senderId, splitArray.length)
-        this.privateMessageMap$.next(this.privateMessageMap)
-      })
-    })
+     
+    ).subscribe()
 
   }
 

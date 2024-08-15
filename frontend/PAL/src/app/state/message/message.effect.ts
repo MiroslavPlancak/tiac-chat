@@ -117,10 +117,15 @@ export class MessageEffects {
     receivePrivateMessage$ = createEffect(() =>
         this.action$.pipe(
             ofType(Messages.Hub.Actions.receivePrivateMessageStarted),
-            rxjs.switchMap((action) =>{
+            rxjs.withLatestFrom(this.store.select(selectCurrentlyClickedPrivateConversation)),
+            rxjs.switchMap(([action, currentlyClickedPrivateConversation]) =>{
              //   console.log(`effect:0`, action.privateMessage)
+             if(currentlyClickedPrivateConversation == action.senderId){
+                console.log(`hey, its me.`)
+                this.chatService.notifyReceiverOfPrivateMessage(action.privateMessage)
+             }
                 return rxjs.of(action).pipe(
-                 // rxjs.tap((res) => console.log(`receive private message started / effect:`, res)),
+                  rxjs.tap((res) => console.log(`receive private message started / effect:`, res)),
                     rxjs.map(()=> Messages.Hub.Actions.receivePrivateMessageSucceeded({ privateMessage: action.privateMessage, senderId: action.senderId})),
                     rxjs.catchError((error) => rxjs.of(Messages.Hub.Actions.receivePrivateMessageFailed({ error: error })))
                 )
